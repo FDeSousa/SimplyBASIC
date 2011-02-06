@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    >
+<EditText 
+	android:layout_width="match_parent" 
+	android:layout_height="match_parent" 
+	android:typeface="monospace" 
+	android:ems="75" 
+	android:maxEms="75" 
+	android:layout_gravity="bottom|fill_horizontal" 
+	android:gravity="bottom|fill_horizontal" 
+	android:focusable="true" 
+	android:focusableInTouchMode="true" 
+	android:background="#ff000000" 
+	android:isScrollContainer="true" 
+	android:minLines="3" 
+	android:inputType="text|textCapCharacters|textCapWords|textCapSentences|textMultiLine" 
+	android:scrollHorizontally="true" 
+	android:saveEnabled="true" 
+	android:textColor="#dd008800" 
+	android:textColorHighlight="#ff008800" 
+	android:textColorHint="#aa008800" 
+	android:textSize="12sp"	
+	style="?android:attr/textViewStyle" android:id="@+id/etMain">
+</EditText>
+</LinearLayout>
