@@ -1,5 +1,9 @@
 package fdesousa.app.SimplyBASIC;
 
+// github.com/FDeSousa/SimplyBASIC
+// is the location of the Git repository
+// for this project
+
 //Java imports
 import java.io.*;
 
