@@ -31,8 +31,8 @@ public class SimplyBASIC extends Activity {
 		final String lines[] = new String[255];	
 		final String token = lines[0];
 		final String output = lines[0];
-		final CommandInterpreter CommInt = new CommandInterpreter(false, is, os);
 		final EditText etCW = (EditText)findViewById(R.id.etMain);
+		final CommandInterpreter CommInt = new CommandInterpreter(false, is, os, etCW);
 		
 		// Initialise etCW, display Welcome message to user, set cursor position
 		etCW.setText("WELCOME TO SIMPLYBASIC\n"
@@ -50,10 +50,13 @@ public class SimplyBASIC extends Activity {
 
 		// OnKeyListener to handle users entering data into command window
 		// TODO Must move the OnKeyListener to somewhere more out of the way
+		
+		/*
 		etCW.setOnKeyListener(new OnKeyListener() {
 			@Override
 			public boolean onKey(View v, int keyCode, KeyEvent event) {
-				if(event.getAction()==KeyEvent.ACTION_UP && event.getKeyCode() == KeyEvent.KEYCODE_ENTER) {
+				if(event.getAction()==KeyEvent.ACTION_UP 
+						&& event.getKeyCode() == KeyEvent.KEYCODE_ENTER) {
 					// Splits the string into tokens, split by Carriage Return
 					// and the characters "> " that show user input area
 					// last token is parsed to CommInt(Command Interpreter), 
@@ -63,13 +66,13 @@ public class SimplyBASIC extends Activity {
 					// but they use the same values as the variables of the same name outside
 					String tokens[] = etCW.getText().toString().split("\n> ");
 					String token = tokens[tokens.length - 1];
-					String output = CommInt.procCommand(token);
+					// String output = CommInt.procCommand(token);
 					
-					// Only write out information if 'output' > 0 length
-					// should do something more elegant for output if there is none
-					// like adding a bunny rabbit ASCII picture or something
-					if (output.length() > 1){
-						etCW.append(output + "\n> ");
+					// If procCommand returns that it didn't process the file,
+					// then it probably didn't output either. If it did, add a new line,
+					// and add the > sign, to signify user input area
+					if (CommInt.procCommand(token)){
+						etCW.append("\n> ");
 					}
 					else
 					{
@@ -88,8 +91,6 @@ public class SimplyBASIC extends Activity {
 				return false;
 			}
 		});// end onKeyListener
-
-
 
 		/*
         private EditText getEditText() {
