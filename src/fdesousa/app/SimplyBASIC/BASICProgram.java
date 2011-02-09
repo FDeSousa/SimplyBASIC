@@ -3,7 +3,7 @@ package fdesousa.app.SimplyBASIC;
 public class BASICProgram {
 	
 	private String progName = "", userName = "";
-	private String[][] listing;
+	private String[][] listing = null;
 	private String output = "";
 	private int cL = 0, nL = 0;
 	
@@ -11,7 +11,6 @@ public class BASICProgram {
 		// Used for HELLO, NEW
 		this.setProgName(progName);
 		this.setUserName(userName);
-		listing = new String[65535][255];
 		// Very simple, just initialises the variables here
 		// giving the program a name and user name attributed
 	}
@@ -27,7 +26,6 @@ public class BASICProgram {
 	public void C_NEW(String progName, String userName){				
 		this.setProgName(progName);
 		this.setUserName(userName);
-		listing = new String[65535][255];
 		// Simple, just re-initialises the variables
 	}
 	
@@ -45,7 +43,7 @@ public class BASICProgram {
 	
 	public String[][] C_LIST(int lN){
 		// Return program listing from line number: lN
-		String[][] list = new String[65535][255];
+		String[][] list = null;
 		cL = lN;
 		while(cL <= listing.length){
 			if (listing[cL] != null){
