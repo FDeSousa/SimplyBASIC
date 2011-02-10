@@ -7,7 +7,7 @@ public class BASICProgram {
 	private String output = "";
 	private int cL = 0, nL = 0;
 	
-	public BASICProgram(String progName, String userName){
+	public BASICProgram(String userName, String progName){
 		// Used for HELLO, NEW
 		this.setProgName(progName);
 		this.setUserName(userName);
@@ -15,7 +15,7 @@ public class BASICProgram {
 		// giving the program a name and user name attributed
 	}
 	
-	public BASICProgram(String progName, String userName, String[][] listing){
+	public BASICProgram(String userName, String progName, String[][] listing){
 		// Used for HELLO, OLD
 		this.setProgName(progName);
 		this.setUserName(userName);
@@ -23,13 +23,13 @@ public class BASICProgram {
 		// As above, but this is used for an older program, to load the listing
 	}
 	
-	public void C_NEW(String progName, String userName){				
+	public void C_NEW(String progName){				
 		this.setProgName(progName);
 		this.setUserName(userName);
 		// Simple, just re-initialises the variables
 	}
 	
-	public void C_OLD(String progName, String userName, String[][] listing){
+	public void C_OLD(String progName, String[][] listing){
 		this.setProgName(progName);
 		this.setUserName(userName);
 		this.listing = listing;

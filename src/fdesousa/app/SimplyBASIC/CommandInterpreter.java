@@ -3,6 +3,8 @@ package fdesousa.app.SimplyBASIC;
 import java.util.regex.*;
 import java.io.*;
 
+import android.os.Environment;
+//import android.util.Log; // Unused for now, may use for logging activity
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.View.OnKeyListener;
@@ -10,27 +12,30 @@ import android.widget.EditText;
 
 public class CommandInterpreter {
 
-	private String line;
-	private String token;
-	private String[] tokens = null;
-	//private String output;
+	// Set directory to read from/write to
+	private File sdRoot = Environment.getExternalStorageDirectory();
+	private File dir = new File (sdRoot.getAbsolutePath() + "/SimplyBASIC");
+	//private String line;	// not used, no need for specific line, using inputToken
+	private String token;	// token to work on. May remove, to replace with inputToken
+	private String[] tokens = null; // whole line, divided into tokens
+	//private String output;	// class now writes straight to etCW
 	private String[][] listing = null;
 	private String[] progDetails = new String[3];
-	private boolean runBASIC = false;
+	//private boolean runBASIC = false;
 	private int C_HELLO_Step = 0;
+	private int C_NEW_Step = 0; 
+	private int C_OLD_Step = 0;
 	private static BASICProgram BP;
-	private static BASICInterpreter BI;
-	private static EditText etCW;
-	private InputStream is;
-	private OutputStream os;
+	//private static BASICInterpreter BI;
+	private EditText etCW;
+	//private InputStream is;
+	//private OutputStream os;
 
 	final static String[] commands = {
 		"HELLO", "NEW", "OLD", "STOP", 
 		"LIST", "SAVE", "UNSAVE", "CATALOG",
 		"SCRATCH", "RENAME", "RUN", "BYE"
 	};
-
-	private static final String nL = "\n> ";
 
 	// Start BASIC Interpreter
 	final int C_HELLO = 0;
@@ -57,65 +62,77 @@ public class CommandInterpreter {
 	// Exit BASIC Interpreter
 	final int C_BYE = 11;
 
-	/**
-	 * @param inputToken
-	 */
-	public CommandInterpreter(boolean runBASIC, InputStream is, OutputStream os, EditText edtextCW) {
+	private static final String nL = "\n> ";
+
+	public CommandInterpreter(EditText edtextCW) {
 		super();
-		this.runBASIC = runBASIC;
 		this.etCW = edtextCW;
-		this.is = is;
-		this.os = os;
+
+		if (dir.exists() == false 
+				&& dir.isDirectory() == false){
+			dir.mkdir();
+		}
 
 		// Only initialises runBASIC with parsed value for now
 		// If true, the CI is being executed to run BASIC commands
 		this.etCW.setOnKeyListener(new OnKeyListener() {
 			boolean runBASIC;
-			
 			@Override
 			public boolean onKey(View v, int keyCode, KeyEvent event) {
 				if(event.getAction()==KeyEvent.ACTION_UP 
 						&& event.getKeyCode() == KeyEvent.KEYCODE_ENTER) {
-					// Splits the string into tokens, split by Carriage Return
-					// and the characters "> " that show user input area
-					// last token is parsed to CommInt(Command Interpreter), 
-					// and executed if needed. Inelegant, but works.
 
-					// As they are used in an inner-class, these variables have to be declared again,
-					// but they use the same values as the variables of the same name outside
-					//String tokens[] = etCW.getText().toString().split("\n> ");
-					//String token = tokens[tokens.length - 1];
-
-					if (C_HELLO_Step > 0){
+					if (C_HELLO_Step >= 1){
 						tokens = etCW.getText().toString().split("-- ");
 						C_HELLO(tokens[tokens.length - 1].trim());
 					}
+					else if (C_NEW_Step >= 1){
+						tokens = etCW.getText().toString().split("-- ");
+						C_NEW(tokens[tokens.length - 1].trim());
+					}
+					else if (C_OLD_Step >= 1){
+						tokens = etCW.getText().toString().split("-- ");
+						C_OLD(tokens[tokens.length - 1].trim());
+					}
 					else {
 						tokens = etCW.getText().toString().split("\n> ");
-						procCommand(tokens[tokens.length - 1].trim());
-					}
-					// String output = CommInt.procCommand(token);
-					/*
-					// If procCommand returns that it didn't process the file,
-					// then it probably didn't output either. If it did, add a new line,
-					// and add the > sign, to signify user input area
-					if (procCommand(token)){
-						etCW.append("\n> ");
-					}
-					else
-					{
-						etCW.append("> ");
-					}
 
-					// Set cursor to new position
-					etCW.setSelection(etCW.getText().length());
-					// Return true, action was handled.
-					 */
+						/**
+						 * Numbers returned upon ending execution:
+						 * 	--	PROBLEMS WITH SYSTEM COMMANDS
+						 * -2:	Problem during execution, need nL and generic error
+						 * -1:	Problem during execution, need nL, error already shown
+						 * 	0:	No problems, needs nL
+						 *  1:	No problems, doesn't need nL
+						 */
+						
+						switch(procCommand(tokens[tokens.length - 1].trim())){							
+						case -2:
+							etCW.append("ERROR WITH SYSTEM COMMAND." + nL);
+							break;
+							
+						case -1:
+						case 0:
+							etCW.append(nL);
+							break;
+							
+						case 1:
+							// Do nothing for now, no action needed
+							break;
+							
+						default:
+							// Just in case an odd error value is sent
+							etCW.append("ERROR WITH RETURN VALUE." + nL);
+							break;
+						}
+					}					
+
 					return true;
 				}
 				if(this.runBASIC == true 
 						&& event.getAction()==KeyEvent.ACTION_DOWN 
 						&& event.getKeyCode() == KeyEvent.KEYCODE_S) {
+					// TODO Add code to stop execution of program
 					// Used when running a BASIC application, to stop operation
 					return false;
 				}
@@ -124,71 +141,50 @@ public class CommandInterpreter {
 		});// end onKeyListener
 	}
 
-	/*
-	public boolean determineCommand(String token){
+	public int procCommand(String line){
+
 		// For now, split string by spaces. Each space signals new token.
 		// Not pretty, and not compatible with original syntax, but it should
 		// work well enough for now, to worry about more later.
-		inputToken = token;
-		tokens = inputToken.split(" ");
-		output = "";
-
-		if (IsBASIC(inputToken.trim()) == true){
-			;
-		}
-		else
-		{
-			output = inputToken;
-		}
-
-		return false;
-	}
-	// Does a job that can be handled elsewhere with ease.
-	 */
-
-	public void procCommand(String line){		
-		// For now, split string by spaces. Each space signals new token.
-		// Not pretty, and not compatible with original syntax, but it should
-		// work well enough for now, to worry about more later.
-		this.line = line;
-		tokens = this.line.split(" ");
+		tokens = line.split(" ");
 		token = tokens[0].trim();
-		//output = "";
 
-		if (runBASIC == true){
-			// Must mean someone has executed RUN command, and
-			// this execCommand is a new instance for the interpreter
-			BI = new BASICInterpreter(tokens);
-			// TODO rest of runBASIC section
-		}
-		else{
+		// TODO Add code to create, initialise and execute System command
+
+		if (token.equals(commands[C_HELLO])){
+			// Ask for user name, get ready for step 1 of HELLO
+			etCW.append("USER NAME-- ");
+			C_HELLO_Step = 1;
+			return 1;
+		} // end HELLO command
+
+		// Only execute these commands if BP is instantiated
+		else if (BP instanceof BASICProgram){
+			// Separated from the other if .. else, this handles BASIC commands
+			// only if and when BP had been instantiated
+			
 			if (isNumber(token) == true){
 				// Must insert call to BASICProgram, to add line to program
 				// possibly parsing inputToken, and tokens[] for storage
 				// and execution of commands later
-				etCW.append("BASIC command" + nL);
-				
+				BP.addLine(tokens);
+				return 0;
 				// TODO Add code to add the tokens to Program Listing
 			}
-			// TODO Add code to create, initialise and execute System command
 
-			if (token.compareTo(commands[C_HELLO]) >= 0){
-				
-				etCW.append("NEW OR OLD-- ");
-				C_HELLO_Step++;
-
-			} // end HELLO command
-			else if (token.compareTo(commands[C_NEW]) >= 0){
-				BP.C_NEW(tokens[2], tokens[3]);
+			if (token.equals(commands[C_NEW])){
+				etCW.append("NEW PROGRAM NAME-- ");
+				C_NEW_Step = 1;
+				return 1;
 			} // end NEW command
-			else if (token.compareTo(commands[C_OLD]) >= 0){
-				BP.C_OLD(tokens[2], tokens[3], listing);
+
+			else if (token.equals(commands[C_OLD])){
+				etCW.append("OLD PROGRAM NAME-- ");
+				C_OLD_Step = 1;
+				return 1;
 			} // end OLD command
-			//else if (token == commands[C_STOP]){
-				// TODO Add code to stop execution of the BASIC program
-			//	;
-			//} // end STOP command
-			else if (token.compareTo(commands[C_LIST]) >= 0){
+
+			else if (token.equals(commands[C_LIST])){
 				if(tokens[3] == null){
 					BP.C_LIST();
 				}
@@ -197,127 +193,224 @@ public class CommandInterpreter {
 					BP.C_LIST(n);
 				}
 			} // end LIST command
-			else if (token.compareTo(commands[C_SAVE]) >= 0){
-				;
+
+			else if (token.equals(commands[C_SAVE])){
+				if (C_SAVE(BP.getProgName() + ".bas")){
+					return 0;
+				}
+				else {
+					return -1;
+				}
 			} // end SAVE command
-			else if (token.compareTo(commands[C_UNSAVE]) >= 0){
-				;
+
+			else if (token.equals(commands[C_UNSAVE])){
+				if (C_UNSAVE(BP.getProgName() + ".bas")){
+					return 0;
+				}
+				else {
+					return -1;
+				}
 			} // end UNSAVE command
-			else if (token.compareTo(commands[C_CATALOG]) >= 0){
-				;
+			
+			else if (token.equals(commands[C_CATALOG])){
+				File[] dirList = dir.listFiles();
+				
+				if (dirList != null){
+					etCW.append("There are " + dirList.length + " files in program directory\n");
+					for (int i = 0; i < dirList.length; i++){
+						etCW.append("\t" + dirList[i].getName() + "\n");
+					}
+				}
+				return 0;
 			} // end CATALOG command
-			else if (token.compareTo(commands[C_SCRATCH]) >= 0){
+			
+			else if (token.equals(commands[C_SCRATCH])){
 				;
 			} // end SCRATCH command
-			else if (token.compareTo(commands[C_RENAME]) >= 0){
+			
+			else if (token.equals(commands[C_RENAME])){
 				;
 			} // end RENAME command
-			else if (token.compareTo(commands[C_RUN]) >= 0){
+			
+			else if (token.equals(commands[C_RUN])){
 				;
 			} // end RUN command
-			else if (token.compareTo(commands[C_BYE]) >= 0){
+			
+			else if (token.equals(commands[C_BYE])){
 				;
 			} // end BYE command
+			
+			else if (token.equals("")){
+				etCW.append(nL);
+				return 1;
+			}
 			else{
-				etCW.append("'" + tokens[0] + "'" + " : " + "'" + token + "'" + nL);
+				etCW.append("'" + tokens[0] + "'" + " : " + "'" + token + "'\n");
 				etCW.append("ERROR WITH SYSTEM COMMAND" + nL);
-				//output = "ERROR WITH SYSTEM COMMAND";
 			}
 		}
-
-		//return true;
+		else{
+		}
+		return -1;
 	}
 
-	private void C_HELLO(String token){
-		this.token = token.trim();
+	private void C_HELLO(String inputToken){
+		/**
+		 * switch .. case steps:
+		 * 	0	Not used; first step is in HELLO, ask for userName
+		 * 	1	Get userName, ask for NEW or OLD
+		 * 	2	If NEW, go to:	3
+		 * 		If OLD, go to:	4
+		 * 			Ask for progName
+		 * 	3	Get progName, create new BP w/empty listing
+		 * 	4	Get progName, create new BP w/loaded program listing
+		 */
 
-		// Steps of HELLO command and inputs
+		token = inputToken.trim();
+
 		switch (C_HELLO_Step) {
 
-		// Step 1: Ask if new or old
-		case 1:		// Check if NEW or OLD
-			if (token.compareTo(commands[C_NEW]) >= 0){
+		case 1:		// Get userName, ask progName
+			progDetails[1] = token;
+			etCW.append("NEW OR OLD-- ");
+			C_HELLO_Step++;
+			break;
+
+		case 2:
+			if (token.equals(commands[C_NEW])){
 				C_HELLO_Step++;
 			}
-			else if (token.compareTo(commands[C_OLD]) >= 0){
-				C_HELLO_Step = 3;
+			else if (token.equals(commands[C_OLD])){
+				C_HELLO_Step = 4;
 			}
 			else{
 				etCW.append("ONLY TYPE 'NEW' OR 'OLD'-- ");
 				break;
 			}
-			progDetails[0] = this.token;
-			etCW.append("PROGRAM NAME-- ");
+
+			etCW.append(token + " PROGRAM NAME-- ");
 			break;
 
-			// Step 2: Get program name
-		case 2:		// If NEW, get input program name
-			progDetails[1] = this.token;
-			C_HELLO_Step = 4;
-			etCW.append("USER NAME-- ");
+		case 3:
+			progDetails[2] = token;
+			C_HELLO_Step = 0;
+			BP = new BASICProgram(progDetails[1], progDetails[2]);
+			etCW.append("READY." + nL);
 			break;
 
-		case 3:		// If OLD, get input program name
-			progDetails[1] = this.token;
-			// Load program listing from file
-			C_HELLO_Step++;
-			etCW.append("USER NAME-- ");
-			break;
-
-			// Step 3: Ask for user name
-		case 4:		// Get input user name
-			progDetails[2] = this.token;
-			C_HELLO_Step++;
-			etCW.append("WELCOME TO BASIC" + nL);
-			break;
-
-		case 5:		// 
-			;
+		case 4:
+			progDetails[2] = token;
+			C_HELLO_Step = 0;
+			// Get listing
+			try {
+				if (dir.canRead()){
+					File basFile = new File(dir, token + ".bas");
+					FileReader basReader = new FileReader(basFile);
+					BufferedReader in = new BufferedReader(basReader);
+					// For now, does nothing with 'in', but should loop
+					// and reader it line-by-line
+					in.close();
+					C_OLD_Step = 0;
+					etCW.append("PROGRAM OPENED SUCCESSFULLY.");
+				}
+			}
+			catch (IOException e) {
+				etCW.append("COULD NOT READ FILE " + e.getMessage().toUpperCase());
+			}
+			
+			BP = new BASICProgram(progDetails[1], progDetails[2], listing);
+			etCW.append("READY." + nL);
 			break;
 
 		default:
 			break;
 		}
-
-		//return false;
 	}
 
-	/*private String System(String inputToken){
-		this.inputToken = inputToken;
+	private void C_NEW(String inputToken){
 
-		// Figures out what to do with a System command
-
-		return output;
+		token = inputToken.trim();
+		BP.C_NEW(token);
+		C_NEW_Step = 0;
 	}
 
-	private String BASIC(String inputToken){
-		this.inputToken = inputToken;
+	private void C_OLD(String inputToken){
 
-		// Figures out what to do with a BASIC command
+		token = inputToken.trim();
+		// Get listing for given progName
 
-		return output;
-	}*/
+		try {
+			if (dir.canRead()){
+				File basFile = new File(dir, token + ".bas");
+				FileReader basReader = new FileReader(basFile);
+				BufferedReader in = new BufferedReader(basReader);
+				// For now, does nothing with 'in', but should loop
+				// and reader it line-by-line
+				in.close();
+				BP.C_OLD(token, listing);
+				C_OLD_Step = 0;
+				etCW.append("PROGRAM OPENED SUCCESSFULLY." + nL);
+			}
+		}
+		catch (IOException e) {
+			etCW.append("COULD NOT READ FILE " + e.getMessage().toUpperCase());
+		}
 
+	}
+
+	private boolean C_SAVE(String fileName){
+		try {
+			if (dir.canWrite()){
+				File basFile = new File(dir, fileName);
+				FileWriter basWriter = new FileWriter(basFile);
+				BufferedWriter out = new BufferedWriter(basWriter);
+				// Temporary write command. To replace with loop, that
+				// writes out the code as plain text
+				out.write("Hello, world!");
+				out.close();
+				etCW.append("PROGRAM SAVED SUCCESSFULLY.");
+				return true;
+			}
+			else{
+				etCW.append("COULD NOT WRITE TO FOLDER.");
+				return false;
+			}
+		}
+		catch (IOException e) {
+			etCW.append("COULD NOT WRITE TO FILE " + e.getMessage().toUpperCase());
+			return false;
+		}
+	}
+	
+	private boolean C_UNSAVE(String fileName){
+		if (dir.canWrite()){
+			File basFileToDelete = new File(dir, fileName);
+			if (basFileToDelete.delete()){
+				etCW.append("PROGRAM UNSAVED SUCCESSFULLY.");
+				return true;
+			}
+			else{
+				etCW.append("COULD NOT UNSAVE FROM FOLDER.");
+				return false;
+			}
+		}
+		else{
+			etCW.append("FILE CANNOT BE UNSAVED - NOT ENOUGH PERMISSIONS");
+			return false;
+		}
+	}
+	
 	private boolean isNumber(String chkToken){
 
 		try {
 			// If first token is number, assume it's a BASIC command
 			// and return true, to state it's to be added to queue.
 
-			//Integer.parseInt(chkToken);
-			//Pattern integerPattern = Pattern.compile("^-?\\d+$");
-			//Matcher matchesInteger = integerPattern.matcher(chkToken);
-			//boolean isInteger = matchesInteger.matches();
-
 			boolean isInteger = Pattern.matches("^-?\\d+$", chkToken);
 			return isInteger;
 
-			//if (isInteger == true){
-			//	return true;
-			//}
 		}
 		catch (NumberFormatException ex){
-			// output = ex.toString();
 			// As first token isn't number, return false,
 			// command is system command, and is to be 
 			// executed immediately by the interpreter.

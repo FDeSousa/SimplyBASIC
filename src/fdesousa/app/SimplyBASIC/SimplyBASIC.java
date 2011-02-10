@@ -11,9 +11,6 @@ import java.io.*;
 import android.app.Activity;
 import android.os.Bundle;
 import android.widget.EditText;
-import android.view.KeyEvent;
-import android.view.View;
-import android.view.View.OnKeyListener;
 
 public class SimplyBASIC extends Activity {
 	// Called when the activity is first created.
@@ -32,12 +29,10 @@ public class SimplyBASIC extends Activity {
 		final String token = lines[0];
 		final String output = lines[0];
 		final EditText etCW = (EditText)findViewById(R.id.etMain);
-		final CommandInterpreter CommInt = new CommandInterpreter(false, is, os, etCW);
+		final CommandInterpreter CommInt = new CommandInterpreter(etCW);
 		
 		// Initialise etCW, display Welcome message to user, set cursor position
-		etCW.setText("WELCOME TO SIMPLYBASIC\n"
-				+ "TYPE 'HELP' FOR A LIST OF COMMANDS\n"
-				+ "> ");
+		etCW.setText("WELCOME TO SIMPLYBASIC\n> ");
 		etCW.setSelection(etCW.getText().length());
 
 		// TODO Add TextChangedListener, get it working properly
