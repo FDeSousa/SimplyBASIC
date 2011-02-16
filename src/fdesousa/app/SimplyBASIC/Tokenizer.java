@@ -16,7 +16,7 @@ public class Tokenizer {
 	private char buffer[];
 	
 	public Tokenizer() {
-		// Doesn't really need initialization of anything for the moment
+		// Doesn't really need initialisation of anything for the moment
 	}
 	
 	public String nextToken(){
