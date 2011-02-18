@@ -12,15 +12,19 @@ package fdesousa.app.SimplyBASIC;
  */
 public class Tokenizer {
 	
-	private int curPos = 0, prevPos = 0, markPos = 0;
-	private char buffer[];
+	private int curPos = 0;		// Marks the current position in the char array
+	private int prevPos = 0;	// Marks the position in the char array of the last token
+	private int markPos = 0;	// Used to mark a position temporarily
+	private char buffer[];		// Holds the characters to analyse, easier to move between chars
+								// than in a String, that involves .substring(char position)
 	
 	public Tokenizer() {
-		// Doesn't really need initialisation of anything for the moment
+		// Constructor doesn't really need initialisation of anything for
+		// the moment as it's used more than once
 	}
 	
 	public String nextToken(){
-		// token is returned
+		// token is the returned String
 		String token = "";
 		// Return EOL if curPos is also EOL or greater
 		if (curPos >= buffer.length){
@@ -105,18 +109,55 @@ public class Tokenizer {
 		return token;
 	}
 	
+	// Methods and functions for doing the admin stuff
+	public boolean hasMoreTokens(){
+		// Simple enough. If current position is less than buffer length, returns true
+		return (curPos < buffer.length);
+	}
+	
+	public void mark(){
+		// Set mark to current position for reparsing
+		markPos = curPos;
+	}
+	
+	public void resetToMark(){
+		// Reset current position to mark position
+		curPos = markPos;
+	}
+	
+	// Three types of reset are used/needed
+	public void reset(){
+		// Reset only the pointer
+		curPos = 0;
+	}
+	
+	public void reset(char[] buf){
+		// Reset char array and pointer
+		buffer = buf;
+		reset();
+	}
+	
+	public void reset(String in){
+		// Reset char array with parsed in string, and pointer
+		buffer = in.toCharArray();
+		reset();
+	}
+	
 	// Who would have thought? A decade and a half, and Java still
 	// doesn't have operations you can perform with char arrays
 	// Hence the inclusion of isSpace, isDigit, isLetter
 	private boolean isSpace(char c){
+		// Check for ' ' (space) or '\t' (tab)
 		return ((c == ' ') || (c == '\t'));
 	}
 	
 	private boolean isDigit(char c){
+		// Checks if char is between '0' and '9'
 		return ((c >= '0') && (c <= '9'));
 	}
 	
 	private boolean isLetter(char c){
+		// Simply checks if the current char is between 'A' and 'Z'
 		return ((c>= 'A') && (c <= 'Z'));
 	}
 	

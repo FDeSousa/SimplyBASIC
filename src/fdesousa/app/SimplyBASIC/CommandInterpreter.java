@@ -19,12 +19,12 @@ public class CommandInterpreter {
 	private Hashtable<String, String[]> codeList = new Hashtable<String, String[]>(2011, 0.75f);
 	private String token = "";	// token to work on. May remove, to replace with inputToken
 	private String[] tokens = null; // whole line, divided into tokens
-	private String lineNumber = "";
+	//private String lineNumber = "";
 	private static BASICProgram BP;
 	// To take control of etCW, once SimplyBASIC parses it:
 	private EditText etCW;
 	private String[] lines = null;
-	private char[] line = null;
+	//private char[] line = null;
 	Tokenizer tokenizer = new Tokenizer();
 	// Array of commands for the system, to make matching easier:
 	final static String[] commands = {
@@ -71,7 +71,8 @@ public class CommandInterpreter {
 					// statements, but it's a trade-off for now at least
 					
 					lines = etCW.getText().toString().split("\n");
-					line = lines[lines.length - 1].toCharArray();
+					// Reset data in tokenizer with the current line to analyse
+					tokenizer.reset(lines[lines.length - 1]);
 					
 					if (C_HELLO_Step >= 1){
 						tokens = etCW.getText().toString().split("-- ");// to delete after tokenizer implemented fully
