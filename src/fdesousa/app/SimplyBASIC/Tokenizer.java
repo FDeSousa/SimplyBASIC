@@ -11,18 +11,18 @@ package fdesousa.app.SimplyBASIC;
  * http://www.mcmanis.com/chuck/java/cocoa/index.html
  */
 public class Tokenizer {
-	
+
 	private int curPos = 0;		// Marks the current position in the char array
 	private int prevPos = 0;	// Marks the position in the char array of the last token
 	private int markPos = 0;	// Used to mark a position temporarily
 	private char buffer[];		// Holds the characters to analyse, easier to move between chars
-								// than in a String, that involves .substring(char position)
-	
+	// than in a String, that involves .substring(char position)
+
 	public Tokenizer() {
 		// Constructor doesn't really need initialisation of anything for
 		// the moment as it's used more than once
 	}
-	
+
 	public String nextToken(){
 		// token is the returned String
 		String token = "";
@@ -34,7 +34,7 @@ public class Tokenizer {
 		prevPos = curPos;
 		// We don't need no stinkin' spaces here!
 		eatSpace();
-		
+
 		// Check what to do with current Character
 		switch (buffer[curPos]){
 		// All of [+ - * / ^ = ( )] are parsed immediately
@@ -48,9 +48,9 @@ public class Tokenizer {
 		case ')':
 			token += buffer[curPos];
 			curPos++;
-			return token;
-		// All of [< > . ,] may have additional operators/chars
-		// If the next char is '=', then token is '<=' or '>='
+			break;
+			// All of [< > . ,] may have additional operators/chars
+			// If the next char is '=', then token is '<=' or '>='
 		case '<':
 		case '>':
 			token += buffer[curPos];
@@ -59,9 +59,9 @@ public class Tokenizer {
 				token += buffer[curPos + 1];
 				curPos++;
 			}
-			return token;
-			
-		// If the next char is a number, token is a decimal number
+			break;
+
+			// If the next char is a number, token is a decimal number
 		case '.':
 			token += buffer[curPos];
 			curPos++;
@@ -69,12 +69,12 @@ public class Tokenizer {
 				token += buffer[curPos];
 				curPos++;
 			}
-			return token;
-			
-		// Eat space, then check if the next char is a Letter
+			break;
+
+			// Eat space, then check if the next char is a Letter
 		case ',':
 			token += buffer[curPos];
-			/* Will be ignoring this for now, a comma is just a comma, nothing else
+			/** Will be ignoring this for now, a comma is just a comma, nothing else
 			 * Mostly because it gets complicated from here.
 			 * Commas don't just separate variables, but also numbers (integers/decimals)
 			 * For now, let the class that requested nextToken, decide what to do after a comma
@@ -96,53 +96,83 @@ public class Tokenizer {
 					curPos++;
 				}
 			}
-			*/
-			return token;
-		
-			
-			
+			 */
+			break;
+
 		default:
+			// Under default, if it's not one of the many conditions above
+			// then check if it's a letter or digit, and the operation continues
+			
+			if (isLetter(buffer[curPos])){
+				// If it's a letter, begin the hunt for a named variable or command
+				token += buffer[curPos];
+				curPos++;
+				// Check what this next char is.
+				// If it's a letter, assume a command, loop to find the rest of it
+				if (isLetter(buffer[curPos])){
+					while (isLetter(buffer[curPos])){
+						token += buffer[curPos];
+						curPos++;
+					}
+				}
+				// If it's a digit, assume a variable name with number (i.e. A1)
+				else if (isDigit(buffer[curPos])){
+					token += buffer[curPos];
+					curPos++;
+				}
+				// Just in case, added a break here. You never know, it might save lives
+				break;
+			}
+			else if (isDigit(buffer[curPos])){
+				// If it's a digit, begin looking for the rest of the number
+				while (isDigit(buffer[curPos]) || buffer[curPos] == '.'){
+					// While it's a digit or a decimal-point, add it to token
+					token += buffer[curPos];
+					curPos++;
+				}
+			}
+			
 			break;
 		}
-			
-		// Just to shut the IDE up for a bit, default to returning empty token
+
+		// Handles the return, no matter what
 		return token;
 	}
-	
+
 	// Methods and functions for doing the admin stuff
 	public boolean hasMoreTokens(){
 		// Simple enough. If current position is less than buffer length, returns true
 		return (curPos < buffer.length);
 	}
-	
+
 	public void mark(){
 		// Set mark to current position for reparsing
 		markPos = curPos;
 	}
-	
+
 	public void resetToMark(){
 		// Reset current position to mark position
 		curPos = markPos;
 	}
-	
+
 	// Three types of reset are used/needed
 	public void reset(){
 		// Reset only the pointer
 		curPos = 0;
 	}
-	
+
 	public void reset(char[] buf){
 		// Reset char array and pointer
 		buffer = buf;
 		reset();
 	}
-	
+
 	public void reset(String in){
 		// Reset char array with parsed in string, and pointer
 		buffer = in.toCharArray();
 		reset();
 	}
-	
+
 	// Who would have thought? A decade and a half, and Java still
 	// doesn't have operations you can perform with char arrays
 	// Hence the inclusion of isSpace, isDigit, isLetter
@@ -150,22 +180,22 @@ public class Tokenizer {
 		// Check for ' ' (space) or '\t' (tab)
 		return ((c == ' ') || (c == '\t'));
 	}
-	
+
 	private boolean isDigit(char c){
 		// Checks if char is between '0' and '9'
 		return ((c >= '0') && (c <= '9'));
 	}
-	
+
 	private boolean isLetter(char c){
 		// Simply checks if the current char is between 'A' and 'Z'
 		return ((c>= 'A') && (c <= 'Z'));
 	}
-	
+
 	private void eatSpace(){
 		// Was part of nextToken, but moved, it's used a fair amount
 		while (isSpace(buffer[curPos])){
 			curPos++;
 		}
 	}
-	
+
 }

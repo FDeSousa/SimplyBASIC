@@ -182,25 +182,8 @@ public class CommandInterpreter {
 			} // end OLD command
 
 			else if (token.equals(commands[C_LIST])){		// Display current program's code
-//				if(tokens[3] == null){
-					BP.C_LIST(etCW, 0);
-//					return 0;
-//				}
-//				else{
-//					String chkToken = tokens[3].replace("--", "");
-//					if (isNumber(chkToken)){
-//						int n = Integer.parseInt(tokens[3].trim());
-//						BP.C_LIST(etCW, n);
-//						return 0;
-//					}
-//					else{
-//						etCW.append("INVALID LINE NUMBER GIVEN");
-//						return -1;
-//					}
-//				}
-//				else{
-//					etCW.append("EMPTY PROGRAM LISTING");
-//				}
+				// From now on, BP handles listing its own code
+				BP.C_LIST(etCW, 0);
 			} // end LIST command
 
 			else if (token.equals(commands[C_SAVE])){		// Save loaded program's to file
@@ -340,25 +323,24 @@ public class CommandInterpreter {
 		}
 	}
 
+	// Because of the fact there's an onKeyListener, waiting for CR,
+	// NEW, OLD, SAVE, UNSAVE, are all controlled within CI instance
 	private void C_NEW(String inputToken){
-
 		token = inputToken.trim();
 		BP.C_NEW(token);
 		C_NEW_Step = 0;
 	}
 
 	private void C_OLD(String inputToken){
-
 		token = inputToken.trim();
 		// Get listing for given progName
-
 		try {
 			if (dir.canRead()){
 				File basFile = new File(dir, token + ".bas");
 				FileReader basReader = new FileReader(basFile);
 				BufferedReader in = new BufferedReader(basReader);
 				// For now, does nothing with 'in', but should loop
-				// and reader it line-by-line
+				// and read it line-by-line, then parse to BP
 				in.close();
 				BP.C_OLD(token, codeList);
 				C_OLD_Step = 0;

@@ -147,5 +147,4 @@ public class BASICProgram implements Runnable{
 		return userName;
 	}
 
-	
 }
