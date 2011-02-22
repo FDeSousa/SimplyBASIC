@@ -5,7 +5,9 @@ import java.util.Enumeration;
 import java.util.Hashtable;
 import java.util.Queue;
 import java.util.Set;
+import java.util.SortedMap;
 import java.util.SortedSet;
+import java.util.TreeMap;
 
 import android.widget.EditText;
 
@@ -16,7 +18,7 @@ public class BASICProgram implements Runnable{
 	// Hashtable has load factor of 0.75
 	// With this capacity and load factor, should handle 1508
 	// Both of these are to have a trade-off between memory use and performance
-	private Hashtable<String, String> codeList = new Hashtable<String, String>(2011, 0.75f);
+	private TreeMap<Integer, String> codeList = new TreeMap<Integer, String>();
 	//private SortedSet<String> lines;
 	//private Set<String> codeList = Collections.synchronizedSortedSet(lines);
 	private String progName = "", userName = "";
@@ -33,7 +35,7 @@ public class BASICProgram implements Runnable{
 		// giving the program a name and user name attributed
 	}
 	
-	public BASICProgram(String userName, String progName, Hashtable<String, String> oldCodeList){
+	public BASICProgram(String userName, String progName, TreeMap<Integer, String> oldCodeList){
 		// Used for HELLO, OLD
 		setProgName(progName);
 		setUserName(userName);
@@ -58,7 +60,7 @@ public class BASICProgram implements Runnable{
 		return true;
 	}
 
-	public void C_OLD(String progName, Hashtable<String, String> oldCodeList){
+	public void C_OLD(String progName, TreeMap<Integer, String> oldCodeList){
 		setProgName(progName);
 		codeList = oldCodeList;
 	}
@@ -66,8 +68,10 @@ public class BASICProgram implements Runnable{
 	public void C_LIST(EditText editText, int lN){
 		// Return parts of program code listing
 		EditText etCW = editText;
-/*
-		Enumeration<String> lineNumberList = codeList.keys();
+		
+		// For now, this just lists the program as-is, straight from the Treemap
+		/*
+		Enumeration<Integer> lineNumberList = (Enumeration<Integer>) codeList.keySet();
 		String lineNumber = "";
 		String outputTokens;
 		if (lineNumberList != null){
@@ -86,15 +90,35 @@ public class BASICProgram implements Runnable{
 		else{
 			etCW.append("NOTHING TO DISPLAY.\n> ");
 		}
-*/
-		etCW.append(codeList.toString());
+		*/
+		
+		if (lN >= codeList.firstKey() && lN <= codeList.lastKey()){
+			SortedMap<Integer,String> C_LIST_codeList = codeList.tailMap(lN);
+			Set<Integer> lineNumbers = C_LIST_codeList.keySet();
+			
+			etCW.append("\n\tUSER NAME: " + userName
+					+ "\tPROGRAM NAME: " + progName);
+			
+			int n = lineNumbers.iterator().next();
+			
+			while (lineNumbers.iterator().hasNext()){
+				etCW.append("\t" + n + "\t" + C_LIST_codeList.get(n).toString());
+				n = lineNumbers.iterator().next();
+			}
+		}
+		else {
+			// This actually comes out better than it seems, except for the lineNumber'=null' bit
+			etCW.append("\n\tUSER NAME: " + userName
+					+ "\tPROGRAM NAME: " + progName
+					+ "\n\tINVALID LINE NUMBER SPECIFIED"
+					+ "\n\tMUST BE BETWEEN " + codeList.firstKey() 
+					+ " AND " + codeList.lastKey());
+		}
 	}
 	
-	public String addLine(String lN, String inputLine){
-		try{
-			String lineNumber = lN;
-			String line = inputLine; 
-			codeList.put(lineNumber, line);
+	public String addLine(int lN, String inputLine){
+		try{ 
+			codeList.put(lN, inputLine);
 			return null;
 		}
 		catch(Exception e){

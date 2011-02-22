@@ -65,7 +65,7 @@ public class Tokenizer {
 		case '.':
 			token += buffer[curPos];
 			curPos++;
-			while (isDigit(buffer[curPos])){
+			while (isDigit(buffer[curPos]) && hasMoreTokens()){
 				token += buffer[curPos];
 				curPos++;
 			}
@@ -103,7 +103,7 @@ public class Tokenizer {
 		// that handles " and what's held inside them, i.e. for PRINT statement
 		case '"':
 			curPos++;
-			while (buffer[curPos] == '"'){
+			while (buffer[curPos] == '"' && hasMoreTokens()){
 				token += buffer[curPos++];
 				// Let's see if this works, and then I can extend its use
 				// it's legal, but frowned upon, but curPos++ should only be
@@ -123,7 +123,7 @@ public class Tokenizer {
 				// Check what this next char is.
 				// If it's a letter, assume a command, loop to find the rest of it
 				if (isLetter(buffer[curPos])){
-					while (isLetter(buffer[curPos])){
+					while (isLetter(buffer[curPos]) && hasMoreTokens()){
 						token += buffer[curPos++];
 						//curPos++;
 					}
@@ -138,7 +138,8 @@ public class Tokenizer {
 			}
 			else if (isDigit(buffer[curPos])){
 				// If it's a digit, begin looking for the rest of the number
-				while (isDigit(buffer[curPos]) || buffer[curPos] == '.'){
+				while ((isDigit(buffer[curPos]) || buffer[curPos] == '.')
+						&& hasMoreTokens()){
 					// While it's a digit or a decimal-point, add it to token
 					token += buffer[curPos++];
 					//curPos++;
@@ -219,7 +220,7 @@ public class Tokenizer {
 
 	private void eatSpace(){
 		// Was part of nextToken, but moved, it's used a fair amount
-		while (isSpace(buffer[curPos])){
+		while (isSpace(buffer[curPos]) && hasMoreTokens()){
 			curPos++;
 		}
 	}

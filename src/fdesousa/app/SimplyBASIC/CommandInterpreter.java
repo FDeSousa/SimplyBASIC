@@ -1,6 +1,7 @@
 package fdesousa.app.SimplyBASIC;
 
 import java.util.Hashtable;
+import java.util.TreeMap;
 import java.util.regex.*;
 import java.io.*;
 
@@ -16,10 +17,10 @@ public class CommandInterpreter {
 	private File sdRoot = Environment.getExternalStorageDirectory();
 	private File dir = new File (sdRoot.getAbsolutePath() + "/SimplyBASIC");
 	// Used for storing the code listing during certain operations:
-	private Hashtable<String, String> codeList = new Hashtable<String, String>(2011, 0.75f);
+	private TreeMap<Integer, String> codeList = new TreeMap<Integer, String>();
 	private String token = "";	// token to work on. May remove, to replace with inputToken
 	private String[] tokens = null; // whole line, divided into tokens
-	private String lineNumber = "";
+	private int lineNumber = 0;
 	private String line = "";
 	private static BASICProgram BP;
 	// To take control of etCW, once SimplyBASIC parses it:
@@ -63,7 +64,7 @@ public class CommandInterpreter {
 		this.etCW.setOnKeyListener(new OnKeyListener() {
 			@Override
 			public boolean onKey(View v, int keyCode, KeyEvent event) {
-				if(event.getAction()==KeyEvent.ACTION_UP 
+				if(event.getAction()==KeyEvent.ACTION_UP
 						&& event.getKeyCode() == KeyEvent.KEYCODE_ENTER) {
 
 					// Could have saved some processor time here, by splitting
@@ -182,7 +183,7 @@ public class CommandInterpreter {
 			// only if and when BP had been instantiated
 
 			if (isNumber(inToken) == true){
-				lineNumber = inToken;
+				lineNumber = Integer.parseInt(inToken.trim());
 				
 				String resultAddLine = BP.addLine(lineNumber, tokenizer.getRestOfLine());
 				if (resultAddLine != null){
@@ -217,7 +218,15 @@ public class CommandInterpreter {
 
 			else if (inToken.equals(commands[C_LIST])){		// Display current program's code
 				// From now on, BP handles listing its own code
-				BP.C_LIST(etCW, 0);
+				if (tokenizer.hasMoreTokens()){
+					String lN = tokenizer.nextToken();
+					if (isNumber(lN)){
+						BP.C_LIST(etCW, Integer.parseInt(lN));
+					}
+				}
+				else {					
+					BP.C_LIST(etCW, 0);
+				}
 			} // end LIST command
 
 			else if (inToken.equals(commands[C_SAVE])){		// Save loaded program's to file
@@ -271,12 +280,11 @@ public class CommandInterpreter {
 			} // end BYE command
 
 			else if (inToken.equals("") || inToken == null){
-				etCW.append(uL);
-				return 1;
+				return 0;
 			}
 			else{
-				etCW.append("'" + tokens[0] + "'" + " : " + "'" + inToken + "'\n");
-				etCW.append("ERROR WITH SYSTEM COMMAND" + uL);
+				etCW.append("ERROR WITH SYSTEM COMMAND");
+				return -1;
 			}
 		}
 		else{
@@ -284,7 +292,7 @@ public class CommandInterpreter {
 		return -1;
 	}
 
-	private void C_HELLO(String inputToken){
+	private void C_HELLO(String inToken){
 		/**
 		 * switch .. case steps:
 		 * 	0	Not used; first step is in HELLO, ask for userName
@@ -296,17 +304,17 @@ public class CommandInterpreter {
 		 * 	4	Get progName, create new BP w/loaded program listing
 		 */
 
-		token = inputToken.trim();
+		token = inToken.trim();
 
 		switch (C_HELLO_Step) {
 
-		case 1:		// Get userName, ask progName
+		case 1:		// Get userName, ask NEW or OLD program
 			progDetails[1] = token;
 			etCW.append("NEW OR OLD-- ");
 			C_HELLO_Step++;
 			break;
 
-		case 2:
+		case 2:		// Ask for Program name
 			if (token.equals(commands[C_NEW])){
 				C_HELLO_Step++;
 			}
@@ -321,14 +329,14 @@ public class CommandInterpreter {
 			etCW.append(token + " PROGRAM NAME-- ");
 			break;
 
-		case 3:
+		case 3:		// NEW, so instantiate BP
 			progDetails[2] = token;
 			C_HELLO_Step = 0;
 			BP = new BASICProgram(progDetails[1], progDetails[2]);
 			etCW.append("READY." + uL);
 			break;
 
-		case 4:
+		case 4:		// OLD, so read file, instantiate BP
 			progDetails[2] = token;
 			C_HELLO_Step = 0;
 			// Get listing
@@ -341,11 +349,12 @@ public class CommandInterpreter {
 					// and read in line-by-line
 					in.close();
 					C_OLD_Step = 0;
-					etCW.append("PROGRAM OPENED SUCCESSFULLY." + uL);
+					etCW.append("PROGRAM OPENED SUCCESSFULLY.\nREADY." + uL);
 				}
 			}
 			catch (IOException e) {
-				etCW.append("COULD NOT READ FILE " + e.getMessage().toUpperCase() + uL);
+				etCW.append("COULD NOT READ FILE: " + e.getMessage().toUpperCase() + uL);
+				break;
 			}
 
 			BP = new BASICProgram(progDetails[1], progDetails[2], codeList);
@@ -357,16 +366,15 @@ public class CommandInterpreter {
 		}
 	}
 
-	// Because of the fact there's an onKeyListener, waiting for CR,
+	// Because of the fact there's an onKeyListener, waiting for Enter key,
 	// NEW, OLD, SAVE, UNSAVE, are all controlled within CI instance
 	private void C_NEW(String inputToken){
-		token = inputToken.trim();
-		BP.C_NEW(token);
+		BP.C_NEW(inputToken);
 		C_NEW_Step = 0;
+		etCW.append("READY." + uL);
 	}
 
 	private void C_OLD(String inputToken){
-		token = inputToken.trim();
 		// Get listing for given progName
 		try {
 			if (dir.canRead()){
@@ -376,13 +384,13 @@ public class CommandInterpreter {
 				// For now, does nothing with 'in', but should loop
 				// and read it line-by-line, then parse to BP
 				in.close();
-				BP.C_OLD(token, codeList);
+				BP.C_OLD(inputToken, codeList);
 				C_OLD_Step = 0;
-				etCW.append("PROGRAM OPENED SUCCESSFULLY." + uL);
+				etCW.append("PROGRAM OPENED SUCCESSFULLY.\nREADY." + uL);
 			}
 		}
 		catch (IOException e) {
-			etCW.append("COULD NOT READ FILE " + e.getMessage().toUpperCase());
+			etCW.append("COULD NOT READ FILE: " + e.getMessage().toUpperCase() + uL);
 		}
 
 	}
@@ -429,13 +437,13 @@ public class CommandInterpreter {
 		}
 	}
 
-	private boolean isNumber(String chkToken){
+	private boolean isNumber(String inputToken){
 
 		try {
 			// If first token is number, assume it's a BASIC command
 			// and return true, to state it's to be added to queue.
 
-			boolean isInteger = Pattern.matches("^-?\\d+$", chkToken);
+			boolean isInteger = Pattern.matches("^-?\\d+$", inputToken);
 			return isInteger;
 
 		}
