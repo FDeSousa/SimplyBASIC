@@ -16,7 +16,7 @@ public class BASICProgram implements Runnable{
 	// Hashtable has load factor of 0.75
 	// With this capacity and load factor, should handle 1508
 	// Both of these are to have a trade-off between memory use and performance
-	private Hashtable<String, String[]> codeList = new Hashtable<String, String[]>(2011, 0.75f);
+	private Hashtable<String, String> codeList = new Hashtable<String, String>(2011, 0.75f);
 	//private SortedSet<String> lines;
 	//private Set<String> codeList = Collections.synchronizedSortedSet(lines);
 	private String progName = "", userName = "";
@@ -33,7 +33,7 @@ public class BASICProgram implements Runnable{
 		// giving the program a name and user name attributed
 	}
 	
-	public BASICProgram(String userName, String progName, Hashtable<String, String[]> oldCodeList){
+	public BASICProgram(String userName, String progName, Hashtable<String, String> oldCodeList){
 		// Used for HELLO, OLD
 		setProgName(progName);
 		setUserName(userName);
@@ -58,40 +58,18 @@ public class BASICProgram implements Runnable{
 		return true;
 	}
 
-	public void C_OLD(String progName, Hashtable<String, String[]> oldCodeList){
+	public void C_OLD(String progName, Hashtable<String, String> oldCodeList){
 		setProgName(progName);
 		codeList = oldCodeList;
 	}
 	
-//	public void C_LIST(EditText editText){
-//		// Return full program code listing
-//		EditText etCW = editText;
-//		
-//		Enumeration<String> lineNumberList = codeList.keys();
-//		String lineNumber = "";
-//		String[] outputTokens;
-//		if (lineNumberList != null){
-//			while (lineNumberList.hasMoreElements()){
-//				lineNumber = lineNumberList.nextElement().toString();
-//				outputTokens = codeList.get(lineNumber);
-//				etCW.append(lineNumber + "\t");
-//				for(int i = 0; i < outputTokens.length; i++){
-//					etCW.append(outputTokens[i] + "\n");
-//				}
-//			}
-//		}
-//		else{
-//			etCW.append("NOTHING TO DISPLAY.\n> ");
-//		}
-//	}
-	
 	public void C_LIST(EditText editText, int lN){
 		// Return parts of program code listing
 		EditText etCW = editText;
-
+/*
 		Enumeration<String> lineNumberList = codeList.keys();
 		String lineNumber = "";
-		String[] outputTokens;
+		String outputTokens;
 		if (lineNumberList != null){
 			while (lineNumberList.hasMoreElements()){
 				lineNumber = lineNumberList.nextElement().toString();
@@ -99,8 +77,8 @@ public class BASICProgram implements Runnable{
 				if ((int)lineNumberInteger >= lN){
 					outputTokens = codeList.get(lineNumber);
 					etCW.append(lineNumber + "\t");
-					for(int i = 0; i < outputTokens.length; i++){
-						etCW.append(outputTokens[i] + "\n");
+					for(int i = 0; i < outputTokens.length(); i++){
+						etCW.append(outputTokens + "\n");
 					}
 				}
 			}
@@ -108,25 +86,18 @@ public class BASICProgram implements Runnable{
 		else{
 			etCW.append("NOTHING TO DISPLAY.\n> ");
 		}
-
-		//Enumeration listEnum = codeList.keys();
-		//while (listEnum.hasMoreElements()){
-		//	String lineNumber = (String)listEnum.nextElement();
-			//Object listObject = codeList.get(lineNumber);
-		//	etCW.append("\t" + lineNumber + "\n");
-		//}
-		
+*/
+		etCW.append(codeList.toString());
 	}
 	
-	public String addLine(String lN, String[] inputTokens){
+	public String addLine(String lN, String inputLine){
 		try{
 			String lineNumber = lN;
-			String[] tokens = inputTokens; 
-			codeList.put(lineNumber, tokens);
+			String line = inputLine; 
+			codeList.put(lineNumber, line);
 			return null;
 		}
 		catch(Exception e){
-			//etCW.append(e.toString());
 			return e.toString();
 		}
 	}

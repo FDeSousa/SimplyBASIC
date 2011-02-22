@@ -98,6 +98,19 @@ public class Tokenizer {
 			}
 			 */
 			break;
+		
+		// Still need to add: case '"'
+		// that handles " and what's held inside them, i.e. for PRINT statement
+		case '"':
+			curPos++;
+			while (buffer[curPos] == '"'){
+				token += buffer[curPos++];
+				// Let's see if this works, and then I can extend its use
+				// it's legal, but frowned upon, but curPos++ should only be
+				// incremented AFTER buffer[curPos] value has been found.
+				//curPos++;
+			}
+			break;
 
 		default:
 			// Under default, if it's not one of the many conditions above
@@ -105,20 +118,20 @@ public class Tokenizer {
 			
 			if (isLetter(buffer[curPos])){
 				// If it's a letter, begin the hunt for a named variable or command
-				token += buffer[curPos];
-				curPos++;
+				token += buffer[curPos++];
+				//curPos++;
 				// Check what this next char is.
 				// If it's a letter, assume a command, loop to find the rest of it
 				if (isLetter(buffer[curPos])){
 					while (isLetter(buffer[curPos])){
-						token += buffer[curPos];
-						curPos++;
+						token += buffer[curPos++];
+						//curPos++;
 					}
 				}
 				// If it's a digit, assume a variable name with number (i.e. A1)
 				else if (isDigit(buffer[curPos])){
-					token += buffer[curPos];
-					curPos++;
+					token += buffer[curPos++];
+					//curPos++;
 				}
 				// Just in case, added a break here. You never know, it might save lives
 				break;
@@ -127,8 +140,8 @@ public class Tokenizer {
 				// If it's a digit, begin looking for the rest of the number
 				while (isDigit(buffer[curPos]) || buffer[curPos] == '.'){
 					// While it's a digit or a decimal-point, add it to token
-					token += buffer[curPos];
-					curPos++;
+					token += buffer[curPos++];
+					//curPos++;
 				}
 			}
 			
@@ -154,6 +167,19 @@ public class Tokenizer {
 		// Reset current position to mark position
 		curPos = markPos;
 	}
+	
+	public String getRestOfLine(){
+		// Send back the rest of the line, minus what's already been sent
+		// Useful for BASIC commands
+		String line = null;
+		mark();
+		while (hasMoreTokens()){
+			line += buffer[curPos++];
+		}
+		// Reset curPos to markPos, just in case it's still needed
+		resetToMark();
+		return line;
+	}
 
 	// Three types of reset are used/needed
 	public void reset(){
@@ -164,13 +190,13 @@ public class Tokenizer {
 	public void reset(char[] buf){
 		// Reset char array and pointer
 		buffer = buf;
-		reset();
+		curPos = 0;
 	}
 
 	public void reset(String in){
 		// Reset char array with parsed in string, and pointer
 		buffer = in.toCharArray();
-		reset();
+		curPos = 0;
 	}
 
 	// Who would have thought? A decade and a half, and Java still

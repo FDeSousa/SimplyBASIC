@@ -16,10 +16,11 @@ public class CommandInterpreter {
 	private File sdRoot = Environment.getExternalStorageDirectory();
 	private File dir = new File (sdRoot.getAbsolutePath() + "/SimplyBASIC");
 	// Used for storing the code listing during certain operations:
-	private Hashtable<String, String[]> codeList = new Hashtable<String, String[]>(2011, 0.75f);
+	private Hashtable<String, String> codeList = new Hashtable<String, String>(2011, 0.75f);
 	private String token = "";	// token to work on. May remove, to replace with inputToken
 	private String[] tokens = null; // whole line, divided into tokens
-	//private String lineNumber = "";
+	private String lineNumber = "";
+	private String line = "";
 	private static BASICProgram BP;
 	// To take control of etCW, once SimplyBASIC parses it:
 	private EditText etCW;
@@ -69,25 +70,55 @@ public class CommandInterpreter {
 					// the string by '-- ' and '\n> ' at the same time, and 
 					// storing into new variables each, and done less if .. else if
 					// statements, but it's a trade-off for now at least
-					
-					lines = etCW.getText().toString().split("\n");
+
+					// lines = etCW.getText().toString().split("\n");
 					// Reset data in tokenizer with the current line to analyse
-					tokenizer.reset(lines[lines.length - 1]);
-					
-					if (C_HELLO_Step >= 1){
-						tokens = etCW.getText().toString().split("-- ");// to delete after tokenizer implemented fully
-						C_HELLO(tokens[tokens.length - 1].trim()); //t.nextToken to be used
+					// tokenizer.reset(lines[lines.length - 1]);
+					//=========================================================================
+					// To test tokenizer, I've decided to leave this up to the use in
+					// HELLO, OLD and NEW commands for now. Let's see if it works!
+
+					/**
+					 * PRELIMINARY NOTE!
+					 * For now, file names with numbers or symbols attached WILL NOT WORK!
+					 * The tokenizer takes it to mean that a word has only letters, a variable
+					 * can have ONE digit, nothing else.
+					 * THEREFORE, to clarify for now:
+					 * A word will have more than one letter, without numbers or spaces
+					 * A command will have more than one letter, without numbers or spaces
+					 * A variable will have one letter, and may have one number, without spaces
+					 * ========================================================================
+					 * I can work around this, and will have to for the PRINT command, 
+					 * but for now, this is how it will be, and there's no other choice.
+					 */
+
+					if (C_HELLO_Step >= 1 || C_NEW_Step >= 1 || C_OLD_Step >= 1){
+						// We're only interested in the last entered item, which is after '-- '
+						// So split the text from editText into "lines" by '-- '
+						lines = etCW.getText().toString().split("-- ");
+						line = lines[lines.length - 1];
+						// Give the tokenizer the last line, which is what we're interested in
+						tokenizer.reset(line);
+						// Tell tokenizer to pass us the next token, store is token
+						token = tokenizer.nextToken();
+
+						if (C_HELLO_Step >= 1){
+							C_HELLO(token);
+						}
+						else if (C_NEW_Step >= 1){
+							C_NEW(token);
+						}
+						else if (C_OLD_Step >= 1){
+							C_OLD(token);
+						}
 					}
-					else if (C_NEW_Step >= 1){
-						tokens = etCW.getText().toString().split("-- ");
-						C_NEW(tokens[tokens.length - 1].trim());
-					}
-					else if (C_OLD_Step >= 1){
-						tokens = etCW.getText().toString().split("-- ");
-						C_OLD(tokens[tokens.length - 1].trim());
-					}
+					//=========================================================================
+					// Once I've tested tokenizer with those system commands, I'll implement its use here
 					else {
-						tokens = etCW.getText().toString().split("\n> ");
+						lines = etCW.getText().toString().split("\n> ");
+						line = lines[lines.length - 1];
+						tokenizer.reset(line);
+						token = tokenizer.nextToken();
 
 						/**
 						 * Numbers returned upon ending execution:
@@ -97,23 +128,23 @@ public class CommandInterpreter {
 						 * 	0:	No problems, needs nL
 						 *  1:	No problems, doesn't need nL
 						 */
-						
-						switch(procCommand(tokens[tokens.length - 1].trim())){							
+
+						switch(procCommand(token)){
 						case -2:
 							etCW.append("ERROR WITH SYSTEM COMMAND." + uL);
 							break;
-							
+
 						case -1:
 							// Should send something log, but does nothing at the moment,
 							// other than append a new line with nL
 						case 0:
 							etCW.append(uL);
 							break;
-							
+
 						case 1:
 							// Do nothing for now, no action needed
 							break;
-							
+
 						default:
 							// Just in case an odd error value is sent
 							etCW.append("ERROR WITH RETURN VALUE." + uL);
@@ -128,17 +159,17 @@ public class CommandInterpreter {
 		});// end onKeyListener
 	}
 
-	public int procCommand(String line){
+	public int procCommand(String inToken){
 
 		// For now, split string by spaces. Each space signals new token.
 		// Not pretty, and not compatible with original syntax, but it should
 		// work well enough for now, to worry about more later.
-		tokens = line.split(" ");
-		token = tokens[0].trim();
+//		tokens = line.split(" ");
+//		token = tokens[0].trim();
 
 		// TODO Add code to create, initialise and execute System command
 
-		if (token.equals(commands[C_HELLO])){				// Start BASIC system
+		if (inToken.equals(commands[C_HELLO])){				// Start BASIC system
 			// Ask for user name, get ready for step 1 of HELLO
 			etCW.append("USER NAME-- ");
 			C_HELLO_Step = 1;
@@ -149,44 +180,47 @@ public class CommandInterpreter {
 		else if (BP instanceof BASICProgram){
 			// Separated from the other if .. else, this handles BASIC commands
 			// only if and when BP had been instantiated
-			
-			if (isNumber(token) == true){
-				// Must insert call to BASICProgram, to add line to program
-				// possibly parsing inputToken, and tokens[] for storage
-				// and execution of commands later
+
+			if (isNumber(inToken) == true){
+				lineNumber = inToken;
+				
+				String resultAddLine = BP.addLine(lineNumber, tokenizer.getRestOfLine());
+				if (resultAddLine != null){
+					etCW.append(resultAddLine + "\n");
+				}
+				
+				/**
+				 * Don't need all this crap, Tokenizer does part of the work after all
 				String[] inputTokens = null;
 				if (tokens.length > 1){
 					for (int i = 1; i < tokens.length; i++){
 						inputTokens[i - 1] = tokens[i];
 					}
 				}
-				String resultAddLine = BP.addLine(tokens[0], inputTokens);
-				if (resultAddLine != null){
-					etCW.append(resultAddLine + "\n");
-				}
+				*/
+				// We could ask for uL, but we don't want to insert additional useless lines
 				etCW.append("> ");
 				return 1;
-				// TODO Add code to add the tokens to Program Listing
 			}
 
-			if (token.equals(commands[C_NEW])){				// Create new program, with new name
+			if (inToken.equals(commands[C_NEW])){				// Create new program, with new name
 				etCW.append("NEW PROGRAM NAME-- ");
 				C_NEW_Step = 1;
 				return 1;
 			} // end NEW command
 
-			else if (token.equals(commands[C_OLD])){		// Load old program from file
+			else if (inToken.equals(commands[C_OLD])){		// Load old program from file
 				etCW.append("OLD PROGRAM NAME-- ");
 				C_OLD_Step = 1;
 				return 1;
 			} // end OLD command
 
-			else if (token.equals(commands[C_LIST])){		// Display current program's code
+			else if (inToken.equals(commands[C_LIST])){		// Display current program's code
 				// From now on, BP handles listing its own code
 				BP.C_LIST(etCW, 0);
 			} // end LIST command
 
-			else if (token.equals(commands[C_SAVE])){		// Save loaded program's to file
+			else if (inToken.equals(commands[C_SAVE])){		// Save loaded program's to file
 				if (C_SAVE(BP.getProgName() + ".bas")){
 					return 0;
 				}
@@ -195,7 +229,7 @@ public class CommandInterpreter {
 				}
 			} // end SAVE command
 
-			else if (token.equals(commands[C_UNSAVE])){		// Delete loaded program's file
+			else if (inToken.equals(commands[C_UNSAVE])){		// Delete loaded program's file
 				if (C_UNSAVE(BP.getProgName() + ".bas")){
 					return 0;
 				}
@@ -203,10 +237,10 @@ public class CommandInterpreter {
 					return -1;
 				}
 			} // end UNSAVE command
-			
-			else if (token.equals(commands[C_CATALOG])){	// Display all previously saved programs
+
+			else if (inToken.equals(commands[C_CATALOG])){	// Display all previously saved programs
 				File[] dirList = dir.listFiles();
-				
+
 				if (dirList != null){
 					etCW.append("There are " + dirList.length + " files in program directory\n");
 					for (int i = 0; i < dirList.length; i++){
@@ -215,33 +249,33 @@ public class CommandInterpreter {
 				}
 				return 0;
 			} // end CATALOG command
-			
-			else if (token.equals(commands[C_SCRATCH])){	// Create new program with same name
+
+			else if (inToken.equals(commands[C_SCRATCH])){	// Create new program with same name
 				BP.C_SCRATCH();
 				return 0;
 			} // end SCRATCH command
-			
-			else if (token.equals(commands[C_RENAME])){		// Rename current program
+
+			else if (inToken.equals(commands[C_RENAME])){		// Rename current program
 				BP.setProgName(tokens[1]);
 			} // end RENAME command
-			
-			else if (token.equals(commands[C_RUN])){		// Run BASIC program in Interpreter
+
+			else if (inToken.equals(commands[C_RUN])){		// Run BASIC program in Interpreter
 				// As BP.run() does not return a value, must assume it will keep its own log,
 				// if something goes wrong, and will display an appropriate error message
 				BP.run();
 				return 0;
 			} // end RUN command
-			
-			else if (token.equals(commands[C_BYE])){		// Exit BASIC System
+
+			else if (inToken.equals(commands[C_BYE])){		// Exit BASIC System
 				;
 			} // end BYE command
-			
-			else if (token.equals("") || token == null){
+
+			else if (inToken.equals("") || inToken == null){
 				etCW.append(uL);
 				return 1;
 			}
 			else{
-				etCW.append("'" + tokens[0] + "'" + " : " + "'" + token + "'\n");
+				etCW.append("'" + tokens[0] + "'" + " : " + "'" + inToken + "'\n");
 				etCW.append("ERROR WITH SYSTEM COMMAND" + uL);
 			}
 		}
@@ -313,7 +347,7 @@ public class CommandInterpreter {
 			catch (IOException e) {
 				etCW.append("COULD NOT READ FILE " + e.getMessage().toUpperCase() + uL);
 			}
-			
+
 			BP = new BASICProgram(progDetails[1], progDetails[2], codeList);
 			etCW.append("READY." + uL);
 			break;
@@ -376,7 +410,7 @@ public class CommandInterpreter {
 			return false;
 		}
 	}
-	
+
 	private boolean C_UNSAVE(String fileName){
 		if (dir.canWrite()){
 			File basFileToDelete = new File(dir, fileName);
@@ -394,7 +428,7 @@ public class CommandInterpreter {
 			return false;
 		}
 	}
-	
+
 	private boolean isNumber(String chkToken){
 
 		try {
