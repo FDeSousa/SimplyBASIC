@@ -1,6 +1,5 @@
 package fdesousa.app.SimplyBASIC;
 
-import java.util.Hashtable;
 import java.util.TreeMap;
 import java.util.regex.*;
 import java.io.*;
@@ -66,19 +65,6 @@ public class CommandInterpreter {
 			public boolean onKey(View v, int keyCode, KeyEvent event) {
 				if(event.getAction()==KeyEvent.ACTION_UP
 						&& event.getKeyCode() == KeyEvent.KEYCODE_ENTER) {
-
-					// Could have saved some processor time here, by splitting
-					// the string by '-- ' and '\n> ' at the same time, and 
-					// storing into new variables each, and done less if .. else if
-					// statements, but it's a trade-off for now at least
-
-					// lines = etCW.getText().toString().split("\n");
-					// Reset data in tokenizer with the current line to analyse
-					// tokenizer.reset(lines[lines.length - 1]);
-					//=========================================================================
-					// To test tokenizer, I've decided to leave this up to the use in
-					// HELLO, OLD and NEW commands for now. Let's see if it works!
-
 					/**
 					 * PRELIMINARY NOTE!
 					 * For now, file names with numbers or symbols attached WILL NOT WORK!
@@ -92,7 +78,6 @@ public class CommandInterpreter {
 					 * I can work around this, and will have to for the PRINT command, 
 					 * but for now, this is how it will be, and there's no other choice.
 					 */
-
 					if (C_HELLO_Step >= 1 || C_NEW_Step >= 1 || C_OLD_Step >= 1){
 						// We're only interested in the last entered item, which is after '-- '
 						// So split the text from editText into "lines" by '-- '
@@ -162,15 +147,7 @@ public class CommandInterpreter {
 
 	public int procCommand(String inToken){
 
-		// For now, split string by spaces. Each space signals new token.
-		// Not pretty, and not compatible with original syntax, but it should
-		// work well enough for now, to worry about more later.
-//		tokens = line.split(" ");
-//		token = tokens[0].trim();
-
-		// TODO Add code to create, initialise and execute System command
-
-		if (inToken.equals(commands[C_HELLO])){				// Start BASIC system
+		if (inToken.equals(commands[C_HELLO])){				// Start BASIC system, initialise BP
 			// Ask for user name, get ready for step 1 of HELLO
 			etCW.append("USER NAME-- ");
 			C_HELLO_Step = 1;
@@ -189,17 +166,6 @@ public class CommandInterpreter {
 				if (resultAddLine != null){
 					etCW.append(resultAddLine + "\n");
 				}
-				
-				/**
-				 * Don't need all this crap, Tokenizer does part of the work after all
-				String[] inputTokens = null;
-				if (tokens.length > 1){
-					for (int i = 1; i < tokens.length; i++){
-						inputTokens[i - 1] = tokens[i];
-					}
-				}
-				*/
-				// We could ask for uL, but we don't want to insert additional useless lines
 				etCW.append("> ");
 				return 1;
 			}
@@ -271,11 +237,12 @@ public class CommandInterpreter {
 			else if (inToken.equals(commands[C_RUN])){		// Run BASIC program in Interpreter
 				// As BP.run() does not return a value, must assume it will keep its own log,
 				// if something goes wrong, and will display an appropriate error message
-				BP.run();
+				BP.run(etCW);
 				return 0;
 			} // end RUN command
 
 			else if (inToken.equals(commands[C_BYE])){		// Exit BASIC System
+				// Needs something here. Like, exit the system, not sure all-in-all
 				;
 			} // end BYE command
 
@@ -288,6 +255,7 @@ public class CommandInterpreter {
 			}
 		}
 		else{
+			etCW.append("ERROR: BASIC NOT STARTED.\nTYPE 'HELLO' TO START.");
 		}
 		return -1;
 	}

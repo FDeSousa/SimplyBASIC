@@ -1,31 +1,17 @@
 package fdesousa.app.SimplyBASIC;
 
-import java.util.Collections;
-import java.util.Enumeration;
-import java.util.Hashtable;
-import java.util.Queue;
 import java.util.Set;
 import java.util.SortedMap;
-import java.util.SortedSet;
 import java.util.TreeMap;
 
 import android.widget.EditText;
 
-public class BASICProgram implements Runnable{
-	
-	// Creating a hashtable to hold the code listing in
-	// Hashtable has capacity of 2011 (sexy prime number)
-	// Hashtable has load factor of 0.75
-	// With this capacity and load factor, should handle 1508
-	// Both of these are to have a trade-off between memory use and performance
+public class BASICProgram{
+
 	private TreeMap<Integer, String> codeList = new TreeMap<Integer, String>();
 	//private SortedSet<String> lines;
 	//private Set<String> codeList = Collections.synchronizedSortedSet(lines);
 	private String progName = "", userName = "";
-	
-	//private String output = "";
-	// Current Line (cL), New Line (nL), Last Line (lL) are pointers
-	private int cL = 0, nL = 0, lL = 0;
 	
 	public BASICProgram(String userName, String progName){
 		// Used for HELLO, NEW
@@ -43,11 +29,20 @@ public class BASICProgram implements Runnable{
 		// As above, but this is used for an older program, to load the listing
 	}
 	
-	@Override
-	public void run() {
+	public void run(EditText editText) {
 		// TODO Add code to run
 		// As class implements Runnable, this must override, and be used
+		// Brings in etCW as editText, so it can be used for printing to
 		
+		// This class no longer implements Runnable, leave that to BASICInterpreter class
+		BASICInterpreter BI = new BASICInterpreter(codeList, editText);
+		try {
+			BI.run();
+		}
+		catch (Exception e) {
+			editText.append(e.toString() + "\n");
+		}
+		// implement BI, and come back to it
 	}
 	
 	public void C_NEW(String progName){				
@@ -69,29 +64,6 @@ public class BASICProgram implements Runnable{
 		// Return parts of program code listing
 		EditText etCW = editText;
 		
-		// For now, this just lists the program as-is, straight from the Treemap
-		/*
-		Enumeration<Integer> lineNumberList = (Enumeration<Integer>) codeList.keySet();
-		String lineNumber = "";
-		String outputTokens;
-		if (lineNumberList != null){
-			while (lineNumberList.hasMoreElements()){
-				lineNumber = lineNumberList.nextElement().toString();
-				int lineNumberInteger = new Integer(lineNumber);
-				if ((int)lineNumberInteger >= lN){
-					outputTokens = codeList.get(lineNumber);
-					etCW.append(lineNumber + "\t");
-					for(int i = 0; i < outputTokens.length(); i++){
-						etCW.append(outputTokens + "\n");
-					}
-				}
-			}
-		}
-		else{
-			etCW.append("NOTHING TO DISPLAY.\n> ");
-		}
-		*/
-		
 		if (lN >= codeList.firstKey() && lN <= codeList.lastKey()){
 			SortedMap<Integer,String> C_LIST_codeList = codeList.tailMap(lN);
 			Set<Integer> lineNumbers = C_LIST_codeList.keySet();
@@ -99,11 +71,11 @@ public class BASICProgram implements Runnable{
 			etCW.append("\n\tUSER NAME: " + userName
 					+ "\tPROGRAM NAME: " + progName);
 			
-			int n = lineNumbers.iterator().next();
+			int cL = lineNumbers.iterator().next();
 			
 			while (lineNumbers.iterator().hasNext()){
-				etCW.append("\t" + n + "\t" + C_LIST_codeList.get(n).toString());
-				n = lineNumbers.iterator().next();
+				etCW.append("\t" + cL + "\t" + C_LIST_codeList.get(cL).toString());
+				cL = lineNumbers.iterator().next();
 			}
 		}
 		else {
