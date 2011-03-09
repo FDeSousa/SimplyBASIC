@@ -25,8 +25,9 @@ public class CommandInterpreter {
 	// To take control of etCW, once SimplyBASIC parses it:
 	private EditText etCW;
 	private String[] lines = null;
-	//private char[] line = null;
+
 	Tokenizer tokenizer = new Tokenizer();
+	
 	// Array of commands for the system, to make matching easier:
 	final static String[] commands = {
 		"HELLO", "NEW", "OLD", "STOP", 

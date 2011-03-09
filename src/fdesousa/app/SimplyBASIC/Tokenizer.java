@@ -98,9 +98,9 @@ public class Tokenizer {
 			}
 			 */
 			break;
-		
-		// Still need to add: case '"'
-		// that handles " and what's held inside them, i.e. for PRINT statement
+
+			// Still need to add: case '"'
+			// that handles " and what's held inside them, i.e. for PRINT statement
 		case '"':
 			curPos++;
 			while (buffer[curPos] == '"' && hasMoreTokens()){
@@ -115,23 +115,29 @@ public class Tokenizer {
 		default:
 			// Under default, if it's not one of the many conditions above
 			// then check if it's a letter or digit, and the operation continues
-			
+
 			if (isLetter(buffer[curPos])){
 				// If it's a letter, begin the hunt for a named variable or command
 				token += buffer[curPos++];
-				//curPos++;
 				// Check what this next char is.
 				// If it's a letter, assume a command, loop to find the rest of it
 				if (isLetter(buffer[curPos])){
 					while (isLetter(buffer[curPos]) && hasMoreTokens()){
 						token += buffer[curPos++];
-						//curPos++;
 					}
 				}
 				// If it's a digit, assume a variable name with number (i.e. A1)
+				// Variables: one letter/one letter and one/two digits
 				else if (isDigit(buffer[curPos])){
 					token += buffer[curPos++];
-					//curPos++;
+				}
+				// If it has an open parentheses right after the first letter, assume it's
+				// an array identifier, and keep going until it finds a close parentheses
+				// Variable arrays: one letter & one digit & ( <index> )
+				else if (buffer[curPos] == '('){
+					while (buffer[curPos] != ')'){
+						token += buffer[curPos++];
+					}
 				}
 				// Just in case, added a break here. You never know, it might save lives
 				break;
@@ -142,13 +148,10 @@ public class Tokenizer {
 						&& hasMoreTokens()){
 					// While it's a digit or a decimal-point, add it to token
 					token += buffer[curPos++];
-					//curPos++;
 				}
 			}
-			
 			break;
 		}
-
 		// Handles the return, no matter what
 		return token;
 	}
@@ -168,7 +171,7 @@ public class Tokenizer {
 		// Reset current position to mark position
 		curPos = markPos;
 	}
-	
+
 	public String getRestOfLine(){
 		// Send back the rest of the line, minus what's already been sent
 		// Useful for BASIC commands
