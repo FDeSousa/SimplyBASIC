@@ -12,13 +12,17 @@ public class BASICProgram implements Runnable{
 
 	private TreeMap<Integer, String> codeList = new TreeMap<Integer, String>();
 	private Set<Integer> lNs;
+	private Set<Integer> RETURNKeySet;
 
 	private String progName = "", userName = "";
 	// Using the tokenizer again here, will be making good use of this too
 	private Tokenizer t = new Tokenizer();
 	// cL = current line, nL = next line, pL = previous line, rL = return line, lL = last line
 	private int cL = 0;// nL = 0, pL = 0, rL = 0, lL = 0;
+	
 	// dataStore is used for keeping data from DATA statements in a FIFO for later access.
+	// It's stupid using the dataStore to store strings, but as it can store both integers AND
+	// real numbers (all float as far as BASIC is concerned), I'll resolve this later 
 	private Queue<String> dataStore;
 
 	// RUN!
@@ -34,7 +38,8 @@ public class BASICProgram implements Runnable{
 			}
 			do {
 				cL = lNs.iterator().next();
-				runStatement(etCW);
+				Statement statement = new Statement(this, t, etCW);
+				statement.doSt();
 			} while (lNs.iterator().hasNext());
 		}
 		catch (Exception e){
@@ -61,7 +66,7 @@ public class BASICProgram implements Runnable{
 				if (s.compareTo("DATA") == 0){
 					while (t.hasMoreTokens()){
 						s = t.nextToken();
-						if (s.compareTo(",") != 0 && isNumber(s)){
+						if (s.compareTo(",") != 0 && CommandInterpreter.isNumber(s)){
 							dataStore.offer(s);
 						}
 					}
@@ -71,11 +76,6 @@ public class BASICProgram implements Runnable{
 		catch (Exception e){
 			return;
 		}
-	}
-
-	private void runStatement(EditText etCW){
-		t.reset(codeList.get(cL));
-		String s = t.nextToken();
 	}
 	
 	// Two ways to instantiate a BASIC Program, with or without source code.
@@ -164,15 +164,23 @@ public class BASICProgram implements Runnable{
 	public String getUserName() {
 		return userName;
 	}
+	
+	// Using these nice and simple Getters and Setters for using 
+	// during GOSUB / GOTO / IF .. THEN / FOR .. NEXT statements
+	public Set<Integer> getlNs() {
+		return lNs;
+	}
 
-	private boolean isNumber(String inputToken){
-		try {
-			boolean isInteger = Pattern.matches("^-?\\d+$", inputToken);
-			return isInteger;
-		}
-		catch (NumberFormatException ex){
-			return false;
-		}
+	public void setlNs(Set<Integer> lNs) {
+		this.lNs = lNs;
+	}
+
+	public Set<Integer> getRETURNKeySet() {
+		return RETURNKeySet;
+	}
+
+	public void setRETURNKeySet(Set<Integer> RETURNKeySet) {
+		this.RETURNKeySet = RETURNKeySet;
 	}
 
 }

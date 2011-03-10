@@ -15,8 +15,9 @@ public class Tokenizer {
 	private int curPos = 0;		// Marks the current position in the char array
 	private int prevPos = 0;	// Marks the position in the char array of the last token
 	private int markPos = 0;	// Used to mark a position temporarily
+	private String token = "";	// The current token that's being worked with
 	private char buffer[];		// Holds the characters to analyse, easier to move between chars
-	// than in a String, that involves .substring(char position)
+								// than in a String, that involves .substring(char position)
 
 	public Tokenizer() {
 		// Constructor doesn't really need initialisation of anything for
@@ -25,7 +26,7 @@ public class Tokenizer {
 
 	public String nextToken(){
 		// token is the returned String
-		String token = "";
+		token = "";
 		// Return EOL if curPos is also EOL or greater
 		if (curPos >= buffer.length){
 			return "\n";
@@ -105,10 +106,6 @@ public class Tokenizer {
 			curPos++;
 			while (buffer[curPos] == '"' && hasMoreTokens()){
 				token += buffer[curPos++];
-				// Let's see if this works, and then I can extend its use
-				// it's legal, but frowned upon, but curPos++ should only be
-				// incremented AFTER buffer[curPos] value has been found.
-				//curPos++;
 			}
 			break;
 
@@ -116,6 +113,13 @@ public class Tokenizer {
 			// Under default, if it's not one of the many conditions above
 			// then check if it's a letter or digit, and the operation continues
 
+			while (isLetter(buffer[curPos]) || isDigit(buffer[curPos])) {
+				token += buffer[curPos++];
+			}
+			
+			// Commenting out this enormous section for now, it's a bit redundant, as I can
+			// do these checks after adding the letters/digits to the token
+			/**
 			if (isLetter(buffer[curPos])){
 				// If it's a letter, begin the hunt for a named variable or command
 				token += buffer[curPos++];
@@ -135,7 +139,12 @@ public class Tokenizer {
 				// an array identifier, and keep going until it finds a close parentheses
 				// Variable arrays: one letter & one digit & ( <index> )
 				else if (buffer[curPos] == '('){
-					while (buffer[curPos] != ')'){
+					// It's odd, to check curPos - 1, but like this, we can still get the close parentheses
+					// into the token. This might be changed later anyway, just that I want it parsing the whole
+					// of the relevant section first.
+					// Will likely let the tokenizer resolve it by simply parsing the close parentheses, and letting
+					// the calling class resolve itself.
+					while (buffer[curPos - 1] != ')'){
 						token += buffer[curPos++];
 					}
 				}
@@ -150,6 +159,7 @@ public class Tokenizer {
 					token += buffer[curPos++];
 				}
 			}
+			*/
 			break;
 		}
 		// Handles the return, no matter what
@@ -160,6 +170,15 @@ public class Tokenizer {
 	public boolean hasMoreTokens(){
 		// Simple enough. If current position is less than buffer length, returns true
 		return (curPos < buffer.length);
+	}
+	
+	public String peek(){
+		mark();
+		eatSpace();
+		String t = ""; 
+		t += buffer[curPos];
+		resetToMark();
+		return t;
 	}
 
 	public void mark(){

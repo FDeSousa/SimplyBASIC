@@ -406,8 +406,9 @@ public class CommandInterpreter {
 		}
 	}
 
-	private boolean isNumber(String inputToken){
-
+	public static boolean isNumber(String inputToken){
+		// It's a public static just to make it easier to use in BP, which
+		// does a check every-so-often.
 		try {
 			// If first token is number, assume it's a BASIC command
 			// and return true, to state it's to be added to queue.
