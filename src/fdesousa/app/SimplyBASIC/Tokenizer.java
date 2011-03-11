@@ -13,9 +13,8 @@ package fdesousa.app.SimplyBASIC;
 public class Tokenizer {
 
 	private int curPos = 0;		// Marks the current position in the char array
-	private int prevPos = 0;	// Marks the position in the char array of the last token
 	private int markPos = 0;	// Used to mark a position temporarily
-	private String token = "";	// The current token that's being worked with
+	private String t = "";	// The current token that's being worked with
 	private char buffer[];		// Holds the characters to analyse, easier to move between chars
 								// than in a String, that involves .substring(char position)
 
@@ -26,13 +25,11 @@ public class Tokenizer {
 
 	public String nextToken(){
 		// token is the returned String
-		token = "";
+		t = "";
 		// Return EOL if curPos is also EOL or greater
 		if (curPos >= buffer.length){
 			return "\n";
 		}
-		// Save position
-		prevPos = curPos;
 		// We don't need no stinkin' spaces here!
 		eatSpace();
 
@@ -47,34 +44,34 @@ public class Tokenizer {
 		case '=':
 		case '(':
 		case ')':
-			token += buffer[curPos];
+			t += buffer[curPos];
 			curPos++;
 			break;
 			// All of [< > . ,] may have additional operators/chars
 			// If the next char is '=', then token is '<=' or '>='
 		case '<':
 		case '>':
-			token += buffer[curPos];
+			t += buffer[curPos];
 			curPos++;
 			if(buffer[curPos + 1] == '='){
-				token += buffer[curPos + 1];
+				t += buffer[curPos + 1];
 				curPos++;
 			}
 			break;
 
 			// If the next char is a number, token is a decimal number
 		case '.':
-			token += buffer[curPos];
+			t += buffer[curPos];
 			curPos++;
 			while (isDigit(buffer[curPos]) && hasMoreTokens()){
-				token += buffer[curPos];
+				t += buffer[curPos];
 				curPos++;
 			}
 			break;
 
 			// Eat space, then check if the next char is a Letter
 		case ',':
-			token += buffer[curPos];
+			t += buffer[curPos];
 			/** Will be ignoring this for now, a comma is just a comma, nothing else
 			 * Mostly because it gets complicated from here.
 			 * Commas don't just separate variables, but also numbers (integers/decimals)
@@ -105,7 +102,7 @@ public class Tokenizer {
 		case '"':
 			curPos++;
 			while (buffer[curPos] == '"' && hasMoreTokens()){
-				token += buffer[curPos++];
+				t += buffer[curPos++];
 			}
 			break;
 
@@ -113,8 +110,30 @@ public class Tokenizer {
 			// Under default, if it's not one of the many conditions above
 			// then check if it's a letter or digit, and the operation continues
 
+			// Get the whole sequence of digits and letters, no matter what
 			while (isLetter(buffer[curPos]) || isDigit(buffer[curPos])) {
-				token += buffer[curPos++];
+				t += buffer[curPos++];
+			}
+			// Check if it's a system command, if it is return it immediately
+			for (int i = 0; i < CommandInterpreter.commands.length; i++){
+				if (t.contains(CommandInterpreter.commands[i]))
+					return t;
+			}
+			// Check if it's a BASIC command, if it is return it immediately			
+			for (int i = 0; i < Statement.commands.length; i++){
+				if (t.contains(Statement.commands[i]))
+					return t;
+			}
+			
+			// Since it's neither of the two above, check out what it actually is
+			if (CommandInterpreter.isNumber(t)){
+				if (buffer[curPos] == '.'){
+					t += buffer[curPos++];
+					while (isDigit(buffer[curPos])){
+						t += buffer[curPos++];
+					}
+				}
+				return t;
 			}
 			
 			// Commenting out this enormous section for now, it's a bit redundant, as I can
@@ -163,7 +182,7 @@ public class Tokenizer {
 			break;
 		}
 		// Handles the return, no matter what
-		return token;
+		return t;
 	}
 
 	// Methods and functions for doing the admin stuff
@@ -172,13 +191,15 @@ public class Tokenizer {
 		return (curPos < buffer.length);
 	}
 	
-	public String peek(){
+	public char peek(boolean eatSpaces){
+		char c;
 		mark();
-		eatSpace();
-		String t = ""; 
-		t += buffer[curPos];
+		if (eatSpaces == true) { 
+			eatSpace(); 
+		}
+		c = buffer[curPos];
 		resetToMark();
-		return t;
+		return c;
 	}
 
 	public void mark(){

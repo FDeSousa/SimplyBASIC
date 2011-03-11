@@ -23,7 +23,7 @@ public class BASICProgram implements Runnable{
 	// dataStore is used for keeping data from DATA statements in a FIFO for later access.
 	// It's stupid using the dataStore to store strings, but as it can store both integers AND
 	// real numbers (all float as far as BASIC is concerned), I'll resolve this later 
-	private Queue<String> dataStore;
+	private Queue<Variable> dataStore;
 
 	// RUN!
 	public void run(EditText etCW) {
@@ -38,8 +38,8 @@ public class BASICProgram implements Runnable{
 			}
 			do {
 				cL = lNs.iterator().next();
-				Statement statement = new Statement(this, t, etCW);
-				statement.doSt();
+				Statement statement = new Statement();
+				statement.doSt(this, t, etCW);
 			} while (lNs.iterator().hasNext());
 		}
 		catch (Exception e){
@@ -52,6 +52,7 @@ public class BASICProgram implements Runnable{
 		// Will see implementation as a first-run method
 		// This will check for DATA statements, and store those into a FIFO list
 		String s = null;
+		Variable v = null;
 		try {
 			lNs = codeList.keySet();
 			// Just make sure it actually has something
@@ -63,11 +64,11 @@ public class BASICProgram implements Runnable{
 				t.reset(codeList.get(cL));
 				s = t.nextToken();
 				
-				if (s.compareTo("DATA") == 0){
+				if (s.compareTo(Statement.commands[8]) == 0){
 					while (t.hasMoreTokens()){
 						s = t.nextToken();
 						if (s.compareTo(",") != 0 && CommandInterpreter.isNumber(s)){
-							dataStore.offer(s);
+							dataStore.offer(v);
 						}
 					}
 				}

@@ -29,56 +29,65 @@ public class Statement {
 	final int S_REM		= 17;	// Signifies the line is a comment, and should be ignored by interpreter
 
 	private String command = null;
-
-	public Statement(BASICProgram p, Tokenizer t, EditText etCW){
+	
+	public Statement(){}		// Poor empty constructor...
+	
+	public void doSt(BASICProgram p, Tokenizer t, EditText etCW) {
+		Statement s;
+		
 		if (t.hasMoreTokens())
 			command = t.nextToken();
-	}
-
-	public void doSt() {
-		if (command.equals(commands[S_IF])){
-			
+		
+		// Because a user could potentially type in a line without spaces between the
+		// command and the rest of the line, we're checking here to see if the first n
+		// letters of the command string match up to the command
+		// This makes for messy code, and possibly messy results, so it should be noted
+		// to the user that input should really, ideally, have spaces between tokens
+		if (command.substring(0, 1).equals(commands[S_IF])){
+			s = new S_IF();
+			s.doSt(p, t, etCW);
 		}
-		else if (command.equals(commands[S_FOR])){
-
+		else if (command.substring(0, 2).equals(commands[S_FOR])){
+			s = new S_FOR();
+			s.doSt(p, t, etCW);
 		}
 		else if (command.equals(commands[S_NEXT])){
-
+			
 		}
-		else if (command.equals(commands[S_LET])){
-
+		else if (command.substring(0, 2).equals(commands[S_LET])){
+			
 		}
-		else if (command.equals(commands[S_READ])){
-
+		else if (command.substring(0, 3).equals(commands[S_READ])){
+			
 		}
-		else if (command.equals(commands[S_DATA])){
+		else if (command.substring(0, 3).equals(commands[S_DATA])){
 			return;
 		}
-		else if (command.equals(commands[S_PRINT])){
-
+		else if (command.substring(0, 4).equals(commands[S_PRINT])){
+			
 		}
-		else if (command.equals(commands[S_GOTO])){
-
+		else if (command.substring(0, 3).equals(commands[S_GOTO])){
+			
 		}
-		else if (command.equals(commands[S_GOSUB])){
-
+		else if (command.substring(0, 4).equals(commands[S_GOSUB])){
+			
 		}
-		else if (command.equals(commands[S_RETURN])){
-
+		else if (command.substring(0, 5).equals(commands[S_RETURN])){
+			
 		}
-		else if (command.equals(commands[S_DIM])){
-
+		else if (command.substring(0, 2).equals(commands[S_DIM])){
+			
 		}
-		else if (command.equals(commands[S_DEF])){
-
+		else if (command.substring(0, 2).equals(commands[S_DEF])){
+			
 		}
-		else if (command.equals(commands[S_FN])){
-
+		else if (command.substring(0, 1).equals(commands[S_FN])){
+			
 		}
 		else if (command.equals(commands[S_END])){
-
+			
 		}
-		else if (command.equals(commands[S_REM])){
+		else if (command.substring(0, 2).equals(commands[S_REM])){
 			return;
 		}
 
