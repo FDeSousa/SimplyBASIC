@@ -8,6 +8,7 @@ public class S_END extends Statement {
 
 	@Override
 	public void doSt(BASICProgram p, Tokenizer t, EditText etCW){
-		
+		p.stopExec();
+		etCW.append("\nTIME: " + (p.getTimeToExecute() / 100.0) + " SECONDS");
 	}
 }

@@ -8,6 +8,7 @@ public class S_RETURN extends Statement {
 
 	@Override
 	public void doSt(BASICProgram p, Tokenizer t, EditText etCW){
-		
+		p.setlNs(p.getRETURNKeySet());
+		p.setRETURNKeySet(null);
 	}
 }

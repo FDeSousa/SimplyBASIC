@@ -8,6 +8,14 @@ public class S_LET extends Statement {
 
 	@Override
 	public void doSt(BASICProgram p, Tokenizer t, EditText etCW){
+		String vName = t.nextToken();
+		String exp = "";
+		t.mark();
+		if (t.nextToken().equals("=")){
+			while (t.hasMoreTokens()){
+				
+			}
+		}
 		
 	}
 }

@@ -35,7 +35,7 @@ public class Tokenizer {
 
 		// Check what to do with current Character
 		switch (buffer[curPos]){
-		// All of [+ - * / ^ = ( )] are parsed immediately
+		// All of [+ - * / ^ = ( )] are parsed immediately and alone
 		case '+':
 		case '-':
 		case '*':
@@ -120,17 +120,25 @@ public class Tokenizer {
 					return t;
 			}
 			// Check if it's a BASIC command, if it is return it immediately			
-			for (int i = 0; i < Statement.commands.length; i++){
-				if (t.contains(Statement.commands[i]))
+			for (int i = 0; i < Statement.statements.length; i++){
+				if (t.contains(Statement.statements[i]))
 					return t;
 			}
 			
 			// Since it's neither of the two above, check out what it actually is
-			if (CommandInterpreter.isNumber(t)){
+			if (Expression.isNumber(t)){
 				if (buffer[curPos] == '.'){
 					t += buffer[curPos++];
 					while (isDigit(buffer[curPos])){
 						t += buffer[curPos++];
+					}
+					// BASIC handles exponents with the letter E, at which point, number after it
+					// is the exponent of the given number i.e. in 111.222E333, 333 is the exponent
+					if (buffer[curPos] == 'E'){
+						t += buffer[curPos++];
+						while (isDigit(buffer[curPos])){
+							t += buffer[curPos++];
+						}
 					}
 				}
 				return t;
@@ -212,6 +220,39 @@ public class Tokenizer {
 		curPos = markPos;
 	}
 
+	public static double[] separateNumber(String inputNumber){
+		// Odd one to explain, but this should separate the main section
+		// of a given number (input as a String) from its exponent (if it has one)
+		// and return the main number in separated[0] and exponent in separated[1]
+		double[] separated = { 0.0, 0.0 };
+		String number = null, exponent = null;
+		int i = 0;
+		
+		while (isDigit(inputNumber.charAt(i)) && i < inputNumber.length()){
+			number += inputNumber.charAt(i++);
+		}
+		if (inputNumber.charAt(i) == 'E'){
+			i++;
+			while (isDigit(inputNumber.charAt(i)) && i < inputNumber.length()){
+				exponent += inputNumber.charAt(i++);
+			}
+		}
+		separated[0] = Double.parseDouble(number);
+		separated[1] = Double.parseDouble(exponent);
+		return separated;
+	}
+	
+	public String getWholeLine(){
+		String line = null;
+		mark();
+		reset();
+		while (hasMoreTokens()){
+			line += buffer[curPos++];
+		}
+		resetToMark();
+		return line;
+	}
+	
 	public String getRestOfLine(){
 		// Send back the rest of the line, minus what's already been sent
 		// Useful for BASIC commands
@@ -246,17 +287,17 @@ public class Tokenizer {
 	// Who would have thought? A decade and a half, and Java still
 	// doesn't have operations you can perform with char arrays
 	// Hence the inclusion of isSpace, isDigit, isLetter
-	private boolean isSpace(char c){
+	public static boolean isSpace(char c){
 		// Check for ' ' (space) or '\t' (tab)
 		return ((c == ' ') || (c == '\t'));
 	}
 
-	private boolean isDigit(char c){
+	public static boolean isDigit(char c){
 		// Checks if char is between '0' and '9'
 		return ((c >= '0') && (c <= '9'));
 	}
 
-	private boolean isLetter(char c){
+	public static boolean isLetter(char c){
 		// Simply checks if the current char is between 'A' and 'Z'
 		return ((c>= 'A') && (c <= 'Z'));
 	}

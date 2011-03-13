@@ -160,7 +160,7 @@ public class CommandInterpreter {
 			// Separated from the other if .. else, this handles BASIC commands
 			// only if and when BP had been instantiated
 
-			if (isNumber(inToken) == true){
+			if (Expression.isNumber(inToken) == true){
 				lineNumber = Integer.parseInt(inToken.trim());
 				
 				String resultAddLine = BP.addLine(lineNumber, tokenizer.getRestOfLine());
@@ -187,7 +187,7 @@ public class CommandInterpreter {
 				// From now on, BP handles listing its own code
 				if (tokenizer.hasMoreTokens()){
 					String lN = tokenizer.nextToken();
-					if (isNumber(lN)){
+					if (Expression.isNumber(lN)){
 						BP.C_LIST(etCW, Integer.parseInt(lN));
 					}
 				}
@@ -406,22 +406,4 @@ public class CommandInterpreter {
 		}
 	}
 
-	public static boolean isNumber(String inputToken){
-		// It's a public static just to make it easier to use in BP, which
-		// does a check every-so-often.
-		try {
-			// If first token is number, assume it's a BASIC command
-			// and return true, to state it's to be added to queue.
-
-			boolean isInteger = Pattern.matches("^-?\\d+$", inputToken);
-			return isInteger;
-
-		}
-		catch (NumberFormatException ex){
-			// As first token isn't number, return false,
-			// command is system command, and is to be 
-			// executed immediately by the interpreter.
-			return false;
-		}
-	}
 }

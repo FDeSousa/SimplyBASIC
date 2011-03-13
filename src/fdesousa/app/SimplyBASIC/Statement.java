@@ -3,7 +3,7 @@ package fdesousa.app.SimplyBASIC;
 import android.widget.EditText;
 
 public class Statement {
-	final static String[] commands = {
+	final static String[] statements = {
 		"IF", "THEN", "FOR", "TO", "STEP", 
 		"NEXT", "LET", "READ", "DATA", 
 		"PRINT", "GOTO", "GOSUB", "RETURN", 
@@ -43,51 +43,65 @@ public class Statement {
 		// letters of the command string match up to the command
 		// This makes for messy code, and possibly messy results, so it should be noted
 		// to the user that input should really, ideally, have spaces between tokens
-		if (command.substring(0, 1).equals(commands[S_IF])){
+		if (command.substring(0, 1).equals(statements[S_IF])){
 			s = new S_IF();
 			s.doSt(p, t, etCW);
 		}
-		else if (command.substring(0, 2).equals(commands[S_FOR])){
+		else if (command.substring(0, 2).equals(statements[S_FOR])){
 			s = new S_FOR();
 			s.doSt(p, t, etCW);
 		}
-		else if (command.equals(commands[S_NEXT])){
-			
+		else if (command.equals(statements[S_NEXT])){
+			s = new S_NEXT();
+			s.doSt(p, t, etCW);
 		}
-		else if (command.substring(0, 2).equals(commands[S_LET])){
-			
+		else if (command.substring(0, 2).equals(statements[S_LET])){
+			s = new S_LET();
+			s.doSt(p, t, etCW);
 		}
-		else if (command.substring(0, 3).equals(commands[S_READ])){
-			
+		else if (command.substring(0, 3).equals(statements[S_READ])){
+			s = new S_READ();
+			s.doSt(p, t, etCW);
 		}
-		else if (command.substring(0, 3).equals(commands[S_DATA])){
+		else if (command.substring(0, 3).equals(statements[S_DATA])){
+			// As DATA is read earlier, for now, I won't be instantiating any class for it
 			return;
 		}
-		else if (command.substring(0, 4).equals(commands[S_PRINT])){
-			
+		else if (command.substring(0, 4).equals(statements[S_PRINT])){
+			s = new S_PRINT();
+			s.doSt(p, t, etCW);
 		}
-		else if (command.substring(0, 3).equals(commands[S_GOTO])){
-			
+		else if (command.substring(0, 3).equals(statements[S_GOTO])){
+			s = new S_GOTO();
+			s.doSt(p, t, etCW);
 		}
-		else if (command.substring(0, 4).equals(commands[S_GOSUB])){
-			
+		else if (command.substring(0, 4).equals(statements[S_GOSUB])){
+			s = new S_GOSUB();
+			s.doSt(p, t, etCW);
 		}
-		else if (command.substring(0, 5).equals(commands[S_RETURN])){
-			
+		else if (command.substring(0, 5).equals(statements[S_RETURN])){
+			s = new S_RETURN();
+			s.doSt(p, t, etCW);
 		}
-		else if (command.substring(0, 2).equals(commands[S_DIM])){
-			
+		else if (command.substring(0, 2).equals(statements[S_DIM])){
+			s = new S_DIM();
+			s.doSt(p, t, etCW);
 		}
-		else if (command.substring(0, 2).equals(commands[S_DEF])){
-			
+		else if (command.substring(0, 2).equals(statements[S_DEF])){
+			s = new S_DEF();
+			s.doSt(p, t, etCW);
 		}
-		else if (command.substring(0, 1).equals(commands[S_FN])){
-			
+		else if (command.substring(0, 1).equals(statements[S_FN])){
+			s = new S_FN();
+			s.doSt(p, t, etCW);
 		}
-		else if (command.equals(commands[S_END])){
-			
+		else if (command.equals(statements[S_END])){
+			s = new S_END();
+			s.doSt(p, t, etCW);
 		}
-		else if (command.substring(0, 2).equals(commands[S_REM])){
+		else if (command.substring(0, 2).equals(statements[S_REM])){
+			// When encountering a REM statement, the line is ignored, so for
+			// simplicity's sake, just exit the method, don't bother with a new class
 			return;
 		}
 
