@@ -219,7 +219,7 @@ public class Tokenizer {
 		// Reset current position to mark position
 		curPos = markPos;
 	}
-
+	
 	public static double[] separateNumber(String inputNumber){
 		// Odd one to explain, but this should separate the main section
 		// of a given number (input as a String) from its exponent (if it has one)

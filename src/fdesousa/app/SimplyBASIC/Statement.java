@@ -9,24 +9,24 @@ public class Statement {
 		"PRINT", "GOTO", "GOSUB", "RETURN", 
 		"DIM", "DEF", "FN", "END", "REM"};
 
-	final int S_IF	 	=  0;	// Start of IF...THEN statement
-	final int S_THEN	=  1;	// Continues of IF...THEN statement
-	final int S_FOR		=  2;	// Start of FOR...TO...STEP statement
-	final int S_TO		=  3;	// Defines limit of FOR...TO...STEP statement
-	final int S_STEP	=  4;	// The number to (in/de)crement by in FOR
-	final int S_NEXT	=  5;	// (in/de)crements variable defined by FOR with variable 
-	final int S_LET		=  6;	// Assignment statement
-	final int S_READ	=  7;	// Reads the next Data value (FIFO ordering)
-	final int S_DATA	=  8;	// Provides data values for the program
-	final int S_PRINT	=  9;	// Print something to screen
-	final int S_GOTO	= 10;	// Unconditional transferal of program execution to a different line
-	final int S_GOSUB	= 11;	// As GOTO, but can be used to define a sub-routine that is returnable
-	final int S_RETURN	= 12;	// Returns execution to where GOSUB left off
-	final int S_DIM		= 13;	// Used to define one- or two-dimensional arrays
-	final int S_DEF		= 14;	// Used to define a function
-	final int S_FN		= 15;	// Beginning two letters of a user-defined function
-	final int S_END		= 16;	// Ends the program on that line, no matter what
-	final int S_REM		= 17;	// Signifies the line is a comment, and should be ignored by interpreter
+	final static int S_IF	 	=  0;	// Start of IF...THEN statement
+	final static int S_THEN		=  1;	// Continues of IF...THEN statement
+	final static int S_FOR		=  2;	// Start of FOR...TO...STEP statement
+	final static int S_TO		=  3;	// Defines limit of FOR...TO...STEP statement
+	final static int S_STEP		=  4;	// The number to (in/de)crement by in FOR
+	final static int S_NEXT		=  5;	// (in/de)crements variable defined by FOR with variable 
+	final static int S_LET		=  6;	// Assignment statement
+	final static int S_READ		=  7;	// Reads the next Data value (FIFO ordering)
+	final static int S_DATA		=  8;	// Provides data values for the program
+	final static int S_PRINT	=  9;	// Print something to screen
+	final static int S_GOTO		= 10;	// Unconditional transferal of program execution to a different line
+	final static int S_GOSUB	= 11;	// As GOTO, but can be used to define a sub-routine that is returnable
+	final static int S_RETURN	= 12;	// Returns execution to where GOSUB left off
+	final static int S_DIM		= 13;	// Used to define one- or two-dimensional arrays
+	final static int S_DEF		= 14;	// Used to define a function
+	final static int S_FN		= 15;	// Beginning two letters of a user-defined function
+	final static int S_END		= 16;	// Ends the program on that line, no matter what
+	final static int S_REM		= 17;	// Signifies the line is a comment, and should be ignored by interpreter
 
 	private String command = null;
 	
@@ -64,8 +64,8 @@ public class Statement {
 			s.doSt(p, t, etCW);
 		}
 		else if (command.substring(0, 3).equals(statements[S_DATA])){
-			// As DATA is read earlier, for now, I won't be instantiating any class for it
-			return;
+			;	// As we have a first-run to get DATA, it's safer to
+				// acknowledge, but ignore it in Statement.java
 		}
 		else if (command.substring(0, 4).equals(statements[S_PRINT])){
 			s = new S_PRINT();
@@ -100,9 +100,8 @@ public class Statement {
 			s.doSt(p, t, etCW);
 		}
 		else if (command.substring(0, 2).equals(statements[S_REM])){
-			// When encountering a REM statement, the line is ignored, so for
-			// simplicity's sake, just exit the method, don't bother with a new class
-			return;
+			;	// When encountering a REM statement, the line is ignored, so for
+				// safety, acknowledge but ignore the statement here
 		}
 
 	}

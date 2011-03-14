@@ -69,7 +69,7 @@ public class BASICProgram implements Runnable{
 	public void run() {
 		// The generic, auto-generated, must-have version of run(), defined by Runnable
 		// Will see implementation as a first-run method placing DATA in FIFO list
-		String s = null;
+		String s = "";
 		try {
 			lNs = codeList.keySet();
 			// Just make sure it actually has something
@@ -80,14 +80,9 @@ public class BASICProgram implements Runnable{
 				cL = lNs.iterator().next();
 				t.reset(codeList.get(cL));
 				s = t.nextToken();
-
-				if (s.compareTo(Statement.statements[8]) == 0){
-					while (t.hasMoreTokens()){
-						s = t.nextToken();
-						if (s.compareTo(",") != 0 && Expression.isNumber(s)){
-							dataStore.offer(Double.parseDouble(s));
-						}
-					}
+				if (s.equals(Statement.statements[Statement.S_DATA])){
+					Statement dataSt = new S_DATA();
+					dataSt.doSt(this, t, null);
 				}
 			} while (lNs.iterator().hasNext());
 		}
@@ -196,6 +191,10 @@ public class BASICProgram implements Runnable{
 	public int getCurrentLine(){
 		return cL;
 	}
+	
+	public void addData(double data){
+		dataStore.offer(data);
+	}
 
 	// Variables are of type Variable, and can be a Number or Number Array
 	private TreeMap<String, Variable> variables = new TreeMap<String, Variable>();
@@ -203,7 +202,12 @@ public class BASICProgram implements Runnable{
 		variables.put(v.getName(), v);
 	}
 	public Variable getVar(String vName){
-		return variables.get(vName);
+		if (variables.containsKey(vName)){
+			return variables.get(vName);			
+		}
+		else {
+			return null;
+		}
 	}
 	public boolean varExists(String vName){
 		return variables.containsKey(vName);

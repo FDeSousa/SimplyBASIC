@@ -1,9 +1,7 @@
 package fdesousa.app.SimplyBASIC;
 
 import java.util.TreeMap;
-import java.util.regex.*;
 import java.io.*;
-
 import android.os.Environment;
 //import android.util.Log; // Unused for now, may use for logging activity
 import android.view.KeyEvent;
