@@ -1,5 +1,7 @@
 package fdesousa.app.SimplyBASIC;
 
+import java.util.regex.Pattern;
+
 public class Tokenizer {
 
 	private int curPos = 0;		// Marks the current position in the char array
@@ -258,6 +260,13 @@ public class Tokenizer {
 		curPos = 0;
 	}
 
+	public static String removeQuotes(String input){
+		Pattern p = Pattern.compile("^[\"](\\s*.*\\s*)[\"]$");
+		// This pattern matches and returns anything within quotation marks
+		String[] args = p.split(input);
+		return args[1];
+	}
+	
 	// Who would have thought? A decade and a half, and Java still
 	// doesn't have operations you can perform with char arrays
 	// Hence the inclusion of isSpace, isDigit, isLetter
