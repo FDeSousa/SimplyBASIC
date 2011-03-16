@@ -1,12 +1,9 @@
 package fdesousa.app.SimplyBASIC;
 
 import java.util.Calendar;
-import java.util.Enumeration;
 import java.util.PriorityQueue;
-import java.util.Queue;
 import java.util.Set;
 import java.util.SortedMap;
-import java.util.Set;
 import java.util.Stack;
 import java.util.TreeMap;
 import android.widget.EditText;

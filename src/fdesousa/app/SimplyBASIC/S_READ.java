@@ -14,7 +14,7 @@ public class S_READ extends Statement {
 				if (Variable.isVariable(token)){
 					if (p.hasData()){
 						Variable v = Variable.getVariable(p, token);
-						v.assignValueToVariable(p.getData(), token);
+						v.setValue(token, p.getData());
 					}
 					else {
 						etCW.append("NO DATA.\n");

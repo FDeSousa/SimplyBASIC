@@ -11,8 +11,16 @@ public class S_DATA extends Statement {
 		String s = "";
 		while (t.hasMoreTokens()){
 			s = t.nextToken();
-			if (s.compareTo(",") != 0 && Expression.isNumber(s)){
-				p.addData(Double.parseDouble(s));
+			if (! s.equals(",")){
+				if (Expression.isNumber(s)){
+					p.addData(Double.parseDouble(s));
+				}
+				else {
+					etCW.append("ILLEGAL CONSTANT.\n" + 
+							"LINE NUMBER " + p.getCurrentLine() +".\n");
+					p.stopExec();
+					return;
+				}
 			}
 		}
 	}

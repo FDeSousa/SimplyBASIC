@@ -32,45 +32,57 @@ public class Function {
 
 	private String FN_Name;
 	private Expression FN_Expression;
-	private double result = 0.0;
-
-	public Function (String functionName, Expression functionExpression){
-		FN_Name = functionName;
-		FN_Expression = functionExpression;
+	private Variable FN_Variable;
+	public Function (String fnName, Expression fnExpression, Variable fnVariable){
+		FN_Name = fnName;
+		FN_Expression = fnExpression;
+		FN_Variable = fnVariable;
 	}
-	
+
 	public String getName(){
 		return FN_Name;
 	}
 	
-	public double doFn(EditText etCW, String token, BASICProgram p){
+	public static String getFnName(String token){
 		Pattern pT = Pattern.compile(regexFunctionTokens);
 		String[] args = pT.split(token);
-		double arg = 0.0;
+		return args[1];
+	}
+
+	public Expression getExpression(){
+		return FN_Expression;
+	}
+
+	public Variable getVariable(){
+		return FN_Variable;
+	}
+
+	public double doUserFn(EditText etCW, String token, BASICProgram p){
+		Pattern pT = Pattern.compile(regexFunctionTokens);
+		String[] args = pT.split(token);
+		double arg = evalArg(args[2], p, etCW);
+
+		// Assign the arg value to the Function's named variable, 
+		// which is used by user functions exclusively
+		FN_Variable.setValue(arg);
+
+		// So now, onto the meat of it, do the function!
+		// Convert the function's expression into postfix (this reorganises it
+		// while also resolving the variable names included in the expression)
+		FN_Expression.inToPost(p, etCW);
+		// And evaluate that expression!
+		FN_Expression.eval(p, etCW);
+		// Yes, it's only one line. The Function name really just references a certain Expression
+
+		return 0.0;
+	}
+	
+	public static double doFn(EditText etCW, String token, BASICProgram p){
+		Pattern pT = Pattern.compile(regexFunctionTokens);
+		String[] args = pT.split(token);
+		double arg = evalArg(args[2], p, etCW);
 		
-		// Have to do a few checks here first, as a Function call can accept a Variable or Number literal
-		if (Variable.isVariable(args[2])){
-			// If it's a variable, get the variable, and get the value from the variable
-			Variable v = Variable.getVariable(p, args[2]);
-			arg = v.getValue(args[2]);
-		}
-		else if (Expression.isNumber(args[2])){
-			// If it's a number, do one important test: does it have an exponent?
-			if (Expression.hasExponent(args[2])){
-				// Since it does, calculate it, and set arg to be that new value
-				arg = Expression.calculateExponent(args[2]);
-			}
-			else {
-				// Since it doesn't, just parse the converted value
-				arg = Double.parseDouble(args[2]);
-			}
-		}
-		
-		// Check the type of function this thing is
-		if (Pattern.matches(regexUserFunctions, token)){
-			// It's a User Function, so do something with that
-		}
-		else if (token.equals(functions[FN_SIN])){
+		if (token.equals(functions[FN_SIN])){
 			return Math.sin(arg);
 		}
 		else if (token.equals(functions[FN_COS])){
@@ -100,9 +112,47 @@ public class Function {
 		else if (token.equals(functions[FN_INT])){
 			return Math.round(arg);
 		}
-		return 0.0;
+		else{
+			// Return 0.0 is none-of-the-above
+			return 0.0;
+		}
 	}
-
+	
+	public static double evalArg(String argument, BASICProgram p, EditText etCW){
+		double arg = 0.0;
+		// Have to do a few checks here first, as a Function call can accept a Variable or Number literal
+		if (Variable.isVariable(argument)){
+			// If it's a variable, get the variable, and get the value from the variable
+			Variable v = Variable.getVariable(p, argument);
+			arg = v.getValue(argument);
+		}
+		else if (Expression.isNumber(argument)){
+			// If it's a number, do one important test: does it have an exponent?
+			if (Expression.hasExponent(argument)){
+				// Since it does, calculate it, and set arg to be that new value
+				arg = Expression.calculateExponent(argument);
+			}
+			else {
+				// Since it doesn't, just parse the converted value
+				arg = Double.parseDouble(argument);
+			}
+		}
+		else {
+			// Since it's not a Variable or a Number, assume it's an expression within the
+			// Function call's arguments list, tokenize into a queue, to get the results from
+			// a new Expression instance into arg.
+			PriorityQueue<String> expr = new PriorityQueue<String>();
+			Tokenizer eT = new Tokenizer();
+			eT.reset(argument);
+			while (eT.hasMoreTokens()){
+				expr.offer(eT.nextToken());
+			}
+			Expression e = new Expression(expr, p, etCW);
+			arg = e.eval(p, etCW);
+		}
+		return arg;
+	}
+	
 	public static boolean isFunction (String token){
 		boolean isFN = false;
 		if (Pattern.matches(regexUserFunctions, token))
@@ -112,7 +162,19 @@ public class Function {
 			if (token.equals(functions[i]))
 				return true;
 		}
-
 		return isFN;
+	}
+
+	public static boolean isUserFunction (String token){
+		if (Pattern.matches(regexUserFunctions, token))
+			return true;
+		else
+			return false;
+	}
+	
+	public static String getArg(String token){
+		Pattern pT = Pattern.compile(regexFunctionTokens);
+		String[] args = pT.split(token);
+		return args[2];
 	}
 }

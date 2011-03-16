@@ -1,8 +1,6 @@
 package fdesousa.app.SimplyBASIC;
 
 import java.util.PriorityQueue;
-import java.util.Queue;
-
 import android.widget.EditText;
 
 public class S_LET extends Statement {
@@ -25,13 +23,12 @@ public class S_LET extends Statement {
 				token = t.nextToken();
 				expression.offer(token);
 			}
-			Expression e = new Expression(expression);
-			result = e.eval(p, t, etCW);	// Expression we want to evaluate was parsed while instantiating 'e'
+			Expression e = new Expression(expression, p, etCW);
+			result = e.eval(p, etCW);	// Expression we want to evaluate was parsed while instantiating 'e'
 		}
 		
 		// Once the expression has been resolved, have to put it somewhere, ideally in the named variable
-		v.assignValueToVariable(result, vName);
-		
+		v.setValue(vName, result);
 		etCW.append("\n" + String.valueOf(result));
 	}
 }

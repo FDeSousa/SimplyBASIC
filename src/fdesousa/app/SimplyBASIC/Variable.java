@@ -59,7 +59,7 @@ public class Variable {
 	public Variable (String name, double value){
 		// Constructor for a standard array
 		this.name = name;
-		this.setValue(value);
+		this.setValue(name, value);
 		type = NUM;
 	}
 
@@ -71,6 +71,7 @@ public class Variable {
 	public Variable (String name, int dimension){
 		this.name = name;
 		dim1 = dimension;
+		S_DIM = new double[dim1];
 		type = S_ARR;
 	}
 
@@ -84,6 +85,7 @@ public class Variable {
 		this.name = name;
 		this.dim1 = dim1;
 		this.dim2 = dim2;
+		M_DIM = new double[dim1][dim2];
 		type = M_ARR;
 	}
 
@@ -102,15 +104,6 @@ public class Variable {
 	public int getType(){
 		return type;
 	}
-
-	/**
-	 * Setter for the value of Variable type NUM
-	 * Set the value of this Variable - type NUM
-	 * @param value - Value for this Variable
-	 */
-	public void setValue(double value) {
-		this.value = value;
-	}
 	
 	/**
 	 * Getter for the value of Variable type NUM/S_DIM/M_DIM
@@ -118,7 +111,7 @@ public class Variable {
 	 * @param vName - the variable's token, to determine and return value of that cell/variable
 	 * @return value - Value of this Variable
 	 */
-	public double getValue(String vName) {
+	public double getValue(String vName){
 		String[] varArgs = splitVariable(vName);
 		if (type == S_ARR){
 			int index = Integer.parseInt(varArgs[2]);
@@ -135,27 +128,37 @@ public class Variable {
 		}
 	}
 
-	// Getter/Setter for S_DIM
-	// Get upper bounds of S_DIM array
-	public int getUpperBoundsOfS_DIM(){
-		return dim1;
-	}
-	// Set/Get the value of an element of variable of type S_DIM
-	public void setValueOfElementInS_DIM(int index, double value){
-		S_DIM[index] = value;
+	/**
+	 * Setter for the value of Variable type NUM/S_DIM/M_DIM
+	 * Set the value of this Variable - type NUM/S_DIM/M_DIM
+	 * @param vName - the variable's token, to determine the variable name and cell
+	 * @param value - the value to place in the variable
+	 */
+	public void setValue(String vName, double value){
+		String[] varArgs = splitVariable(vName);
+		if (type == S_ARR){
+			int index = Integer.parseInt(varArgs[2]);
+			S_DIM[index] = value;
+		}
+		else if (type == M_ARR){
+			int dim1 = Integer.parseInt(varArgs[2]);
+			int dim2 = Integer.parseInt(varArgs[3]);
+			M_DIM[dim1][dim2] = value;
+		}
+		else {
+			this.value = value;
+		}
 	}
 
-	// Getter/Setter for M_DIM
-	// Get upper bounds of M_DIM array
-	public int[] getUpperBoundsOfM_DIM(){
-		int[] uBounds = { dim1, dim2 };
-		return uBounds;
+	/**
+	 * Setter for the value of Variable type NUM exclusively
+	 * Set the value of this Variable - type NUM exclusively
+	 * @param value - the value to place in the variable
+	 */
+	public void setValue(double value){
+		this.value = value;
 	}
-	// Set/Get the value of an element of variable of type M_DIM
-	public void setValueOfElementInM_DIM(int index1, int index2, double value){
-		M_DIM[index1][index2] = value;
-	}
-
+	
 	// Check if the input String is a variable
 	public static boolean isVariable(String input){
 		return (Pattern.matches(regexNUM, input) | 
@@ -177,29 +180,6 @@ public class Variable {
 			return ERR;
 		}
 		return ERR;
-	}
-	
-	/**
-	 * Assign a value to the current called initialised variable
-	 * @param value - the value to be assigned
-	 * @param vName - the String containing the variable's name and arguments
-	 */
-	public void assignValueToVariable(double value, String vName){
-		if (type == NUM){
-			setValue(value);
-		}
-		else if (type == S_ARR){
-			String[] args = splitVariable(vName);
-			setValueOfElementInS_DIM(Integer.parseInt(args[2]), value);
-			// Get one argument from vName, the single 'row' identifier
-			// Use this as the 'cell' identifier to place results in
-		}
-		else if (type == M_ARR){
-			String[] args = splitVariable(vName);
-			setValueOfElementInM_DIM(Integer.parseInt(args[2]), Integer.parseInt(args[3]), value);
-			// Get two arguments from vName, the 'row' and 'column' identifiers
-			// Use these to identify the 'cell' to place results in
-		}
 	}
 	
 	public static String[] splitVariable(String input){

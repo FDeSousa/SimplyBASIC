@@ -9,17 +9,40 @@ public class Expression {
 
 	static final String[] operators = { "^", "*", "/", "+", "-" };
 
-	PriorityQueue<String> in = new PriorityQueue<String>(), post = new PriorityQueue<String>();
-	Stack<String> ops = null;
+	boolean FN_Expression = false;
+
+	// A queue of infix values parsed in as a new expression
+	PriorityQueue<String> in = new PriorityQueue<String>();
+	// The same expression, but rearranged into postfix notation
+	PriorityQueue<String> post = new PriorityQueue<String>();
+	// A stack of operators. Temporary use while converting
+	Stack<String> ops = new Stack<String>();
 
 	public static String regexNumber = "^(-?\\d*\\.?\\d+)[E]?(\\d+)$";
 	public static String regexExponent = "^(-?\\d*\\.?\\d+)[E]{1}(\\d+)$";
 
-	public Expression (PriorityQueue<String> expression){
-		in = expression;
+	/**
+	 * This empty constructor is used by DEF statement, which then resets the queue later
+	 */
+	public Expression (){
+		FN_Expression = true;
+	}
+	
+	/**
+	 * This constructor initialises the expr queue, and convert input queue to postfix immediately
+	 * @param expr
+	 * @param p
+	 */
+	public Expression (PriorityQueue<String> expr, BASICProgram p, EditText etCW){
+		in = expr;
+		inToPost(p, etCW);
+	}
+	
+	public void reset (PriorityQueue<String> expr){
+		in = expr;
 	}
 
-	private void inToPost(BASICProgram p){
+	public void inToPost(BASICProgram p, EditText etCW){
 		String token = null;
 
 		while (! in.isEmpty()) {
@@ -30,8 +53,8 @@ public class Expression {
 			if (isNumber(token)){
 				if (hasExponent(token)){
 					// If there's an exponent, calculate it first
-					String temp = String.valueOf(calculateExponent(token));
-					token = temp;
+					String n = String.valueOf(calculateExponent(token));
+					token = n;
 				}
 				// Add the number to the Queue
 				post.offer(token);
@@ -40,6 +63,15 @@ public class Expression {
 				// If it's a variable value, get the value of that variable first
 				Variable v = Variable.getVariable(p, token);
 				post.offer(String.valueOf(v.getValue(token)));
+			}
+			else if (Function.isFunction(token)){
+				// If it's a function call, calculate it before adding it
+				if (Function.isUserFunction(token)){
+					p.getFunction(token);
+				}
+				else {
+					Function.doFn(etCW, token, p);
+				}
 			}
 			else if (isOperator(token)){
 				if (ops.isEmpty()){
@@ -68,43 +100,40 @@ public class Expression {
 	}
 
 	@SuppressWarnings("null")
-	public double eval(BASICProgram p, Tokenizer t, EditText etCW){
-		// TODO: Evaluation of expression here
+	public double eval(BASICProgram p, EditText etCW){
+		// The stack with the values to be operated on, in their order
 		Stack<Double> runningTotal = null;
+		// The two values to be operated on
 		double val1, val2;
-		String val;
-		
-		inToPost(p); // in, ops and post are all accessible by this method, 
-					 // so only parse in one item, and receive nothing.
+		// The operator to use on the two values
+		String op;
+
+		// so only parse in one item, and receive nothing.
 		while (! post.isEmpty()){
-			val = post.poll();
-			// TODO: Remove after use directly below
-			etCW.append(val+"\n"); // To check what's in the stream now
-			if (isNumber(val)){
-				runningTotal.push(Double.parseDouble(val));
+			op = post.poll();
+			
+			if (isNumber(op)){
+				runningTotal.push(Double.parseDouble(op));
 			}
-			else if (isOperator(val)){
+			else if (isOperator(op)){
 				val2 = runningTotal.pop();
 				val1 = runningTotal.pop();
-				// TODO: Remove after use directly below
-				etCW.append("Val1"+String.valueOf(val1)+"\t"+String.valueOf(val2)+"\n"); // To check what's being operated on
-				if (val.equals("^")){
+				
+				if (op.equals("^")){
 					runningTotal.push(Math.pow(val1, val2));
 				}
-				else if (val.equals("*")){
+				else if (op.equals("*")){
 					runningTotal.push(val1 * val2);
 				}
-				else if (val.equals("/")){
+				else if (op.equals("/")){
 					runningTotal.push(val1 / val2);
 				}
-				else if (val.equals("+")){
+				else if (op.equals("+")){
 					runningTotal.push(val1 + val2);
 				}
-				else if (val.equals("-")){
+				else if (op.equals("-")){
 					runningTotal.push(val1 - val2);
 				}
-				// TODO: Remove after use directly below
-				etCW.append("Top of runTot"+String.valueOf(runningTotal.peek())+"\n"); // To check what's being operated on
 			}
 		}	
 		return runningTotal.pop();
