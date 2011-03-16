@@ -233,6 +233,23 @@ public class BASICProgram implements Runnable{
 		return v.getType();
 	}
 	
+	// Functions are of type Function, and can be user-defined functions only
+	private TreeMap<String, Function> functions = new TreeMap<String, Function>();
+	public void putFunction(Function f){
+		functions.put(f.getName(), f);
+	}
+	public Function getFunction(String fnName){
+		if (functions.containsKey(fnName)){
+			return functions.get(fnName);			
+		}
+		else {
+			return null;
+		}
+	}
+	public boolean fnExists(String fnName){
+		return functions.containsKey(fnName);
+	}
+	
 	// Using these nice and simple Getters and Setters for using 
 	// during GOSUB / GOTO / IF .. THEN / FOR .. NEXT statements
 	public Set<Integer> getlNs() {

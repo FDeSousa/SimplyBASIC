@@ -38,21 +38,8 @@ public class Expression {
 			}
 			else if (Variable.isVariable(token)){
 				// If it's a variable value, get the value of that variable first
-				String[] varArgs = Variable.splitVariable(token);
-				Variable v = p.getVar(varArgs[0]);
-				if (v.getType() == Variable.NUM){			// Variable type of Number
-					// Offer up the value of the named Variable to the Queue
-					post.offer(String.valueOf(v.getValue()));
-				}
-				else if (v.getType() == Variable.S_ARR){	// Variable type of NumberArray(Single-Dim)
-					// Offer up the value of the chosen element from the Variable to the Queue
-					post.offer(String.valueOf(v.getValueOfElementInS_DIM(Integer.parseInt(varArgs[varArgs.length-1]))));
-				}
-				else if (v.getType() == Variable.M_ARR){	// Variable type of NumberArray(Multi-Dim)
-					// Offer up the value of the chosen element from the Variable to the Queue
-					post.offer(String.valueOf(v.getValueOfElementInM_DIM(Integer.parseInt(varArgs[varArgs.length-2]), 
-							Integer.parseInt(varArgs[varArgs.length-1]))));
-				}
+				Variable v = Variable.getVariable(p, token);
+				post.offer(String.valueOf(v.getValue(token)));
 			}
 			else if (isOperator(token)){
 				if (ops.isEmpty()){
@@ -119,18 +106,7 @@ public class Expression {
 				// TODO: Remove after use directly below
 				etCW.append("Top of runTot"+String.valueOf(runningTotal.peek())+"\n"); // To check what's being operated on
 			}
-		}
-		/*
-		Queue<String> infix = null;
-		// Get all the tokens from the parsed expression into Queue infix
-		Tokenizer eT = new Tokenizer();
-		eT.reset(expression);
-		while (eT.hasMoreTokens()){
-			infix.offer(eT.nextToken());
-		}
-		// Convert infix to postfix, place results in a queue to evaluate
-		Queue<String> postfix = inToPost(infix);
-		 */		
+		}	
 		return runningTotal.pop();
 	}
 

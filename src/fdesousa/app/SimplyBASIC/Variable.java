@@ -113,12 +113,26 @@ public class Variable {
 	}
 	
 	/**
-	 * Getter for the value of Variable type NUM
-	 * Get the value of this Variable - type NUM
-	 * @return value - Value of thise Variable
+	 * Getter for the value of Variable type NUM/S_DIM/M_DIM
+	 * Get the value of this Variable - type NUM/S_DIM/M_DIM
+	 * @param vName - the variable's token, to determine and return value of that cell/variable
+	 * @return value - Value of this Variable
 	 */
-	public double getValue() {
-		return value;
+	public double getValue(String vName) {
+		String[] varArgs = splitVariable(vName);
+		if (type == S_ARR){
+			int index = Integer.parseInt(varArgs[2]);
+			return S_DIM[index];
+		}
+		else if (type == M_ARR){
+			int dim1 = Integer.parseInt(varArgs[2]);
+			int dim2 = Integer.parseInt(varArgs[3]);
+			return M_DIM[dim1][dim2];
+		}
+		else {
+			// If it's not a single-/multi-dimension array, return the value
+			return value;			
+		}
 	}
 
 	// Getter/Setter for S_DIM
@@ -130,9 +144,6 @@ public class Variable {
 	public void setValueOfElementInS_DIM(int index, double value){
 		S_DIM[index] = value;
 	}
-	public double getValueOfElementInS_DIM(int index){
-		return S_DIM[index];
-	}
 
 	// Getter/Setter for M_DIM
 	// Get upper bounds of M_DIM array
@@ -143,9 +154,6 @@ public class Variable {
 	// Set/Get the value of an element of variable of type M_DIM
 	public void setValueOfElementInM_DIM(int index1, int index2, double value){
 		M_DIM[index1][index2] = value;
-	}
-	public double getValueOfElementInM_DIM(int index1, int index2){
-		return M_DIM[index1][index2];
 	}
 
 	// Check if the input String is a variable

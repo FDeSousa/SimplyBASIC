@@ -3,6 +3,8 @@ package fdesousa.app.SimplyBASIC;
 import java.util.PriorityQueue;
 import java.util.regex.Pattern;
 
+import android.widget.EditText;
+
 public class Function {
 
 	final static String[] functions = { 
@@ -29,13 +31,40 @@ public class Function {
 	public static String regexFunctionTokens = "^([A-Z]{3})[(](.+)[)]$";
 
 	private String FN_Name;
-	private PriorityQueue<String> FN_Expression;
+	private Expression FN_Expression;
 	private double result = 0.0;
 
-	public double doFn(String token, BASICProgram p){
+	public Function (String functionName, Expression functionExpression){
+		FN_Name = functionName;
+		FN_Expression = functionExpression;
+	}
+	
+	public String getName(){
+		return FN_Name;
+	}
+	
+	public double doFn(EditText etCW, String token, BASICProgram p){
 		Pattern pT = Pattern.compile(regexFunctionTokens);
 		String[] args = pT.split(token);
-		double arg = Double.parseDouble(args[2].trim());
+		double arg = 0.0;
+		
+		// Have to do a few checks here first, as a Function call can accept a Variable or Number literal
+		if (Variable.isVariable(args[2])){
+			// If it's a variable, get the variable, and get the value from the variable
+			Variable v = Variable.getVariable(p, args[2]);
+			arg = v.getValue(args[2]);
+		}
+		else if (Expression.isNumber(args[2])){
+			// If it's a number, do one important test: does it have an exponent?
+			if (Expression.hasExponent(args[2])){
+				// Since it does, calculate it, and set arg to be that new value
+				arg = Expression.calculateExponent(args[2]);
+			}
+			else {
+				// Since it doesn't, just parse the converted value
+				arg = Double.parseDouble(args[2]);
+			}
+		}
 		
 		// Check the type of function this thing is
 		if (Pattern.matches(regexUserFunctions, token)){
@@ -69,7 +98,7 @@ public class Function {
 			return Math.random();
 		}
 		else if (token.equals(functions[FN_INT])){
-			return arg;
+			return Math.round(arg);
 		}
 		return 0.0;
 	}
