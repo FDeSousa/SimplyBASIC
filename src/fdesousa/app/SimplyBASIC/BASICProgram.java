@@ -1,9 +1,12 @@
 package fdesousa.app.SimplyBASIC;
 
 import java.util.Calendar;
+import java.util.Enumeration;
+import java.util.PriorityQueue;
 import java.util.Queue;
 import java.util.Set;
 import java.util.SortedMap;
+import java.util.Set;
 import java.util.Stack;
 import java.util.TreeMap;
 import android.widget.EditText;
@@ -26,22 +29,23 @@ public class BASICProgram implements Runnable{
 	Calendar timer = Calendar.getInstance();
 	long startTime;
 
-	// RUN!
+	/**
+	 * The main run() method here, and the one that's called by CommandInterpreter
+	 * It executes run() to get all DATA values plotted into a Queue
+	 * An EditText is required for output only
+	 */
 	public void run(EditText etCW) {
 		try {
 			startTime = timer.getTimeInMillis();
 			stop = false;
 			// Do the first-run, to get all DATA stored into a FIFO list
-			run();
-
+			//run();
 			// Re-initialise lNs here for use while final run is going
 			lNs = codeList.keySet();
-
-			if (! lNs.iterator().hasNext()){
-				return;
-			}
 			cL = lNs.iterator().next();
+			
 			do {
+				t.reset(codeList.get(cL));
 				Statement statement = new Statement();
 				statement.doSt(this, t, etCW);
 
@@ -64,7 +68,15 @@ public class BASICProgram implements Runnable{
 	// dataStore is used for keeping data from DATA statements in a FIFO for later access.
 	// It's stupid using the dataStore to store strings, but as it can store both integers AND
 	// real numbers (all float as far as BASIC is concerned), I'll resolve this later 
-	private Queue<Double> dataStore;
+	private PriorityQueue<Double> dataStore = new PriorityQueue<Double>();
+	
+	public double getData(){
+		return dataStore.poll();
+	}
+	
+	public boolean hasData(){
+		return (! dataStore.isEmpty());
+	}
 	
 	public void run() {
 		// The generic, auto-generated, must-have version of run(), defined by Runnable
@@ -72,19 +84,23 @@ public class BASICProgram implements Runnable{
 		String s = "";
 		try {
 			lNs = codeList.keySet();
-			// Just make sure it actually has something
-			if (! lNs.iterator().hasNext()){
-				return;
-			}
+
+			cL = lNs.iterator().next();
 			do {
-				cL = lNs.iterator().next();
 				t.reset(codeList.get(cL));
 				s = t.nextToken();
 				if (s.equals(Statement.statements[Statement.S_DATA])){
 					Statement dataSt = new S_DATA();
 					dataSt.doSt(this, t, null);
 				}
-			} while (lNs.iterator().hasNext());
+				
+				if (lNs.iterator().hasNext()){
+					cL = lNs.iterator().next();
+				}
+				else {
+					cont = false;
+				}
+			} while (cont && ! stop);
 		}
 		catch (Exception e){
 			return;
@@ -242,11 +258,10 @@ public class BASICProgram implements Runnable{
 		RETURNs.push(this.RETURNKeySet);
 	}
 
-	// To aid with GOTO/GOSUB/etc, we make a tail map of the code list, and from there
-	// we make a new set of keys, which will then act as our new set of keys to execute
+	// To aid with GOTO/GOSUB/etc, we make a tail set of the code list, 
+	// which will then act as our new set of keys to execute
 	public Set<Integer> getTailMap(int lN){
-		SortedMap<Integer, String> tempCodeList = codeList.tailMap(lN);
-		Set<Integer> lineNumbers = tempCodeList.keySet();
+		Set<Integer> lineNumbers = codeList.tailMap(lN).keySet();
 		return lineNumbers;
 	}
 

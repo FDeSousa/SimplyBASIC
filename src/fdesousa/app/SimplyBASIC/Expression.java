@@ -1,6 +1,6 @@
 package fdesousa.app.SimplyBASIC;
 
-import java.util.Queue;
+import java.util.PriorityQueue;
 import java.util.Stack;
 import java.util.regex.Pattern;
 import android.widget.EditText;
@@ -9,13 +9,13 @@ public class Expression {
 
 	static final String[] operators = { "^", "*", "/", "+", "-" };
 
-	Queue<String> in = null, post = null;
+	PriorityQueue<String> in = new PriorityQueue<String>(), post = new PriorityQueue<String>();
 	Stack<String> ops = null;
 
-	public static String regexNumber = "^-?\\d*\\.?\\d*[E]?\\d+$";
+	public static String regexNumber = "^(-?\\d*\\.?\\d+)[E]?(\\d+)$";
 	public static String regexExponent = "^(-?\\d*\\.?\\d+)[E]{1}(\\d+)$";
 
-	public Expression (Queue<String> expression){
+	public Expression (PriorityQueue<String> expression){
 		in = expression;
 	}
 
@@ -155,14 +155,17 @@ public class Expression {
 		return false;
 	}
 
+	/**
+	 * Returns true if the input String is a number in the format:
+	 * ±.123/±.123E456/±123.456/±123.456E789
+	 * (± refers to positive/negative number, not the symbol itself)
+	 * as compared by regex pattern match
+	 * @param input String
+	 * @return true if it matches / false if it doesn't
+	 */
 	public static boolean isNumber(String input){
 		// It's a public static just to make it easier to use in BP, which does a check every-so-often.
 		try {
-			/**
-			 * What the regex below matches:
-			 * ±.123/±.123E456/±123.456/±123.456E789
-			 * (± refers to positive/negative number, not the symbol itself)
-			 */
 			return Pattern.matches(regexNumber, input);
 		}
 		catch (NumberFormatException ex) {
@@ -173,11 +176,6 @@ public class Expression {
 	public static boolean hasExponent(String input){
 		// It's a public static just to make it easier to use in BP, which does a check every-so-often.
 		try {
-			/**
-			 * What the regex below matches:
-			 * ±.123E456/±123.456E789/±123E456
-			 * (± refers to positive/negative number, not the symbol itself)
-			 */
 			return Pattern.matches(regexExponent, input);
 		}
 		catch (NumberFormatException ex) {
@@ -188,7 +186,7 @@ public class Expression {
 	public static double[] separateNumber(String input){
 		Pattern p = Pattern.compile(regexExponent);
 		String[] split = p.split(input);
-		double[] number = { Double.parseDouble(split[split.length-2]), Double.parseDouble(split[split.length-1]) };
+		double[] number = { Double.parseDouble(split[1]), Double.parseDouble(split[2]) };
 		return number;
 	}
 

@@ -8,6 +8,8 @@ public class S_PRINT extends Statement {
 
 	@Override
 	public void doSt(BASICProgram p, Tokenizer t, EditText etCW){
+		String token = t.nextToken();
+		
 		
 	}
 }

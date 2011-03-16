@@ -16,7 +16,7 @@ public class Tokenizer {
 	private int markPos = 0;	// Used to mark a position temporarily
 	private String t = "";	// The current token that's being worked with
 	private char buffer[];		// Holds the characters to analyse, easier to move between chars
-								// than in a String, that involves .substring(char position)
+	// than in a String, that involves .substring(char position)
 
 	public Tokenizer() {
 		// Constructor doesn't really need initialisation of anything for
@@ -113,19 +113,58 @@ public class Tokenizer {
 			// Get the whole sequence of digits and letters, no matter what
 			while (isLetter(buffer[curPos]) || isDigit(buffer[curPos])) {
 				t += buffer[curPos++];
+				// A little costly on processor time, doing these checks every time a letter
+				// or character is added, but it could minimise mistakes
+				
+				// Check if it's a standard BASIC function, if it is return it immediately
+				for (int i = 0; i < Function.functions.length; i++){
+					if (t.contains(Function.functions[i]))
+						return t;
+				}
+				// Check if it's a system command, if it is return it immediately
+				for (int i = 0; i < CommandInterpreter.commands.length; i++){
+					if (t.contains(CommandInterpreter.commands[i]))
+						return t;
+				}
+				// Check if it's a BASIC command, if it is return it immediately			
+				for (int i = 0; i < Statement.statements.length; i++){
+					if (t.contains(Statement.statements[i]))
+						return t;
+				}
 			}
-			// Check if it's a system command, if it is return it immediately
-			for (int i = 0; i < CommandInterpreter.commands.length; i++){
-				if (t.contains(CommandInterpreter.commands[i]))
-					return t;
-			}
-			// Check if it's a BASIC command, if it is return it immediately			
-			for (int i = 0; i < Statement.statements.length; i++){
-				if (t.contains(Statement.statements[i]))
-					return t;
+
+			// Check if this thing is a variable
+			if (Variable.isVariable(t)){
+				// It is! So now get the rest of it (if there is a rest of it)
+				if (peek(false) == '('){
+					// Right, get the whole of the variable's arguments
+					do {
+						t += buffer[curPos++];
+					} while (buffer[curPos - 1] != ')');
+				}
+				// Either way, return t now, don't check for anything else
+				return t;
 			}
 			
-			// Since it's neither of the two above, check out what it actually is
+			// Check if it's a function then
+			if (Function.isFunction(t)){
+				// It certainly is! Get the arguments!
+				if (peek(false) == '('){
+					// Since it lists arguments, get them!
+					do {
+						t += buffer[curPos++];
+						// Function call can include a reference to one array element
+						if (buffer[curPos] == '('){
+							do {
+								t += buffer[curPos++];
+							} while (buffer[curPos - 1] != ')');
+						}
+					} while (buffer[curPos - 1] != ')');
+				}
+				return t;
+			}
+			
+			// Since it's none of the above, it's likely a number
 			if (Expression.isNumber(t)){
 				if (buffer[curPos] == '.'){
 					t += buffer[curPos++];
@@ -143,7 +182,7 @@ public class Tokenizer {
 				}
 				return t;
 			}
-			
+
 			// Commenting out this enormous section for now, it's a bit redundant, as I can
 			// do these checks after adding the letters/digits to the token
 			/**
@@ -186,11 +225,11 @@ public class Tokenizer {
 					token += buffer[curPos++];
 				}
 			}
-			*/
+			 */
 			break;
 		}
 		// Handles the return, no matter what
-		return t;
+		return t.trim();
 	}
 
 	// Methods and functions for doing the admin stuff
@@ -198,7 +237,7 @@ public class Tokenizer {
 		// Simple enough. If current position is less than buffer length, returns true
 		return (curPos < buffer.length);
 	}
-	
+
 	public char peek(boolean eatSpaces){
 		char c;
 		mark();
@@ -219,7 +258,23 @@ public class Tokenizer {
 		// Reset current position to mark position
 		curPos = markPos;
 	}
-	
+
+	/**
+	 * Get a String containing a variable as a token
+	 * @return String containing variable and arguments
+	 */
+	public String getVariable(){
+		t = "";
+
+		t = nextToken();
+		if (peek(false) == '('){
+			do {
+				t += nextToken();
+			} while (t.substring(t.length()-2) != ")");			
+		}
+		return t.trim();
+	}
+
 	public static double[] separateNumber(String inputNumber){
 		// Odd one to explain, but this should separate the main section
 		// of a given number (input as a String) from its exponent (if it has one)
@@ -227,7 +282,7 @@ public class Tokenizer {
 		double[] separated = { 0.0, 0.0 };
 		String number = null, exponent = null;
 		int i = 0;
-		
+
 		while (isDigit(inputNumber.charAt(i)) && i < inputNumber.length()){
 			number += inputNumber.charAt(i++);
 		}
@@ -241,29 +296,29 @@ public class Tokenizer {
 		separated[1] = Double.parseDouble(exponent);
 		return separated;
 	}
-	
+
 	public String getWholeLine(){
-		String line = null;
+		String line = "";
 		mark();
 		reset();
 		while (hasMoreTokens()){
 			line += buffer[curPos++];
 		}
 		resetToMark();
-		return line;
+		return line.trim();
 	}
-	
+
 	public String getRestOfLine(){
 		// Send back the rest of the line, minus what's already been sent
 		// Useful for BASIC commands
-		String line = null;
+		String line = "";
 		mark();
 		while (hasMoreTokens()){
 			line += buffer[curPos++];
 		}
 		// Reset curPos to markPos, just in case it's still needed
 		resetToMark();
-		return line;
+		return line.trim();
 	}
 
 	// Three types of reset are used/needed

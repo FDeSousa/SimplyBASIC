@@ -2,21 +2,48 @@ package fdesousa.app.SimplyBASIC;
 
 import java.util.regex.Pattern;
 
-import android.widget.EditText;
-
 public class Variable {
-	// Error / Number / Single-Dimension Array / Multiple-Dimension Array
+	/**
+	 * ERR	 =	-1	-	Error number, not match with any below
+	 * NUM	 =	 0	-	Variable is a regular Number Variable
+	 * S_ARR =	 1	-	Variable is a Single Dimension Array Number Variable
+	 * M_ARR =	 2	-	Variable is a Multi Dimension Array Number Variable
+	 */
 	public final static int ERR = -1, NUM = 0, S_ARR = 1, M_ARR = 2;
-	// Regular Expressions for Number, Single- or Multi-Dim Array variables
-	// regexNUM will determine if the named variable is a regular number variable
+
+	/**
+	 * regexNUM will match and get the name of a regular Number Variable
+	 */
 	public final static String regexNUM = "^[A-Z]{1}\\d?$";
-	// regexVarName will get the name of a variable array
+	
+	/**
+	 * regexVarName will get the name of a variable array
+	 * Upon using Pattern.split(), the returned array is:
+	 * [0] Whole Variable S_/M_DIM array that matches
+	 * [1] Array name 
+	 */
 	public final static String regexVarName = "^([A-Z]{1})(?=[(]{1})";
-	// regexS_ARR determines if the variable is a single-dim array, and can also return the variable name and sole argument
-	public final static String regexS_ARR = "^[A-Z]{1}[(]{1}\\s*(\\d+|\\w?\\d?)\\s*[)]{1}$";
-	// regexM_ARR determines if the variable is a multi-dim array, and can also return the variable name and both arguments
+
+	/**
+	 * regexS_ARR determines if the variable is a single-dim array, and can also return the variable name and sole argument
+	 * Upon using Pattern.split(), the returned array is:
+	 * [0]	Whole Variable S_DIM Array that matches
+	 * [1]	Array name
+	 * [2]	Array argument
+	 */
+	public final static String regexS_ARR = "^([A-Z]{1})[(]{1}\\s*(\\d+|\\w?\\d?)\\s*[)]{1}$";
+	
+	/**
+	 * regexM_ARR determines if the variable is a multi-dim array, and can also return the variable name and both arguments
+	 * Upon using Pattern.split(), the returned array is:
+	 * [0]	Whole Variable M_DIM Array that matches
+	 * [1]	Array name
+	 * [2]	Array argument 1
+	 * [3]	Array argument 2
+	 */
 	public final static String regexM_ARR = "^[A-Z]{1}[(]{1}\\s*(\\d+|\\w?\\d?)\\s*[,]{1}\\s*(\\d+|\\w?\\d?)\\s*[)]{1}$";
 
+	// General declarations here
 	private String name;
 	private int type;
 	private double value;
@@ -24,6 +51,11 @@ public class Variable {
 	private double[][] M_DIM;
 	private int dim1, dim2;
 
+	/**
+	 * Declare a new regular number Variable
+	 * @param name	- Name of this variable
+	 * @param value	- Value of this variable
+	 */
 	public Variable (String name, double value){
 		// Constructor for a standard array
 		this.name = name;
@@ -31,12 +63,23 @@ public class Variable {
 		type = NUM;
 	}
 
+	/**
+	 * Declare a new single-dimension number array Variable
+	 * @param name		- Name of this variable
+	 * @param dimension	- Array bounds, dimension limit
+	 */
 	public Variable (String name, int dimension){
 		this.name = name;
 		dim1 = dimension;
 		type = S_ARR;
 	}
 
+	/**
+	 * Declare a new multi-dimension number array Variable
+	 * @param name	- Name of thise variable
+	 * @param dim1	- Array bounds, dimension limit of dimension 1
+	 * @param dim2	- Array bounds, dimension limit of dimension 2
+	 */
 	public Variable (String name, int dim1, int dim2){
 		this.name = name;
 		this.dim1 = dim1;
@@ -44,21 +87,36 @@ public class Variable {
 		type = M_ARR;
 	}
 
-	// Simple as, get a String containing name of variable
+	/**
+	 * Get a String containing the name of this Variable
+	 * @return Variable name
+	 */
 	public String getName(){
 		return name;
 	}
 
-	// Get the type of variable
+	/**
+	 * Get the type of this Variable
+	 * @return type - type of this Variable
+	 */
 	public int getType(){
 		return type;
 	}
 
-	// Getter/Setter for NUM
-	// Set/Get the value of a variable of type NUM
+	/**
+	 * Setter for the value of Variable type NUM
+	 * Set the value of this Variable - type NUM
+	 * @param value - Value for this Variable
+	 */
 	public void setValue(double value) {
 		this.value = value;
 	}
+	
+	/**
+	 * Getter for the value of Variable type NUM
+	 * Get the value of this Variable - type NUM
+	 * @return value - Value of thise Variable
+	 */
 	public double getValue() {
 		return value;
 	}
@@ -108,9 +166,32 @@ public class Variable {
 				return NUM;
 		}
 		catch(NumberFormatException e){
-			return -1;
+			return ERR;
 		}
-		return -1;
+		return ERR;
+	}
+	
+	/**
+	 * Assign a value to the current called initialised variable
+	 * @param value - the value to be assigned
+	 * @param vName - the String containing the variable's name and arguments
+	 */
+	public void assignValueToVariable(double value, String vName){
+		if (type == NUM){
+			setValue(value);
+		}
+		else if (type == S_ARR){
+			String[] args = splitVariable(vName);
+			setValueOfElementInS_DIM(Integer.parseInt(args[2]), value);
+			// Get one argument from vName, the single 'row' identifier
+			// Use this as the 'cell' identifier to place results in
+		}
+		else if (type == M_ARR){
+			String[] args = splitVariable(vName);
+			setValueOfElementInM_DIM(Integer.parseInt(args[2]), Integer.parseInt(args[3]), value);
+			// Get two arguments from vName, the 'row' and 'column' identifiers
+			// Use these to identify the 'cell' to place results in
+		}
 	}
 	
 	public static String[] splitVariable(String input){
@@ -134,26 +215,10 @@ public class Variable {
 		return varArgs;
 	}
 	
-	public static Variable getRestOfVariable(BASICProgram p, Tokenizer t, EditText etCW, String vName, String token){
-		if (token.equals("(")){
-			vName += token;
-			do {
-				token = t.nextToken();
-				vName += token;
-			// Seems a bit redundant doing two operations here, but it makes the while below simpler
-			} while (! token.equals(")"));
-		} // Got the whole of the variable and its arguments above
+	public static Variable getVariable(BASICProgram p, String vName){
 		
 		int chk = checkVariableType(vName);
 		String[] args = splitVariable(vName);
-		
-		// TODO: Remove what's below, it's just to check the args
-		String toPrint = "";
-		for (int i = 0; i < args.length; i++){
-			toPrint += args[i] + "\t";
-		}
-		etCW.append("\n"+toPrint+"\n");	
-		// TODO: Remove up to here asap
 		
 		Variable tV = p.getVar(args[0]);
 		if (tV != null){	// If it's not null, it exists			

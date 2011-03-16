@@ -34,20 +34,21 @@ public class Statement {
 	
 	public void doSt(BASICProgram p, Tokenizer t, EditText etCW) {
 		Statement s;
-		
-		if (t.hasMoreTokens())
+
+		if (t.hasMoreTokens()){
 			command = t.nextToken();
+		}
 		
 		// Because a user could potentially type in a line without spaces between the
 		// command and the rest of the line, we're checking here to see if the first n
 		// letters of the command string match up to the command
 		// This makes for messy code, and possibly messy results, so it should be noted
 		// to the user that input should really, ideally, have spaces between tokens
-		if (command.substring(0, 1).equals(statements[S_IF])){
+		if (command.equals(statements[S_IF])){
 			s = new S_IF();
 			s.doSt(p, t, etCW);
 		}
-		else if (command.substring(0, 2).equals(statements[S_FOR])){
+		else if (command.equals(statements[S_FOR])){
 			s = new S_FOR();
 			s.doSt(p, t, etCW);
 		}
@@ -55,51 +56,47 @@ public class Statement {
 			s = new S_NEXT();
 			s.doSt(p, t, etCW);
 		}
-		else if (command.substring(0, 2).equals(statements[S_LET])){
+		else if (command.equals(statements[S_LET])){
 			s = new S_LET();
 			s.doSt(p, t, etCW);
 		}
-		else if (command.substring(0, 3).equals(statements[S_READ])){
+		else if (command.equals(statements[S_READ])){
 			s = new S_READ();
 			s.doSt(p, t, etCW);
 		}
-		else if (command.substring(0, 3).equals(statements[S_DATA])){
+		else if (command.equals(statements[S_DATA])){
 			;	// As we have a first-run to get DATA, it's safer to
 				// acknowledge, but ignore it in Statement.java
 		}
-		else if (command.substring(0, 4).equals(statements[S_PRINT])){
+		else if (command.equals(statements[S_PRINT])){
 			s = new S_PRINT();
 			s.doSt(p, t, etCW);
 		}
-		else if (command.substring(0, 3).equals(statements[S_GOTO])){
+		else if (command.equals(statements[S_GOTO])){
 			s = new S_GOTO();
 			s.doSt(p, t, etCW);
 		}
-		else if (command.substring(0, 4).equals(statements[S_GOSUB])){
+		else if (command.equals(statements[S_GOSUB])){
 			s = new S_GOSUB();
 			s.doSt(p, t, etCW);
 		}
-		else if (command.substring(0, 5).equals(statements[S_RETURN])){
+		else if (command.equals(statements[S_RETURN])){
 			s = new S_RETURN();
 			s.doSt(p, t, etCW);
 		}
-		else if (command.substring(0, 2).equals(statements[S_DIM])){
+		else if (command.equals(statements[S_DIM])){
 			s = new S_DIM();
 			s.doSt(p, t, etCW);
 		}
-		else if (command.substring(0, 2).equals(statements[S_DEF])){
+		else if (command.equals(statements[S_DEF])){
 			s = new S_DEF();
-			s.doSt(p, t, etCW);
-		}
-		else if (command.substring(0, 1).equals(statements[S_FN])){
-			s = new S_FN();
 			s.doSt(p, t, etCW);
 		}
 		else if (command.equals(statements[S_END])){
 			s = new S_END();
 			s.doSt(p, t, etCW);
 		}
-		else if (command.substring(0, 2).equals(statements[S_REM])){
+		else if (command.equals(statements[S_REM])){
 			;	// When encountering a REM statement, the line is ignored, so for
 				// safety, acknowledge but ignore the statement here
 		}
