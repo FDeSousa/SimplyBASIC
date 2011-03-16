@@ -30,9 +30,18 @@ public class Statement {
 
 	private String command = null;
 	
-	public Statement(){}		// Poor empty constructor...
+	protected BASICProgram p;
+	protected Tokenizer t;
+	protected EditText et;
 	
-	public void doSt(BASICProgram p, Tokenizer t, EditText etCW) {
+	public Statement(BASICProgram pgm, Tokenizer tok, EditText edtxt){
+		// Adding these here instead of stating them elsewhere
+		p = pgm;
+		t = tok;
+		et = edtxt;
+	}
+	
+	public void doSt() {
 		Statement s;
 
 		if (t.hasMoreTokens()){
@@ -45,56 +54,56 @@ public class Statement {
 		// This makes for messy code, and possibly messy results, so it should be noted
 		// to the user that input should really, ideally, have spaces between tokens
 		if (command.equals(statements[S_IF])){
-			s = new S_IF();
-			s.doSt(p, t, etCW);
+			s = new S_IF(p, t, et);
+			s.doSt();
 		}
 		else if (command.equals(statements[S_FOR])){
-			s = new S_FOR();
-			s.doSt(p, t, etCW);
+			s = new S_FOR(p, t, et);
+			s.doSt();
 		}
 		else if (command.equals(statements[S_NEXT])){
-			s = new S_NEXT();
-			s.doSt(p, t, etCW);
+			s = new S_NEXT(p, t, et);
+			s.doSt();
 		}
 		else if (command.equals(statements[S_LET])){
-			s = new S_LET();
-			s.doSt(p, t, etCW);
+			s = new S_LET(p, t, et);
+			s.doSt();
 		}
 		else if (command.equals(statements[S_READ])){
-			s = new S_READ();
-			s.doSt(p, t, etCW);
+			s = new S_READ(p, t, et);
+			s.doSt();
 		}
 		else if (command.equals(statements[S_DATA])){
 			;	// As we have a first-run to get DATA, it's safer to
 				// acknowledge, but ignore it in Statement.java
 		}
 		else if (command.equals(statements[S_PRINT])){
-			s = new S_PRINT();
-			s.doSt(p, t, etCW);
+			s = new S_PRINT(p, t, et);
+			s.doSt();
 		}
 		else if (command.equals(statements[S_GOTO])){
-			s = new S_GOTO();
-			s.doSt(p, t, etCW);
+			s = new S_GOTO(p, t, et);
+			s.doSt();
 		}
 		else if (command.equals(statements[S_GOSUB])){
-			s = new S_GOSUB();
-			s.doSt(p, t, etCW);
+			s = new S_GOSUB(p, t, et);
+			s.doSt();
 		}
 		else if (command.equals(statements[S_RETURN])){
-			s = new S_RETURN();
-			s.doSt(p, t, etCW);
+			s = new S_RETURN(p, t, et);
+			s.doSt();
 		}
 		else if (command.equals(statements[S_DIM])){
-			s = new S_DIM();
-			s.doSt(p, t, etCW);
+			s = new S_DIM(p, t, et);
+			s.doSt();
 		}
 		else if (command.equals(statements[S_DEF])){
-			s = new S_DEF();
-			s.doSt(p, t, etCW);
+			s = new S_DEF(p, t, et);
+			s.doSt();
 		}
 		else if (command.equals(statements[S_END])){
-			s = new S_END();
-			s.doSt(p, t, etCW);
+			s = new S_END(p, t, et);
+			s.doSt();
 		}
 		else if (command.equals(statements[S_REM])){
 			;	// When encountering a REM statement, the line is ignored, so for

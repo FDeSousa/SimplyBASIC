@@ -4,10 +4,12 @@ import android.widget.EditText;
 
 public class S_IF extends Statement {
 
-	public S_IF(){}		// Empty constructors make me sad...
+	public S_IF(BASICProgram pgm, Tokenizer tok, EditText edtxt){
+		super(pgm, tok, edtxt);
+	}		// Empty constructors make me sad...
 
 	@Override
-	public void doSt(BASICProgram p, Tokenizer t, EditText etCW){
+	public void doSt(){
 		
 	}
 }

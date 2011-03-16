@@ -5,10 +5,12 @@ import android.widget.EditText;
 
 public class S_LET extends Statement {
 
-	public S_LET(){}
+	public S_LET(BASICProgram pgm, Tokenizer tok, EditText edtxt){
+		super(pgm, tok, edtxt);
+	}
 
 	@Override
-	public void doSt(BASICProgram p, Tokenizer t, EditText etCW){
+	public void doSt(){
 		double result = 0.0;
 		String vName = t.nextToken();
 		// Let Variable sort itself out, and return a Variable to work with
@@ -23,12 +25,12 @@ public class S_LET extends Statement {
 				token = t.nextToken();
 				expression.offer(token);
 			}
-			Expression e = new Expression(expression, p, etCW);
-			result = e.eval(p, etCW);	// Expression we want to evaluate was parsed while instantiating 'e'
+			Expression e = new Expression(expression, p, et);
+			result = e.eval(p, et);	// Expression we want to evaluate was parsed while instantiating 'e'
 		}
 		
 		// Once the expression has been resolved, have to put it somewhere, ideally in the named variable
 		v.setValue(vName, result);
-		etCW.append("\n" + String.valueOf(result));
+		et.append("\n" + String.valueOf(result));
 	}
 }

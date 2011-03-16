@@ -4,10 +4,12 @@ import android.widget.EditText;
 
 public class S_GOSUB extends Statement {
 
-	public S_GOSUB(){}
+	public S_GOSUB(BASICProgram pgm, Tokenizer tok, EditText edtxt){
+		super(pgm, tok, edtxt);
+	}
 
 	@Override
-	public void doSt(BASICProgram p, Tokenizer t, EditText etCW){
+	public void doSt(){
 		if (t.hasMoreTokens()) {
 			String token = t.nextToken();
 			if (Expression.isNumber(token)) {
@@ -16,12 +18,12 @@ public class S_GOSUB extends Statement {
 				p.setlNs(p.getTailMap(lN));
 			}
 			else {
-				etCW.append("ILLEGAL LINE NUMBER - LINE " + p.getCurrentLine());
+				et.append("ILLEGAL LINE NUMBER - LINE " + p.getCurrentLine());
 				p.stopExec();
 			}
 		}
 		else {
-			etCW.append("MISSING LINE NUMBER - LINE " + p.getCurrentLine());
+			et.append("MISSING LINE NUMBER - LINE " + p.getCurrentLine());
 			p.stopExec();
 		}
 	}

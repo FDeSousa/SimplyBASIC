@@ -43,8 +43,8 @@ public class BASICProgram implements Runnable{
 			
 			do {
 				t.reset(codeList.get(cL));
-				Statement statement = new Statement();
-				statement.doSt(this, t, etCW);
+				Statement statement = new Statement(this, t, etCW);
+				statement.doSt();
 
 				// To avoid issues with IF/GOTO/GOSUB/NEXT, have to get next line before end of loop
 				// But then, to avoid not being able to process the last line, since this is do..while
@@ -87,8 +87,8 @@ public class BASICProgram implements Runnable{
 				t.reset(codeList.get(cL));
 				s = t.nextToken();
 				if (s.equals(Statement.statements[Statement.S_DATA])){
-					Statement dataSt = new S_DATA();
-					dataSt.doSt(this, t, null);
+					Statement dataSt = new S_DATA(this, t, null);
+					dataSt.doSt();
 				}
 				
 				if (lNs.iterator().hasNext()){

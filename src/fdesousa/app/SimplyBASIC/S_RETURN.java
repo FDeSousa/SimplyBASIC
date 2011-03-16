@@ -4,10 +4,12 @@ import android.widget.EditText;
 
 public class S_RETURN extends Statement {
 
-	public S_RETURN(){}
+	public S_RETURN(BASICProgram pgm, Tokenizer tok, EditText edtxt){
+		super(pgm, tok, edtxt);
+	}
 
 	@Override
-	public void doSt(BASICProgram p, Tokenizer t, EditText etCW){
+	public void doSt(){
 		p.setlNs(p.getRETURNKeySet());
 		p.setRETURNKeySet(null);
 	}

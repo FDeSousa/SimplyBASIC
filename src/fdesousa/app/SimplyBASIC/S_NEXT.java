@@ -4,10 +4,12 @@ import android.widget.EditText;
 
 public class S_NEXT extends Statement {
 
-	public S_NEXT(){}
+	public S_NEXT(BASICProgram pgm, Tokenizer tok, EditText edtxt){
+		super(pgm, tok, edtxt);
+	}
 
 	@Override
-	public void doSt(BASICProgram p, Tokenizer t, EditText etCW){
+	public void doSt(){
 		
 	}
 }

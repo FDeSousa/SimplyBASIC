@@ -4,11 +4,13 @@ import android.widget.EditText;
 
 public class S_END extends Statement {
 
-	public S_END(){}
+	public S_END(BASICProgram pgm, Tokenizer tok, EditText edtxt){
+		super(pgm, tok, edtxt);
+	}
 
 	@Override
-	public void doSt(BASICProgram p, Tokenizer t, EditText etCW){
+	public void doSt(){
 		p.stopExec();
-		etCW.append("\nTIME: " + (p.getTimeToExecute() / 100.0) + " SECONDS");
+		et.append("\nTIME: " + (p.getTimeToExecute() / 100.0) + " SECONDS");
 	}
 }

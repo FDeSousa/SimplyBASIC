@@ -1,20 +1,10 @@
 package fdesousa.app.SimplyBASIC;
-/**
- * Greatly inspired by the LexicalTokenizer class
- * from Cocoa, the BASIC Interpreter written in Java
- * by Chuck McManis.
- * As I looked at my own theories, and looked at his code, I realised how 
- * inefficient mine was, so this is taking his theory, and applying my own 
- * code to it. Hopefully somewhat simplified for reading, and using newer
- * classes that Java now has access to, and built-in as standard.
- * As required by McManis, the Cocoa home page link:
- * http://www.mcmanis.com/chuck/java/cocoa/index.html
- */
+
 public class Tokenizer {
 
 	private int curPos = 0;		// Marks the current position in the char array
 	private int markPos = 0;	// Used to mark a position temporarily
-	private String t = "";	// The current token that's being worked with
+	private String t = new String();	// The current token that's being worked with
 	private char buffer[];		// Holds the characters to analyse, easier to move between chars
 	// than in a String, that involves .substring(char position)
 
@@ -24,7 +14,7 @@ public class Tokenizer {
 	}
 
 	public String nextToken(){
-		// token is the returned String
+		// t is the returned String token
 		t = "";
 		// Return EOL if curPos is also EOL or greater
 		if (curPos >= buffer.length){
@@ -44,8 +34,7 @@ public class Tokenizer {
 		case '=':
 		case '(':
 		case ')':
-			t += buffer[curPos];
-			curPos++;
+			t += buffer[curPos++];
 			break;
 			// All of [< > . ,] may have additional operators/chars
 			// If the next char is '=', then token is '<=' or '>='
@@ -53,9 +42,8 @@ public class Tokenizer {
 		case '>':
 			t += buffer[curPos];
 			curPos++;
-			if(buffer[curPos + 1] == '='){
-				t += buffer[curPos + 1];
-				curPos++;
+			if(peek(false) == '='){
+				t += buffer[curPos++];
 			}
 			break;
 
@@ -64,44 +52,19 @@ public class Tokenizer {
 			t += buffer[curPos];
 			curPos++;
 			while (isDigit(buffer[curPos]) && hasMoreTokens()){
-				t += buffer[curPos];
-				curPos++;
+				t += buffer[curPos++];
 			}
 			break;
 
 			// Eat space, then check if the next char is a Letter
 		case ',':
-			t += buffer[curPos];
-			/** Will be ignoring this for now, a comma is just a comma, nothing else
-			 * Mostly because it gets complicated from here.
-			 * Commas don't just separate variables, but also numbers (integers/decimals)
-			 * For now, let the class that requested nextToken, decide what to do after a comma
-			 * 
-			eatSpace();
-			// If the next char is a letter, check char after that
-			if (isLetter(buffer[curPos])) {
-				// If next char is also letter, it's probably a new token, to be ignored
-				if (isLetter(buffer[curPos + 1])) {
-					// Do not want the token to include this char, so ignore it, return token as-is
-					return token;
-				// If next char is number, it's a variable (letter & number)
-				} else if (isDigit(buffer[curPos + 1])) {
-					token += buffer[curPos] + buffer[curPos + 1];
-					curPos += 2;
-				// If next char is something different, current token is a variable (letter)
-				} else {
-					token += buffer[curPos];
-					curPos++;
-				}
-			}
-			 */
+			t += buffer[curPos++];
 			break;
 
-			// Still need to add: case '"'
-			// that handles " and what's held inside them, i.e. for PRINT statement
+			// Return everything inside double quotes "
 		case '"':
-			curPos++;
-			while (buffer[curPos] == '"' && hasMoreTokens()){
+			t += buffer[curPos++];
+			while (buffer[curPos] != '"' && hasMoreTokens()){
 				t += buffer[curPos++];
 			}
 			break;
@@ -182,50 +145,6 @@ public class Tokenizer {
 				}
 				return t;
 			}
-
-			// Commenting out this enormous section for now, it's a bit redundant, as I can
-			// do these checks after adding the letters/digits to the token
-			/**
-			if (isLetter(buffer[curPos])){
-				// If it's a letter, begin the hunt for a named variable or command
-				token += buffer[curPos++];
-				// Check what this next char is.
-				// If it's a letter, assume a command, loop to find the rest of it
-				if (isLetter(buffer[curPos])){
-					while (isLetter(buffer[curPos]) && hasMoreTokens()){
-						token += buffer[curPos++];
-					}
-				}
-				// If it's a digit, assume a variable name with number (i.e. A1)
-				// Variables: one letter/one letter and one/two digits
-				else if (isDigit(buffer[curPos])){
-					token += buffer[curPos++];
-				}
-				// If it has an open parentheses right after the first letter, assume it's
-				// an array identifier, and keep going until it finds a close parentheses
-				// Variable arrays: one letter & one digit & ( <index> )
-				else if (buffer[curPos] == '('){
-					// It's odd, to check curPos - 1, but like this, we can still get the close parentheses
-					// into the token. This might be changed later anyway, just that I want it parsing the whole
-					// of the relevant section first.
-					// Will likely let the tokenizer resolve it by simply parsing the close parentheses, and letting
-					// the calling class resolve itself.
-					while (buffer[curPos - 1] != ')'){
-						token += buffer[curPos++];
-					}
-				}
-				// Just in case, added a break here. You never know, it might save lives
-				break;
-			}
-			else if (isDigit(buffer[curPos])){
-				// If it's a digit, begin looking for the rest of the number
-				while ((isDigit(buffer[curPos]) || buffer[curPos] == '.')
-						&& hasMoreTokens()){
-					// While it's a digit or a decimal-point, add it to token
-					token += buffer[curPos++];
-				}
-			}
-			 */
 			break;
 		}
 		// Handles the return, no matter what
@@ -363,5 +282,4 @@ public class Tokenizer {
 			curPos++;
 		}
 	}
-
 }

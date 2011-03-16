@@ -6,10 +6,12 @@ import android.widget.EditText;
 
 public class S_DEF extends Statement {
 
-	public S_DEF(){}
+	public S_DEF(BASICProgram pgm, Tokenizer tok, EditText edtxt){
+		super(pgm, tok, edtxt);
+	}
 
 	@Override
-	public void doSt(BASICProgram p, Tokenizer t, EditText etCW){
+	public void doSt(){
 		// Next token after "DEF" will be the function call name
 		String fnName = t.nextToken();
 		// Get the argument from within fnName, this is the variable to look for

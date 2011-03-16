@@ -4,10 +4,12 @@ import android.widget.EditText;
 
 public class S_DATA extends Statement {
 
-	public S_DATA(){}
+	public S_DATA(BASICProgram pgm, Tokenizer tok, EditText edtxt){
+		super(pgm, tok, edtxt);
+	}
 
 	@Override
-	public void doSt(BASICProgram p, Tokenizer t, EditText etCW){
+	public void doSt(){
 		String s = "";
 		while (t.hasMoreTokens()){
 			s = t.nextToken();
@@ -16,7 +18,7 @@ public class S_DATA extends Statement {
 					p.addData(Double.parseDouble(s));
 				}
 				else {
-					etCW.append("ILLEGAL CONSTANT.\n" + 
+					et.append("ILLEGAL CONSTANT.\n" + 
 							"LINE NUMBER " + p.getCurrentLine() +".\n");
 					p.stopExec();
 					return;

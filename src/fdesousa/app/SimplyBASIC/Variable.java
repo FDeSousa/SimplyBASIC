@@ -2,6 +2,7 @@ package fdesousa.app.SimplyBASIC;
 
 import java.util.regex.Pattern;
 
+@SuppressWarnings("unused")
 public class Variable {
 	/**
 	 * ERR	 =	-1	-	Error number, not match with any below
@@ -77,7 +78,7 @@ public class Variable {
 
 	/**
 	 * Declare a new multi-dimension number array Variable
-	 * @param name	- Name of thise variable
+	 * @param name	- Name of this variable
 	 * @param dim1	- Array bounds, dimension limit of dimension 1
 	 * @param dim2	- Array bounds, dimension limit of dimension 2
 	 */
