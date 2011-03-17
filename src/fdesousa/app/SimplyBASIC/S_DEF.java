@@ -17,7 +17,7 @@ public class S_DEF extends Statement {
 		// Get the argument from within fnName, this is the variable to look for
 		String fnVarName = Function.getArg(fnName);
 		// Create a new Variable for use with this user-defined Function
-		Variable fnVar = new Variable(fnVarName, 0.0);
+		Variable fnVar = new Variable(fnVarName);
 		// Put this new variable into BASIC Program
 		p.putVar(fnVar);
 		
@@ -34,9 +34,8 @@ public class S_DEF extends Statement {
 			}
 		}
 		// Name the associated Expression, but don't initialise it just yet
-		Expression fnExp = new Expression();
-		// Reset the queue
-		fnExp.reset(expression);
+		Expression fnExp = new Expression(expression);
+
 		Function fn = new Function(fnName, fnExp, fnVar);
 		p.putFunction(fn);
 	}

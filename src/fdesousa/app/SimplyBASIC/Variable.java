@@ -2,7 +2,6 @@ package fdesousa.app.SimplyBASIC;
 
 import java.util.regex.Pattern;
 
-@SuppressWarnings("unused")
 public class Variable {
 	/**
 	 * ERR	 =	-1	-	Error number, not match with any below
@@ -16,7 +15,7 @@ public class Variable {
 	 * regexNUM will match and get the name of a regular Number Variable
 	 */
 	public final static String regexNUM = "^[A-Z]{1}\\d?$";
-	
+
 	/**
 	 * regexVarName will get the name of a variable array
 	 * Upon using Pattern.split(), the returned array is:
@@ -33,7 +32,7 @@ public class Variable {
 	 * [2]	Array argument
 	 */
 	public final static String regexS_ARR = "^([A-Z]{1})[(]{1}\\s*(\\d+|\\w?\\d?)\\s*[)]{1}$";
-	
+
 	/**
 	 * regexM_ARR determines if the variable is a multi-dim array, and can also return the variable name and both arguments
 	 * Upon using Pattern.split(), the returned array is:
@@ -53,41 +52,30 @@ public class Variable {
 	private int dim1, dim2;
 
 	/**
-	 * Declare a new regular number Variable
-	 * @param name	- Name of this variable
-	 * @param value	- Value of this variable
+	 * Declare a new variable, the type of which is defined by
+	 * the token in vName
+	 * @param vName - token with argument(s) for new Variable
 	 */
-	public Variable (String name, double value){
-		// Constructor for a standard array
-		this.name = name;
-		this.setValue(name, value);
-		type = NUM;
-	}
-
-	/**
-	 * Declare a new single-dimension number array Variable
-	 * @param name		- Name of this variable
-	 * @param dimension	- Array bounds, dimension limit
-	 */
-	public Variable (String name, int dimension){
-		this.name = name;
-		dim1 = dimension;
-		S_DIM = new double[dim1];
-		type = S_ARR;
-	}
-
-	/**
-	 * Declare a new multi-dimension number array Variable
-	 * @param name	- Name of this variable
-	 * @param dim1	- Array bounds, dimension limit of dimension 1
-	 * @param dim2	- Array bounds, dimension limit of dimension 2
-	 */
-	public Variable (String name, int dim1, int dim2){
-		this.name = name;
-		this.dim1 = dim1;
-		this.dim2 = dim2;
-		M_DIM = new double[dim1][dim2];
-		type = M_ARR;
+	public Variable(String vName){
+		if (checkVariableType(vName) == NUM){
+			name = vName;
+			type = NUM;
+		}
+		else if (checkVariableType(vName) == S_ARR){
+			String[] args = splitVariable(vName);
+			name = args[1];
+			dim1 = Integer.parseInt(args[2]);
+			S_DIM = new double[dim1];
+			type = S_ARR;
+		}
+		else if (checkVariableType(vName) == M_ARR){
+			String[] args = splitVariable(vName);
+			name = args[1];
+			dim1 = Integer.parseInt(args[2]);
+			dim2 = Integer.parseInt(args[3]);
+			M_DIM = new double[dim1][dim2];
+			type = M_ARR;
+		}
 	}
 
 	/**
@@ -105,11 +93,10 @@ public class Variable {
 	public int getType(){
 		return type;
 	}
-	
+
 	/**
 	 * Getter for the value of Variable type NUM/S_DIM/M_DIM
-	 * Get the value of this Variable - type NUM/S_DIM/M_DIM
-	 * @param vName - the variable's token, to determine and return value of that cell/variable
+	 * @param vName - the variable call token, to determine and return value of that cell/variable
 	 * @return value - Value of this Variable
 	 */
 	public double getValue(String vName){
@@ -128,11 +115,14 @@ public class Variable {
 			return value;			
 		}
 	}
+	
+	public double getValue(){
+		return value;
+	}
 
 	/**
 	 * Setter for the value of Variable type NUM/S_DIM/M_DIM
-	 * Set the value of this Variable - type NUM/S_DIM/M_DIM
-	 * @param vName - the variable's token, to determine the variable name and cell
+	 * @param vName - the variable call token, to determine the variable name and cell
 	 * @param value - the value to place in the variable
 	 */
 	public void setValue(String vName, double value){
@@ -153,20 +143,22 @@ public class Variable {
 
 	/**
 	 * Setter for the value of Variable type NUM exclusively
-	 * Set the value of this Variable - type NUM exclusively
 	 * @param value - the value to place in the variable
 	 */
 	public void setValue(double value){
+		// Could save some processor time at some point
+		// Especially useful for FOR statement, as it's assumed
+		// that the named variable can only be of type NUM
 		this.value = value;
 	}
-	
+
 	// Check if the input String is a variable
 	public static boolean isVariable(String input){
-		return (Pattern.matches(regexNUM, input) | 
-				Pattern.matches(regexS_ARR, input) | 
+		return (Pattern.matches(regexNUM, input) || 
+				Pattern.matches(regexS_ARR, input) || 
 				Pattern.matches(regexM_ARR, input));
 	}
-	
+
 	// Static Variable operations to check type and split it
 	public static int checkVariableType(String input){
 		try{
@@ -182,33 +174,33 @@ public class Variable {
 		}
 		return ERR;
 	}
-	
+
 	public static String[] splitVariable(String input){
 		String REGEX;
 		int varType = checkVariableType(input);
 		// Set the regular expression from one of the pre-defined ones
 		switch (varType){
-			case S_ARR:
-				REGEX = regexS_ARR;
-				break;
-			case M_ARR:
-				REGEX = regexM_ARR;
-				break;
-			default:
-				REGEX = regexVarName;
-				break;
+		case S_ARR:
+			REGEX = regexS_ARR;
+			break;
+		case M_ARR:
+			REGEX = regexM_ARR;
+			break;
+		default:
+			REGEX = regexVarName;
+			break;
 		}
 		// Compile the pattern from the REGEX, and split into arguments
 		Pattern p = Pattern.compile(REGEX);
 		String[] varArgs = p.split(input);
 		return varArgs;
 	}
-	
+
 	public static Variable getVariable(BASICProgram p, String vName){
-		
+
 		int chk = checkVariableType(vName);
 		String[] args = splitVariable(vName);
-		
+
 		Variable tV = p.getVar(args[0]);
 		if (tV != null){	// If it's not null, it exists			
 			if (tV.getType() == chk){	// If the type is the same
@@ -220,7 +212,7 @@ public class Variable {
 		}
 		else if (tV == null && chk == NUM){
 			// As it doesn't exist and it's a simple number, create it
-			Variable v = new Variable(args[0], 0.0); // The variable value will be updated by LET, so leave it as 0.0
+			Variable v = new Variable(args[0]);
 			p.putVar(v);
 			return v;
 		}

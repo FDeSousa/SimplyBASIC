@@ -14,18 +14,11 @@ public class S_DIM extends Statement {
 			String vName = t.nextToken();
 			// Check if it's a Variable
 			if (Variable.isVariable(vName)){
-				String[] args = Variable.splitVariable(vName);
 				@SuppressWarnings("unused")
-				Variable v;
-				if (Variable.checkVariableType(vName) == Variable.S_ARR){
-					v = new Variable(args[1], Integer.parseInt(args[2]));
-				}
-				else if (Variable.checkVariableType(vName) == Variable.M_ARR){
-					v = new Variable(args[1], Integer.parseInt(args[2]), Integer.parseInt(args[3]));
-				}
-				else{
-					et.append("ILLEGAL VARIABLE - LINE " + p.getCurrentLine() + "\n");
-				}
+				Variable v = new Variable(vName);
+				// Since putting all of the constructors of Variable into one
+				// unified constructor, that figures out, splits, and then assigns
+				// initialises itself, it's much easier here
 			}
 			else if (t.equals(",")){
 				;	// Don't do anything with it, just acknowledge its existence

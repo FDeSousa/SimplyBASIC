@@ -281,14 +281,13 @@ public class BASICProgram implements Runnable{
 
 	// As FOR loops can be numerous, we handle them similarly to GOTO/GOSUB .. RETURN
 	// by having a stack, waiting for a NEXT statement to execute it
-	private Stack<String> forNexts = new Stack<String>();
+	private TreeMap<String, S_FOR> forNexts = new TreeMap<String, S_FOR>();
 
-	public void newFor(String line){
-		forNexts.push(line);
+	public void newFor(String key, S_FOR forLoop){
+		forNexts.put(key, forLoop);
 	}
 
-	public String getFor(){
-		return forNexts.pop();
+	public S_FOR getFor(String key){
+		return forNexts.get(key);
 	}
-
 }

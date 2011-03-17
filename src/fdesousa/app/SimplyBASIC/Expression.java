@@ -27,7 +27,7 @@ public class Expression {
 	public Expression (){
 		FN_Expression = true;
 	}
-	
+
 	/**
 	 * This constructor initialises the expr queue, and convert input queue to postfix immediately
 	 * @param expr
@@ -37,9 +37,10 @@ public class Expression {
 		in = expr;
 		inToPost(p, etCW);
 	}
-	
-	public void reset (PriorityQueue<String> expr){
+
+	public Expression (PriorityQueue<String> expr){
 		in = expr;
+		post.clear();
 	}
 
 	public void inToPost(BASICProgram p, EditText etCW){
@@ -111,14 +112,14 @@ public class Expression {
 		// so only parse in one item, and receive nothing.
 		while (! post.isEmpty()){
 			op = post.poll();
-			
+
 			if (isNumber(op)){
 				runningTotal.push(Double.parseDouble(op));
 			}
 			else if (isOperator(op)){
 				val2 = runningTotal.pop();
 				val1 = runningTotal.pop();
-				
+
 				if (op.equals("^")){
 					runningTotal.push(Math.pow(val1, val2));
 				}
@@ -150,6 +151,28 @@ public class Expression {
 			return 0;
 		else
 			return -1;
+	}
+
+	/**
+	 * Get the expression Queue, and create and parse a new Expression instance
+	 * @param p - an instance of BASICProgram
+	 * @param et - an instance of EditText for output
+	 * @param expTok - a Tokenizer, for tokenizing the expression
+	 * @return A new Expression, with data, and convert to postfix
+	 */
+	public static Expression getExp(BASICProgram p, EditText et, Tokenizer expTok){
+		PriorityQueue<String> expr = new PriorityQueue<String>();
+
+		String token = expTok.nextToken();
+
+		while (expTok.hasMoreTokens()){
+			// If expTok has more tokens, and the token isn't endOn, assume we're still in an expression
+			expr.offer(token);
+			token = expTok.nextToken();
+		}
+
+		Expression e = new Expression(expr, p, et);
+		return e;
 	}
 
 	public static boolean isOperator(String token){
