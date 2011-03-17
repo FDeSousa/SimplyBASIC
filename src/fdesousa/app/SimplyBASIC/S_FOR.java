@@ -32,7 +32,7 @@ public class S_FOR extends Statement {
 	private double first, last, step;
 	// Store the code list to return to
 	private Set<Integer> codeList;
-	
+
 	/**
 	 * 
 	 * @param pgm
@@ -79,7 +79,7 @@ public class S_FOR extends Statement {
 		Pattern pt;
 		String[] args;
 		Tokenizer expTok = new Tokenizer();
-		
+
 		if (Pattern.matches(regexSTEP, line)){
 			pt = Pattern.compile(regexSTEP);
 			args = pt.split(line);
@@ -96,11 +96,11 @@ public class S_FOR extends Statement {
 			assgn = Expression.getExp(p, et, expTok);
 			first = assgn.eval(p, et);
 			v.setValue(first);
-			
+
 			expTok.reset(args[3]);
 			limit = Expression.getExp(p, et, expTok);
 			last = limit.eval(p, et);
-			
+
 			expTok.reset(args[4]);
 			count = Expression.getExp(p, et, expTok);
 			step = count.eval(p, et);
@@ -132,7 +132,7 @@ public class S_FOR extends Statement {
 			p.stopExec();
 		}
 	}
-	
+
 	public static S_FOR getFOR(BASICProgram p, String vName){
 		return p.getFor(vName);
 	}
