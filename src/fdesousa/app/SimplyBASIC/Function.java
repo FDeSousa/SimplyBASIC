@@ -1,3 +1,28 @@
+/*
+ * Function.java - Implement a Function.
+ *
+ * Copyright (c) 2011 Filipe De Sousa
+ * 
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ * 
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ * 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
+ * 
+ */
+
 package fdesousa.app.SimplyBASIC;
 
 import java.util.PriorityQueue;
@@ -57,10 +82,10 @@ public class Function {
 		return FN_Variable;
 	}
 
-	public double doUserFn(EditText etCW, String token, BASICProgram p){
+	public double doUserFn(EditText et, String token, BASICProgram p){
 		Pattern pT = Pattern.compile(regexFunctionTokens);
 		String[] args = pT.split(token);
-		double arg = evalArg(args[2], p, etCW);
+		double arg = evalArg(args[2], p, et);
 
 		// Assign the arg value to the Function's named variable, 
 		// which is used by user functions exclusively
@@ -69,18 +94,18 @@ public class Function {
 		// So now, onto the meat of it, do the function!
 		// Convert the function's expression into postfix (this reorganises it
 		// while also resolving the variable names included in the expression)
-		FN_Expression.inToPost(p, etCW);
+		FN_Expression.inToPost(p, et);
 		// And evaluate that expression!
-		FN_Expression.eval(p, etCW);
+		FN_Expression.eval(p, et);
 		// Yes, it's only one line. The Function name really just references a certain Expression
 
 		return 0.0;
 	}
 	
-	public static double doFn(EditText etCW, String token, BASICProgram p){
+	public static double doFn(EditText et, String token, BASICProgram p){
 		Pattern pT = Pattern.compile(regexFunctionTokens);
 		String[] args = pT.split(token);
-		double arg = evalArg(args[2], p, etCW);
+		double arg = evalArg(args[2], p, et);
 		
 		if (token.equals(functions[FN_SIN])){
 			return Math.sin(arg);
@@ -118,7 +143,7 @@ public class Function {
 		}
 	}
 	
-	public static double evalArg(String argument, BASICProgram p, EditText etCW){
+	public static double evalArg(String argument, BASICProgram p, EditText et){
 		double arg = 0.0;
 		// Have to do a few checks here first, as a Function call can accept a Variable or Number literal
 		if (Variable.isVariable(argument)){
@@ -147,8 +172,8 @@ public class Function {
 			while (eT.hasMoreTokens()){
 				expr.offer(eT.nextToken());
 			}
-			Expression e = new Expression(expr, p, etCW);
-			arg = e.eval(p, etCW);
+			Expression e = new Expression(expr, p, et);
+			arg = e.eval(p, et);
 		}
 		return arg;
 	}

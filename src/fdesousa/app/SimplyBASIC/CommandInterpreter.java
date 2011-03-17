@@ -1,3 +1,28 @@
+/*
+ * CommandInterpreter.java - Implement the main Command Interpreter.
+ *
+ * Copyright (c) 2011 Filipe De Sousa
+ * 
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ * 
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ * 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
+ * 
+ */
+
 package fdesousa.app.SimplyBASIC;
 
 import java.util.TreeMap;
@@ -19,9 +44,9 @@ public class CommandInterpreter {
 	private String[] tokens = null; // whole line, divided into tokens
 	private int lineNumber = 0;
 	private String line = "";
-	private static BASICProgram BP;
-	// To take control of etCW, once SimplyBASIC parses it:
-	private EditText etCW;
+	private BASICProgram BP;
+	// To take control of et, once SimplyBASIC parses it:
+	private EditText et;
 	private String[] lines = null;
 
 	Tokenizer tokenizer = new Tokenizer();
@@ -50,16 +75,16 @@ public class CommandInterpreter {
 	// uL = user line. Users input new commands where they see "> "
 	private static final String uL = "\n> ";
 
-	public CommandInterpreter(EditText editText) {
+	public CommandInterpreter(EditText edtxt) {
 		super();
-		this.etCW = editText;
+		this.et = edtxt;
 		// Check if the working directory actually exists, if not, make it
 		if (dir.exists() == false 
 				&& dir.isDirectory() == false){
 			dir.mkdir();
 		}
 
-		this.etCW.setOnKeyListener(new OnKeyListener() {
+		this.et.setOnKeyListener(new OnKeyListener() {
 			@Override
 			public boolean onKey(View v, int keyCode, KeyEvent event) {
 				if(event.getAction()==KeyEvent.ACTION_UP
@@ -79,8 +104,8 @@ public class CommandInterpreter {
 					 */
 					if (C_HELLO_Step >= 1 || C_NEW_Step >= 1 || C_OLD_Step >= 1){
 						// We're only interested in the last entered item, which is after '-- '
-						// So split the text from editText into "lines" by '-- '
-						lines = etCW.getText().toString().split("-- ");
+						// So split the text from edtxt into "lines" by '-- '
+						lines = et.getText().toString().split("-- ");
 						line = lines[lines.length - 1];
 						// Give the tokenizer the last line, which is what we're interested in
 						tokenizer.reset(line);
@@ -100,12 +125,12 @@ public class CommandInterpreter {
 					//=========================================================================
 					// Once I've tested tokenizer with those system commands, I'll implement its use here
 					else {
-						lines = etCW.getText().toString().split("\n> ");
+						lines = et.getText().toString().split("\n> ");
 						line = lines[lines.length - 1];
 						tokenizer.reset(line);
 						token = tokenizer.nextToken();
 
-						/**
+						/*
 						 * Numbers returned upon ending execution:
 						 * 	--	PROBLEMS WITH SYSTEM COMMANDS
 						 * -2:	Problem during execution, need nL and generic error
@@ -116,14 +141,14 @@ public class CommandInterpreter {
 
 						switch(procCommand(token)){
 						case -2:
-							etCW.append("ERROR WITH SYSTEM COMMAND." + uL);
+							et.append("ERROR WITH SYSTEM COMMAND." + uL);
 							break;
 
 						case -1:
 							// Should send something log, but does nothing at the moment,
 							// other than append a new line with nL
 						case 0:
-							etCW.append(uL);
+							et.append(uL);
 							break;
 
 						case 1:
@@ -132,7 +157,7 @@ public class CommandInterpreter {
 
 						default:
 							// Just in case an odd error value is sent
-							etCW.append("ERROR WITH RETURN VALUE." + uL);
+							et.append("ERROR WITH RETURN VALUE." + uL);
 							break;
 						}
 					}					
@@ -148,7 +173,7 @@ public class CommandInterpreter {
 
 		if (inToken.equals(commands[C_HELLO])){				// Start BASIC system, initialise BP
 			// Ask for user name, get ready for step 1 of HELLO
-			etCW.append("USER NAME-- ");
+			et.append("USER NAME-- ");
 			C_HELLO_Step = 1;
 			return 1;
 		} // end HELLO command
@@ -163,20 +188,20 @@ public class CommandInterpreter {
 				
 				String resultAddLine = BP.addLine(lineNumber, tokenizer.getRestOfLine());
 				if (resultAddLine != null){
-					etCW.append(resultAddLine + "\n");
+					et.append(resultAddLine + "\n");
 				}
-				etCW.append("> ");
+				et.append("> ");
 				return 1;
 			}
 
 			if (inToken.equals(commands[C_NEW])){				// Create new program, with new name
-				etCW.append("NEW PROGRAM NAME-- ");
+				et.append("NEW PROGRAM NAME-- ");
 				C_NEW_Step = 1;
 				return 1;
 			} // end NEW command
 
 			else if (inToken.equals(commands[C_OLD])){		// Load old program from file
-				etCW.append("OLD PROGRAM NAME-- ");
+				et.append("OLD PROGRAM NAME-- ");
 				C_OLD_Step = 1;
 				return 1;
 			} // end OLD command
@@ -186,11 +211,11 @@ public class CommandInterpreter {
 				if (tokenizer.hasMoreTokens()){
 					String lN = tokenizer.nextToken();
 					if (Expression.isNumber(lN)){
-						BP.C_LIST(etCW, Integer.parseInt(lN));
+						BP.C_LIST(et, Integer.parseInt(lN));
 					}
 				}
 				else {					
-					BP.C_LIST(etCW, 0);
+					BP.C_LIST(et, BP.getFirstLine());
 				}
 			} // end LIST command
 
@@ -216,9 +241,9 @@ public class CommandInterpreter {
 				File[] dirList = dir.listFiles();
 
 				if (dirList != null){
-					etCW.append("There are " + dirList.length + " files in program directory\n");
+					et.append("There are " + dirList.length + " files in program directory\n");
 					for (int i = 0; i < dirList.length; i++){
-						etCW.append("\t" + dirList[i].getName() + "\n");
+						et.append("\t" + dirList[i].getName() + "\n");
 					}
 				}
 				return 0;
@@ -236,7 +261,7 @@ public class CommandInterpreter {
 			else if (inToken.equals(commands[C_RUN])){		// Run BASIC program in Interpreter
 				// As BP.run() does not return a value, must assume it will keep its own log,
 				// if something goes wrong, and will display an appropriate error message
-				BP.run(etCW);
+				BP.run(et);
 				return 0;
 			} // end RUN command
 
@@ -249,12 +274,12 @@ public class CommandInterpreter {
 				return 0;
 			}
 			else{
-				etCW.append("ERROR WITH SYSTEM COMMAND");
+				et.append("ERROR WITH SYSTEM COMMAND");
 				return -1;
 			}
 		}
 		else{
-			etCW.append("ERROR: BASIC NOT STARTED.\nTYPE 'HELLO' TO START.");
+			et.append("ERROR: BASIC NOT STARTED.\nTYPE 'HELLO' TO START.");
 		}
 		return -1;
 	}
@@ -277,7 +302,7 @@ public class CommandInterpreter {
 
 		case 1:		// Get userName, ask NEW or OLD program
 			progDetails[1] = token;
-			etCW.append("NEW OR OLD-- ");
+			et.append("NEW OR OLD-- ");
 			C_HELLO_Step++;
 			break;
 
@@ -289,18 +314,18 @@ public class CommandInterpreter {
 				C_HELLO_Step = 4;
 			}
 			else{
-				etCW.append("ONLY TYPE 'NEW' OR 'OLD'-- ");
+				et.append("ONLY TYPE 'NEW' OR 'OLD'-- ");
 				break;
 			}
 
-			etCW.append(token + " PROGRAM NAME-- ");
+			et.append(token + " PROGRAM NAME-- ");
 			break;
 
 		case 3:		// NEW, so instantiate BP
 			progDetails[2] = token;
 			C_HELLO_Step = 0;
 			BP = new BASICProgram(progDetails[1], progDetails[2]);
-			etCW.append("READY." + uL);
+			et.append("READY." + uL);
 			break;
 
 		case 4:		// OLD, so read file, instantiate BP
@@ -316,16 +341,16 @@ public class CommandInterpreter {
 					// and read in line-by-line
 					in.close();
 					C_OLD_Step = 0;
-					etCW.append("PROGRAM OPENED SUCCESSFULLY.\nREADY." + uL);
+					et.append("PROGRAM OPENED SUCCESSFULLY.\nREADY." + uL);
 				}
 			}
 			catch (IOException e) {
-				etCW.append("COULD NOT READ FILE: " + e.getMessage().toUpperCase() + uL);
+				et.append("COULD NOT READ FILE: " + e.getMessage().toUpperCase() + uL);
 				break;
 			}
 
 			BP = new BASICProgram(progDetails[1], progDetails[2], codeList);
-			etCW.append("READY." + uL);
+			et.append("READY." + uL);
 			break;
 
 		default:
@@ -338,7 +363,7 @@ public class CommandInterpreter {
 	private void C_NEW(String inputToken){
 		BP.C_NEW(inputToken);
 		C_NEW_Step = 0;
-		etCW.append("READY." + uL);
+		et.append("READY." + uL);
 	}
 
 	private void C_OLD(String inputToken){
@@ -353,11 +378,11 @@ public class CommandInterpreter {
 				in.close();
 				BP.C_OLD(inputToken, codeList);
 				C_OLD_Step = 0;
-				etCW.append("PROGRAM OPENED SUCCESSFULLY.\nREADY." + uL);
+				et.append("PROGRAM OPENED SUCCESSFULLY.\nREADY." + uL);
 			}
 		}
 		catch (IOException e) {
-			etCW.append("COULD NOT READ FILE: " + e.getMessage().toUpperCase() + uL);
+			et.append("COULD NOT READ FILE: " + e.getMessage().toUpperCase() + uL);
 		}
 
 	}
@@ -372,16 +397,16 @@ public class CommandInterpreter {
 				// writes out the code as plain text
 				out.write("Hello, world!");
 				out.close();
-				etCW.append("PROGRAM SAVED SUCCESSFULLY.");
+				et.append("PROGRAM SAVED SUCCESSFULLY.");
 				return true;
 			}
 			else{
-				etCW.append("COULD NOT WRITE TO FOLDER.");
+				et.append("COULD NOT WRITE TO FOLDER.");
 				return false;
 			}
 		}
 		catch (IOException e) {
-			etCW.append("COULD NOT WRITE TO FILE " + e.getMessage().toUpperCase());
+			et.append("COULD NOT WRITE TO FILE " + e.getMessage().toUpperCase());
 			return false;
 		}
 	}
@@ -390,16 +415,16 @@ public class CommandInterpreter {
 		if (dir.canWrite()){
 			File basFileToDelete = new File(dir, fileName);
 			if (basFileToDelete.delete()){
-				etCW.append("PROGRAM UNSAVED SUCCESSFULLY.");
+				et.append("PROGRAM UNSAVED SUCCESSFULLY.");
 				return true;
 			}
 			else{
-				etCW.append("COULD NOT UNSAVE FROM FOLDER.");
+				et.append("COULD NOT UNSAVE FROM FOLDER.");
 				return false;
 			}
 		}
 		else{
-			etCW.append("FILE CANNOT BE UNSAVED - NOT ENOUGH PERMISSIONS");
+			et.append("FILE CANNOT BE UNSAVED - NOT ENOUGH PERMISSIONS");
 			return false;
 		}
 	}

@@ -1,3 +1,28 @@
+/*
+ * BASICProgram.java - Implement the BASIC Program, to store and run the code.
+ *
+ * Copyright (c) 2011 Filipe De Sousa
+ * 
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ * 
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ * 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
+ * 
+ */
+
 package fdesousa.app.SimplyBASIC;
 
 import java.util.Calendar;
@@ -31,7 +56,7 @@ public class BASICProgram implements Runnable{
 	 * It executes run() to get all DATA values plotted into a Queue
 	 * An EditText is required for output only
 	 */
-	public void run(EditText etCW) {
+	public void run(EditText et) {
 		try {
 			startTime = timer.getTimeInMillis();
 			stop = false;
@@ -43,7 +68,7 @@ public class BASICProgram implements Runnable{
 			
 			do {
 				t.reset(codeList.get(cL));
-				Statement statement = new Statement(this, t, etCW);
+				Statement statement = new Statement(this, t, et);
 				statement.doSt();
 
 				// To avoid issues with IF/GOTO/GOSUB/NEXT, have to get next line before end of loop
@@ -58,7 +83,7 @@ public class BASICProgram implements Runnable{
 			} while (cont && ! stop);
 		}
 		catch (Exception e){
-			etCW.append(e.toString().toUpperCase() + ".\n");
+			et.append(e.toString().toUpperCase() + ".\n");
 		}
 	}
 
@@ -137,26 +162,26 @@ public class BASICProgram implements Runnable{
 		codeList = oldCodeList;
 	}
 
-	public void C_LIST(EditText etCW, int lN){
+	public void C_LIST(EditText et, int lN){
 		// Return parts of program code listing
 
-		if (lN >= codeList.firstKey() && lN <= codeList.lastKey()){
+		if (lN >= codeList.firstKey() & lN <= codeList.lastKey()){
 			SortedMap<Integer,String> C_LIST_codeList = codeList.tailMap(lN);
 			Set<Integer> lineNumbers = C_LIST_codeList.keySet();
 
-			etCW.append("\nUSER NAME: " + userName
+			et.append("\nUSER NAME: " + userName
 					+ "\nPROGRAM NAME: " + progName);
 
 			int cL = lineNumbers.iterator().next();
 
 			while (lineNumbers.iterator().hasNext()){
-				etCW.append(cL + "\t" + C_LIST_codeList.get(cL).toString());
+				et.append(cL + "\t" + C_LIST_codeList.get(cL).toString());
 				cL = lineNumbers.iterator().next();
 			}
 		}
 		else {
 			// This actually comes out better than it seems, except for the lineNumber'=null' bit
-			etCW.append("\nUSER NAME: " + userName
+			et.append("\nUSER NAME: " + userName
 					+ "\nPROGRAM NAME: " + progName
 					+ "\nINVALID LINE NUMBER SPECIFIED"
 					+ "\nMUST BE BETWEEN " + codeList.firstKey() 
@@ -164,6 +189,10 @@ public class BASICProgram implements Runnable{
 		}
 	}
 
+	public int getFirstLine(){
+		return codeList.firstKey();
+	}
+	
 	// Boring parts of the class below. Not the meat of it.
 	public String addLine(int lN, String inputLine){
 		try{ 

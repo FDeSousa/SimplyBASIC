@@ -1,3 +1,31 @@
-This is my third-year Computing project.
-I'm using Github simply for the version control, and remote backup of project files.
-This project is nowhere near completion.
+SimplyBASIC for Android.
+A Dartmouth BASIC v2 emulator for Android.
+
+This is my third-year Computing project, and it's tougher than anything I've ever programmed.
+Hopefully this will get me a great passing mark for my project module.
+
+Although there's a lot of code in it, it doesn't exactly work at the moment. It's a real pain,
+and really needs debugging, so it's very unstable, unreliable, and probably broken in every way.
+Documentation will be written once I can get it to do something more than just tell me it can't
+do anything.
+
+This project is covered under an MIT License.
+Copyright (c) 2011 Filipe De Sousa
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+THE SOFTWARE.
