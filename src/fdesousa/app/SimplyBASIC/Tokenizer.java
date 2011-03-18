@@ -63,6 +63,11 @@ public class Tokenizer {
 				// All of [+ - * / ^ = ( )] are parsed immediately and alone
 				case '+':
 				case '-':
+					t += buffer[curPos++];
+					if (isDigit(buffer[curPos])){
+						return getNumber();
+					}
+					break;
 				case '*':
 				case '/':
 				case '^':
@@ -75,19 +80,17 @@ public class Tokenizer {
 					// If the next char is '=', then token is '<=' or '>='
 				case '<':
 				case '>':
-					t += buffer[curPos];
-					curPos++;
-					if (peek(false) == '=') {
+					t += buffer[curPos++];
+					if (buffer[curPos] == '=') {
 						t += buffer[curPos++];
 					}
 					break;
 
 					// If the next char is a number, token is a decimal number
 				case '.':
-					t += buffer[curPos];
-					curPos++;
-					while (isDigit(buffer[curPos]) & hasMoreTokens()) {
-						t += buffer[curPos++];
+					t += buffer[curPos++];
+					if (isDigit(buffer[curPos])) {
+						return getNumber();
 					}
 					break;
 
@@ -169,39 +172,57 @@ public class Tokenizer {
 					// Since it's none of the above, it's likely a number
 					if (Expression.isNumber(t)) {
 						// It is! We're back in business!
-						if (buffer[curPos] == '.') {
-							// If this next character is a decimal place, keep getting characters 
-							t += buffer[curPos++];
-							while (isDigit(buffer[curPos]) & hasMoreTokens()){
-								// But only get them while they're digits
-								t += buffer[curPos++];
-							}
-						}
-						// BASIC handles exponents with the letter E, at which
-						// point, number after it
-						// is the exponent of the given number i.e. in 111.222E333,
-						// 333 is the exponent
-						if (buffer[curPos] == 'E') {
-							// If this next character is an E for Exponent, get the rest of it
-							t += buffer[curPos++];
-							while (isDigit(buffer[curPos]) & hasMoreTokens()){
-								// But only if the rest of it consists of digits
-								t += buffer[curPos++];
-							}
-						}
-						return t;
+						return getNumber();
 					}
 					break;
 				}
+				// Handles the return, no matter what
+				return t;
 			}
-			// Handles the return, no matter what
-			return t;
+			else {
+				return "\n";
+			}
 		}
 		catch (ArrayIndexOutOfBoundsException e){
 			return "\n";
 		}
 	}
 
+	private String getNumber(){
+		String num = t;
+		
+		while (isDigit(buffer[curPos])){
+			num += nextToken();
+		}
+		
+		// BASIC handles numbers as double/integer, so look for a decimal place
+		if (buffer[curPos] == '.'){
+			// If this next character is a decimal place, keep getting characters 
+			num += nextToken();
+			while (isDigit(buffer[curPos]) & hasMoreTokens()){
+				// But only get them while they're digits
+				num += nextToken();
+			}
+		}
+		// BASIC handles exponents with the letter E, at which
+		// point, number after it
+		// is the exponent of the given number i.e. in 111.222E333,
+		// 333 is the exponent
+		if (buffer[curPos] == 'E'){
+			// If this next character is an E for Exponent, get the rest of it
+			num += buffer[curPos++];
+			if (buffer[curPos] == '-' || buffer[curPos] == '+' || isDigit(buffer[curPos])){
+				num += nextToken();
+			}
+			while (isDigit(buffer[curPos]) & hasMoreTokens()){
+				// But only if the rest of it consists of digits
+				num += nextToken();
+			}
+		}
+		
+		return num;
+	}
+	
 	// Methods and functions for doing the admin stuff
 	public boolean hasMoreTokens() {
 		// Simple enough. If current position is less than buffer length,
@@ -245,30 +266,6 @@ public class Tokenizer {
 			} while (t.substring(t.length() - 2) != ")");
 		}
 		return t.trim();
-	}
-
-	public static double[] separateNumber(String inputNumber) {
-		// Odd one to explain, but this should separate the main section
-		// of a given number (input as a String) from its exponent (if it has
-		// one)
-		// and return the main number in separated[0] and exponent in
-		// separated[1]
-		double[] separated = { 0.0, 0.0 };
-		String number = null, exponent = null;
-		int i = 0;
-
-		while (isDigit(inputNumber.charAt(i)) && i < inputNumber.length()) {
-			number += inputNumber.charAt(i++);
-		}
-		if (inputNumber.charAt(i) == 'E') {
-			i++;
-			while (isDigit(inputNumber.charAt(i)) && i < inputNumber.length()) {
-				exponent += inputNumber.charAt(i++);
-			}
-		}
-		separated[0] = Double.parseDouble(number);
-		separated[1] = Double.parseDouble(exponent);
-		return separated;
 	}
 
 	public String getWholeLine() {

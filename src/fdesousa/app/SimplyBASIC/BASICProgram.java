@@ -37,6 +37,7 @@ import android.widget.EditText;
 
 public class BASICProgram implements Runnable{
 
+	TreeMap<Integer, String> masterCodeList;
 	private TreeMap<Integer, String> codeList = new TreeMap<Integer, String>();
 	private Set<Entry<Integer, String>> lines;		// Holds the set of lines for iter
 	private Iterator<Entry<Integer, String>> iter;	// Used to iterate through Set
@@ -47,7 +48,7 @@ public class BASICProgram implements Runnable{
 	private Tokenizer t = new Tokenizer();
 	// cL = current line, nL = next line, pL = previous line, rL = return line, lL = last line
 
-	private boolean stop = false;
+	private boolean stop = new Boolean(false);
 
 	EditText et;
 	
@@ -65,7 +66,7 @@ public class BASICProgram implements Runnable{
 			et = edtxt;
 			// We want to keep a backup codeList, as the key sets are all linked to codeList,
 			// this might give us trouble if something is changed/added/removed.
-			TreeMap<Integer, String> masterCodeList = codeList;
+			masterCodeList = codeList;
 			// To calculate the running time, we set a start time
 			startTime = timer.getTimeInMillis();
 			
@@ -89,6 +90,7 @@ public class BASICProgram implements Runnable{
 		}
 		catch (Exception e){
 			et.append(e.toString().toUpperCase() + ".\n");
+			codeList = masterCodeList;
 		}
 	}
 
