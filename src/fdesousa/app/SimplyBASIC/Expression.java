@@ -43,8 +43,8 @@ public class Expression {
 	// A stack of operators. Temporary use while converting
 	Stack<String> ops = new Stack<String>();
 
-	public static String regexNumber = "^(-?\\d*\\.?\\d+)[E]?(\\d+)$";
-	public static String regexExponent = "^(-?\\d*\\.?\\d+)[E]{1}(\\d+)$";
+	public final static String regexNumber = "^(-?\\d*\\.?\\d+)[E]?(\\d+)$";
+	public final static String regexExponent = "^(-?\\d*\\.?\\d+)[E]{1}(\\d+)$";
 
 	/**
 	 * This empty constructor is used by DEF statement, which then resets the queue later

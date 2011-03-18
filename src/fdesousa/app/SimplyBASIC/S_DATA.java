@@ -52,14 +52,14 @@ public class S_DATA extends Statement {
 			}
 			else {
 				// If the token isn't a number/comma/EOL, it's in the wrong place
-				errConstant();
+				errConstant(s);
 				return;
 			}
 		}
 	}
 	
-	private void errConstant(){
-		et.append("ILLEGAL CONSTANT - LINE NUMBER " + p.getCurrentLine() +".\n");
+	private void errConstant(String s){
+		et.append("ILLEGAL CONSTANT: " + s + " LINE NUMBER " + p.getCurrentLine() +".\n");
 		p.stopExec();
 	}
 }

@@ -51,7 +51,7 @@ public class Tokenizer {
 			if (curPos >= buffer.length) {
 				t = "\n";
 			}
-			// We don't need no stinkin' spaces here!
+			// We don't need no stinking spaces here!
 
 			if (hasMoreTokens()){
 				eatSpace();
@@ -118,18 +118,18 @@ public class Tokenizer {
 						// Check if it's a standard BASIC function, if it is return it
 						// immediately
 						for (int i = 0; i < Function.functions.length; i++) {
-							if (t.contains(Function.functions[i]))
+							if (t.equals(Function.functions[i]))
 								return t;
 						}
 						// Check if it's a system command, if it is return it
 						// immediately
 						for (int i = 0; i < CommandInterpreter.commands.length; i++) {
-							if (t.contains(CommandInterpreter.commands[i]))
+							if (t.equals(CommandInterpreter.commands[i]))
 								return t;
 						}
 						// Check if it's a BASIC command, if it is return it immediately
 						for (int i = 0; i < Statement.statements.length; i++) {
-							if (t.contains(Statement.statements[i]))
+							if (t.equals(Statement.statements[i]))
 								return t;
 						}
 					}
@@ -168,20 +168,25 @@ public class Tokenizer {
 
 					// Since it's none of the above, it's likely a number
 					if (Expression.isNumber(t)) {
+						// It is! We're back in business!
 						if (buffer[curPos] == '.') {
+							// If this next character is a decimal place, keep getting characters 
 							t += buffer[curPos++];
 							while (isDigit(buffer[curPos]) & hasMoreTokens()){
+								// But only get them while they're digits
 								t += buffer[curPos++];
 							}
-							// BASIC handles exponents with the letter E, at which
-							// point, number after it
-							// is the exponent of the given number i.e. in 111.222E333,
-							// 333 is the exponent
-							if (buffer[curPos] == 'E') {
+						}
+						// BASIC handles exponents with the letter E, at which
+						// point, number after it
+						// is the exponent of the given number i.e. in 111.222E333,
+						// 333 is the exponent
+						if (buffer[curPos] == 'E') {
+							// If this next character is an E for Exponent, get the rest of it
+							t += buffer[curPos++];
+							while (isDigit(buffer[curPos]) & hasMoreTokens()){
+								// But only if the rest of it consists of digits
 								t += buffer[curPos++];
-								while (isDigit(buffer[curPos]) & hasMoreTokens()){
-									t += buffer[curPos++];
-								}
 							}
 						}
 						return t;

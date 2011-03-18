@@ -35,7 +35,8 @@ public class S_END extends Statement {
 
 	@Override
 	public void doSt(){
+		et.append("TIME TO: " + (p.getTimeToExecute() / 100.0) + " SECONDS.\n");
 		p.stopExec();
-		et.append("\nTIME: " + (p.getTimeToExecute() / 100.0) + " SECONDS");
+		return;
 	}
 }

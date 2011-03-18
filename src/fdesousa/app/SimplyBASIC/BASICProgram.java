@@ -31,7 +31,6 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.PriorityQueue;
 import java.util.Set;
-import java.util.SortedMap;
 import java.util.Stack;
 import java.util.TreeMap;
 import android.widget.EditText;
@@ -50,6 +49,8 @@ public class BASICProgram implements Runnable{
 
 	private boolean stop = false;
 
+	EditText et;
+	
 	// Using Calendar to get the running time in milliseconds
 	Calendar timer = Calendar.getInstance();
 	long startTime;
@@ -59,8 +60,9 @@ public class BASICProgram implements Runnable{
 	 * It executes run() to get all DATA values plotted into a Queue
 	 * An EditText is required for output only
 	 */
-	public void run(EditText et) {
+	public void run(EditText edtxt) {
 		try {
+			et = edtxt;
 			// We want to keep a backup codeList, as the key sets are all linked to codeList,
 			// this might give us trouble if something is changed/added/removed.
 			TreeMap<Integer, String> masterCodeList = codeList;
@@ -117,12 +119,13 @@ public class BASICProgram implements Runnable{
 				t.reset(cL.getValue());
 				s = t.nextToken();
 				if (s.equals(Statement.statements[Statement.S_DATA])){
-					Statement dataSt = new S_DATA(this, t, null);
+					Statement dataSt = new S_DATA(this, t, et);
 					dataSt.doSt();
 				}
-				else if (s.equals(Statement.statements[Statement.S_END])){
-					Statement endSt = new S_END(this, t, null);
-					endSt.doSt();
+				else if (s.equals(Statement.statements[Statement.S_END]) &
+						iter.hasNext()){
+					et.append("END IS NOT LAST - LINE NUMBER " + String.valueOf(cL.getKey()) + "\n");
+					stopExec();
 				}
 			}
 			// Reset stop just here so the other run can continue
