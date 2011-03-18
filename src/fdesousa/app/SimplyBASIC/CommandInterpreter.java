@@ -41,9 +41,8 @@ public class CommandInterpreter {
 	// Used for storing the code listing during certain operations:
 	private TreeMap<Integer, String> codeList = new TreeMap<Integer, String>();
 	private String token = "";	// token to work on. May remove, to replace with inputToken
-	private String[] tokens = null; // whole line, divided into tokens
+	private String[] tokens; // whole line, divided into tokens
 	private int lineNumber = 0;
-	private String line = "";
 	private BASICProgram BP;
 	// To take control of et, once SimplyBASIC parses it:
 	private EditText et;
@@ -106,9 +105,8 @@ public class CommandInterpreter {
 						// We're only interested in the last entered item, which is after '-- '
 						// So split the text from edtxt into "lines" by '-- '
 						lines = et.getText().toString().split("-- ");
-						line = lines[lines.length - 1];
 						// Give the tokenizer the last line, which is what we're interested in
-						tokenizer.reset(line);
+						tokenizer.reset(lines[lines.length - 1]);
 						// Tell tokenizer to pass us the next token, store is token
 						token = tokenizer.nextToken();
 
@@ -126,8 +124,7 @@ public class CommandInterpreter {
 					// Once I've tested tokenizer with those system commands, I'll implement its use here
 					else {
 						lines = et.getText().toString().split("\n> ");
-						line = lines[lines.length - 1];
-						tokenizer.reset(line);
+						tokenizer.reset(lines[lines.length - 1]);
 						token = tokenizer.nextToken();
 
 						/*
@@ -185,11 +182,7 @@ public class CommandInterpreter {
 
 			if (Expression.isNumber(input) == true){
 				lineNumber = Integer.parseInt(input.trim());
-				
-				String resultAddLine = BP.addLine(lineNumber, tokenizer.getRestOfLine());
-				if (resultAddLine != null){
-					et.append(resultAddLine + "\n");
-				}
+				BP.addLine(lineNumber, tokenizer.getRestOfLine());
 				et.append("> ");
 				return 1;
 			}
@@ -207,18 +200,6 @@ public class CommandInterpreter {
 			} // end OLD command
 
 			else if (input.equals(commands[C_LIST])){		// Display current program's code
-				// From now on, BP handles listing its own code
-				/*
-				if (tokenizer.hasMoreTokens()){
-					String lN = tokenizer.nextToken();
-					if (Expression.isNumber(lN)){
-						BP.C_LIST(et, Integer.parseInt(lN));
-					}
-				}
-				else {					
-					BP.C_LIST(et, BP.getFirstLine());
-				}
-				*/
 				BP.C_LIST(et);
 				return 0;
 			} // end LIST command
@@ -281,10 +262,6 @@ public class CommandInterpreter {
 				et.append("ERROR WITH SYSTEM COMMAND");
 				return -1;
 			}
-		//}
-		//else{
-		//	et.append("ERROR: BASIC NOT STARTED.\nTYPE 'HELLO' TO START.");
-		//}
 		return -1;
 	}
 

@@ -37,7 +37,6 @@ public class S_RETURN extends Statement {
 	public void doSt(){
 		if (! p.getRETURNKeySetisEmpty()){
 			p.setlNs(p.getRETURNKeySet());
-			p.setRETURNKeySet(null);
 		}
 		else{
 			et.append("ILLEGAL RETURN - LINE NUMBER " + String.valueOf(p.getCurrentLine()) + "\n");

@@ -235,7 +235,7 @@ public class Variable {
 				return null;
 			}
 		}
-		else if (tV == null && chk == NUM){
+		else if (tV == null & chk == NUM){
 			// As it doesn't exist and it's a simple number, create it
 			Variable v = new Variable(args[0]);
 			p.putVar(v);

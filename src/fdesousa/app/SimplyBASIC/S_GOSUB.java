@@ -39,7 +39,7 @@ public class S_GOSUB extends Statement {
 			String token = t.nextToken();
 			if (Expression.isNumber(token)) {
 				int lN = Integer.parseInt(token);
-				p.setRETURNKeySet(p.getlNs());
+				p.putRETURNKeySet(p.getlNs());
 				p.setlNs(p.getTailSet(lN));
 			}
 			else {

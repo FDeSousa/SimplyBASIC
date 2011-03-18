@@ -55,21 +55,30 @@ public class Expression {
 
 	/**
 	 * This constructor initialises the expr queue, and convert input queue to postfix immediately
-	 * @param expr
-	 * @param p
+	 * @param expr - the queue holding the expr to calculate
+	 * @param p - an instance of BASICProgram, used with inToPost()
+	 * @param et - an instance of EditText, used with inToPost()
 	 */
 	public Expression (PriorityQueue<String> expr, BASICProgram p, EditText et){
 		in = expr;
 		inToPost(p, et);
 	}
 
+	/**
+	 * This constructor initialises the expr queue, but does nothing else
+	 * @param expr - the queue holding the expr to calculate
+	 */
 	public Expression (PriorityQueue<String> expr){
 		in = expr;
-		post.clear();
 	}
 
 	public void inToPost(BASICProgram p, EditText et){
-		String token = null;
+		String token = new String();
+
+		if (! in.isEmpty() & in.size() < 2){
+			post.offer(in.poll());
+			return;
+		}
 
 		while (! in.isEmpty()) {
 			token = in.poll();
@@ -125,44 +134,52 @@ public class Expression {
 		}
 	}
 
-	@SuppressWarnings("null")
 	public double eval(BASICProgram p, EditText et){
-		// The stack with the values to be operated on, in their order
-		Stack<Double> runningTotal = null;
-		// The two values to be operated on
-		double val1, val2;
-		// The operator to use on the two values
-		String op;
+		try {
+			// The stack with the values to be operated on, in their order
+			Stack<Double> runningTotal = new Stack<Double>();
+			// The two values to be operated on
+			double val1, val2;
+			// The operator to use on the two values
+			String op;
 
-		// so only parse in one item, and receive nothing.
-		while (! post.isEmpty()){
-			op = post.poll();
+			if (! post.isEmpty() & post.size() < 2)
+				return Double.parseDouble(post.poll());
 
-			if (isNumber(op)){
-				runningTotal.push(Double.parseDouble(op));
-			}
-			else if (isOperator(op)){
-				val2 = runningTotal.pop();
-				val1 = runningTotal.pop();
-
-				if (op.equals("^")){
-					runningTotal.push(Math.pow(val1, val2));
+			// so only parse in one item, and receive nothing.
+			while (! post.isEmpty()){
+				if (isNumber(post.peek())){
+					runningTotal.push(Double.parseDouble(post.poll()));
 				}
-				else if (op.equals("*")){
-					runningTotal.push(val1 * val2);
+				else if (isOperator(post.peek())){
+					val2 = runningTotal.pop();
+					val1 = runningTotal.pop();
+					op = post.poll();
+					if (op.equals("^")){
+						runningTotal.push(Math.pow(val1, val2));
+					}
+					else if (op.equals("*")){
+						runningTotal.push(val1 * val2);
+					}
+					else if (op.equals("/")){
+						runningTotal.push(val1 / val2);
+					}
+					else if (op.equals("+")){
+						runningTotal.push(val1 + val2);
+					}
+					else if (op.equals("-")){
+						runningTotal.push(val1 - val2);
+					}
 				}
-				else if (op.equals("/")){
-					runningTotal.push(val1 / val2);
-				}
-				else if (op.equals("+")){
-					runningTotal.push(val1 + val2);
-				}
-				else if (op.equals("-")){
-					runningTotal.push(val1 - val2);
-				}
-			}
-		}	
-		return runningTotal.pop();
+			}	
+			return runningTotal.pop();
+		}
+		catch (Exception e){
+			et.append("ILLEGAL FORMULA - LINE NUMBER " + String.valueOf(p.getCurrentLine()) + "\n");
+			et.append(e + "\n");
+			p.stopExec();
+			return Double.MAX_VALUE;
+		}
 	}
 
 	private int precedence(String token){
@@ -191,7 +208,6 @@ public class Expression {
 		String token = expTok.nextToken();
 
 		while (expTok.hasMoreTokens()){
-			// If expTok has more tokens, and the token isn't endOn, assume we're still in an expression
 			expr.offer(token);
 			token = expTok.nextToken();
 		}

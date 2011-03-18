@@ -53,7 +53,7 @@ public class Statement {
 	final static int S_END		= 16;	// Ends the program on that line, no matter what
 	final static int S_REM		= 17;	// Signifies the line is a comment, and should be ignored by interpreter
 
-	private String command = null;
+	private String command = new String();
 	
 	protected BASICProgram p;
 	protected Tokenizer t;

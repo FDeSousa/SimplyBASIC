@@ -89,7 +89,7 @@ public class BASICProgram implements Runnable{
 			codeList = masterCodeList;
 		}
 		catch (Exception e){
-			et.append(e.toString().toUpperCase() + ".\n");
+			et.append(e.toString().toUpperCase() + " " + String.valueOf(getCurrentLine()) + ".\n");
 			codeList = masterCodeList;
 		}
 	}
@@ -196,14 +196,8 @@ public class BASICProgram implements Runnable{
 	}
 
 	// Boring parts of the class below. Not the meat of it.
-	public String addLine(int lN, String inputLine){
-		try{ 
+	public void addLine(int lN, String inputLine){
 			codeList.put(lN, inputLine);
-			return null;
-		}
-		catch(Exception e){
-			return e.toString();
-		}
 	}
 
 	public long getTimeToExecute(){
@@ -316,7 +310,7 @@ public class BASICProgram implements Runnable{
 	 * Add a new RETURN keyset
 	 * @param RETURNKeySet - a keyset of entries for RETURN
 	 */
-	public void setRETURNKeySet(Set<Entry<Integer, String>> RETURNKeySet) {
+	public void putRETURNKeySet(Set<Entry<Integer, String>> RETURNKeySet) {
 		this.RETURNKeySet = RETURNKeySet;
 		RETURNs.push(this.RETURNKeySet);
 	}
