@@ -46,13 +46,18 @@ public class S_NEXT extends Statement {
 				forNext.doStNext();
 			}
 			else {
-				et.append("INVALID VARIABLE - LINE NUMBER " + p.getCurrentLine() + "\n");
-				p.stopExec();
+				errNEXT("INVALID VARIABLE");
+				return;
 			}
 		}
 		else {
-			et.append("NEXT WITHOUT VARIABLE - LINE NUMBER " + p.getCurrentLine() + "\n");
-			p.stopExec();
+			errNEXT("NEXT WITHOUT VARIABLE");
+			return;
 		}
+	}
+	
+	private void errNEXT(String type){
+		et.append(type + " - LINE NUMBER " + p.getCurrentLine() + "\n");
+		p.stopExec();
 	}
 }

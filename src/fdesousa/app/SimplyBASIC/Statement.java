@@ -99,8 +99,8 @@ public class Statement {
 			s.doSt();
 		}
 		else if (command.equals(statements[S_DATA])){
-			;	// As we have a first-run to get DATA, it's safer to
-				// acknowledge, but ignore it in Statement.java
+			return;	// As we have a first-run to get DATA, it's safer to
+					// acknowledge, but ignore it in Statement.java
 		}
 		else if (command.equals(statements[S_PRINT])){
 			s = new S_PRINT(p, t, et);
@@ -131,10 +131,14 @@ public class Statement {
 			s.doSt();
 		}
 		else if (command.equals(statements[S_REM])){
-			;	// When encountering a REM statement, the line is ignored, so for
-				// safety, acknowledge but ignore the statement here
+			return;	// When encountering a REM statement, the line is ignored, so for
+					// safety, acknowledge but ignore the statement here by using return
 		}
-
+		else{
+			et.append("ILLEGAL INSTRUCTION - LINE NUMBER " + String.valueOf(p.getCurrentLine()) + "\n");
+			p.stopExec();
+			return;
+		}
 	}
 
 }

@@ -25,6 +25,7 @@
 
 package fdesousa.app.SimplyBASIC;
 
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.regex.Pattern;
 import android.widget.EditText;
@@ -56,7 +57,7 @@ public class S_FOR extends Statement {
 	 */
 	private double first, last, step;
 	// Store the code list to return to
-	private Set<Integer> codeList;
+	private Set<Entry<Integer, String>> codeList;
 
 	/**
 	 * 

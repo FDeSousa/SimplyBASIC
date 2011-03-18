@@ -35,20 +35,31 @@ public class S_DATA extends Statement {
 
 	@Override
 	public void doSt(){
-		String s = "";
+		String s = new String();
+		
 		while (t.hasMoreTokens()){
 			s = t.nextToken();
-			if (! s.equals(",")){
-				if (Expression.isNumber(s)){
-					p.addData(Double.parseDouble(s));
-				}
-				else {
-					et.append("ILLEGAL CONSTANT.\n" + 
-							"LINE NUMBER " + p.getCurrentLine() +".\n");
-					p.stopExec();
-					return;
-				}
+			if (Expression.isNumber(s)){
+				p.addData(Double.parseDouble(s));
+			}
+			else if (s.equals(",")){
+				; // Acknowledge, but do nothing about it
+			}
+			else if (s.equals("\n")){
+				// Break from this Statement if the token is EOL ("\n")
+				// as there's nothing else to do
+				return;
+			}
+			else {
+				// If the token isn't a number/comma/EOL, it's in the wrong place
+				errConstant();
+				return;
 			}
 		}
+	}
+	
+	private void errConstant(){
+		et.append("ILLEGAL CONSTANT - LINE NUMBER " + p.getCurrentLine() +".\n");
+		p.stopExec();
 	}
 }

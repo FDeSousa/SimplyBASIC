@@ -54,14 +54,36 @@ public class S_DEF extends Statement {
 		if (token.equals("=")){
 			// Very simple for the moment, will only handle numbers and symbols, hoping to mend that asap
 			while (t.hasMoreTokens()){
-				token = t.nextToken();
-				expression.offer(token);
+				if (! token.equals("\n")){
+					token = t.nextToken();
+					expression.offer(token);					
+				}
+				else if (token.equals("\n")){
+					putFn(fnName, expression, fnVar);
+					return;
+				}
+				else{
+					errFormat();
+					return;
+				}
 			}
 		}
-		// Name the associated Expression, but don't initialise it just yet
+		else {
+			// If the token isn't a number/comma/EOL, it's in the wrong place
+			errFormat();
+			return;
+		}
+		
+	}
+	
+	private void putFn(String fnName, PriorityQueue<String> expression, Variable fnVar){
 		Expression fnExp = new Expression(expression);
-
 		Function fn = new Function(fnName, fnExp, fnVar);
 		p.putFunction(fn);
+	}
+	
+	private void errFormat(){
+		et.append("INCORRECT FORMAT - LINE NUMBER " + p.getCurrentLine() +".\n");
+		p.stopExec();
 	}
 }

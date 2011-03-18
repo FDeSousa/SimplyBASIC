@@ -53,6 +53,11 @@ public class S_PRINT extends Statement {
 				// Acknowledge commas as new line indicator
 				outLine += "\n";
 			}
+			else if (token.equals("\n")){
+				// Acknowledge this as a point to append the outLine, and leave
+				et.append(outLine + token);
+				return;
+			}
 			else {
 				// Assume it's an expression, figure that out first
 				PriorityQueue<String> ex = new PriorityQueue<String>();
@@ -64,6 +69,5 @@ public class S_PRINT extends Statement {
 				outLine += String.valueOf(e.eval(p, et));
 			}
 		}
-		et.append(outLine + "\n");
 	}
 }

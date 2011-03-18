@@ -26,6 +26,9 @@
 package fdesousa.app.SimplyBASIC;
 
 import java.util.Calendar;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.PriorityQueue;
 import java.util.Set;
 import java.util.SortedMap;
@@ -36,15 +39,15 @@ import android.widget.EditText;
 public class BASICProgram implements Runnable{
 
 	private TreeMap<Integer, String> codeList = new TreeMap<Integer, String>();
-	private Set<Integer> lNs;
-	
+	private Set<Entry<Integer, String>> lines;		// Holds the set of lines for iter
+	private Iterator<Entry<Integer, String>> iter;	// Used to iterate through Set
+	private Entry<Integer, String> cL;				// Holds an individual entry
+
 	private String progName = "", userName = "";
 	// Using the tokenizer again here, will be making good use of this too
 	private Tokenizer t = new Tokenizer();
 	// cL = current line, nL = next line, pL = previous line, rL = return line, lL = last line
-	private int cL = 0;// nL = 0, pL = 0, rL = 0, lL = 0;
 
-	private boolean cont = true;
 	private boolean stop = false;
 
 	// Using Calendar to get the running time in milliseconds
@@ -58,29 +61,29 @@ public class BASICProgram implements Runnable{
 	 */
 	public void run(EditText et) {
 		try {
+			// We want to keep a backup codeList, as the key sets are all linked to codeList,
+			// this might give us trouble if something is changed/added/removed.
+			TreeMap<Integer, String> masterCodeList = codeList;
+			// To calculate the running time, we set a start time
 			startTime = timer.getTimeInMillis();
-			stop = false;
-			// Do the first-run, to get all DATA stored into a FIFO list
-			//run();
-			// Re-initialise lNs here for use while final run is going
-			lNs = codeList.keySet();
-			cL = lNs.iterator().next();
 			
-			do {
-				t.reset(codeList.get(cL));
-				Statement statement = new Statement(this, t, et);
-				statement.doSt();
-
-				// To avoid issues with IF/GOTO/GOSUB/NEXT, have to get next line before end of loop
-				// But then, to avoid not being able to process the last line, since this is do..while
-				// we should do a check, and use boolean variables, to make sure all is in check
-				if (lNs.iterator().hasNext()){
-					cL = lNs.iterator().next();
-				}
-				else {
-					cont = false;
-				}
-			} while (cont && ! stop);
+			// reset stop, just in case it's been done at a bad time
+			stop = false;
+			
+			// Do the first-run, to get all DATA stored into a FIFO list
+			run();
+			// Re-initialise lNs here for use while final run is going
+			lines = codeList.entrySet();
+			iter = lines.iterator();
+			
+			while (iter.hasNext() & ! stop){
+				cL = iter.next();
+				t.reset(cL.getValue());
+				Statement s = new Statement(this, t, et);
+				s.doSt();
+			}
+			// Now, it's ended the run, so we can revert back to the original codeList
+			codeList = masterCodeList;
 		}
 		catch (Exception e){
 			et.append(e.toString().toUpperCase() + ".\n");
@@ -91,38 +94,39 @@ public class BASICProgram implements Runnable{
 	// It's stupid using the dataStore to store strings, but as it can store both integers AND
 	// real numbers (all float as far as BASIC is concerned), I'll resolve this later 
 	private PriorityQueue<Double> dataStore = new PriorityQueue<Double>();
-	
+
 	public double getData(){
 		return dataStore.poll();
 	}
-	
+
 	public boolean hasData(){
 		return (! dataStore.isEmpty());
 	}
-	
+
 	public void run() {
 		// The generic, auto-generated, must-have version of run(), defined by Runnable
 		// Will see implementation as a first-run method placing DATA in FIFO list
-		String s = "";
+		String s = new String();
 		try {
-			lNs = codeList.keySet();
-
-			cL = lNs.iterator().next();
-			do {
-				t.reset(codeList.get(cL));
+			
+			lines = codeList.entrySet();
+			iter = lines.iterator();
+			
+			while (iter.hasNext() & ! stop){
+				cL = iter.next();
+				t.reset(cL.getValue());
 				s = t.nextToken();
 				if (s.equals(Statement.statements[Statement.S_DATA])){
 					Statement dataSt = new S_DATA(this, t, null);
 					dataSt.doSt();
 				}
-				
-				if (lNs.iterator().hasNext()){
-					cL = lNs.iterator().next();
+				else if (s.equals(Statement.statements[Statement.S_END])){
+					Statement endSt = new S_END(this, t, null);
+					endSt.doSt();
 				}
-				else {
-					cont = false;
-				}
-			} while (cont && ! stop);
+			}
+			// Reset stop just here so the other run can continue
+			stop = false;
 		}
 		catch (Exception e){
 			return;
@@ -162,37 +166,30 @@ public class BASICProgram implements Runnable{
 		codeList = oldCodeList;
 	}
 
-	public void C_LIST(EditText et, int lN){
+	public void C_LIST(EditText et){
 		// Return parts of program code listing
+		try {
+			et.append("USER NAME: " + userName
+					+ "\nPROGRAM NAME: " + progName 
+					+ "\n");
 
-		if (lN >= codeList.firstKey() & lN <= codeList.lastKey()){
-			SortedMap<Integer,String> C_LIST_codeList = codeList.tailMap(lN);
-			Set<Integer> lineNumbers = C_LIST_codeList.keySet();
-
-			et.append("\nUSER NAME: " + userName
-					+ "\nPROGRAM NAME: " + progName);
-
-			int cL = lineNumbers.iterator().next();
-
-			while (lineNumbers.iterator().hasNext()){
-				et.append(cL + "\t" + C_LIST_codeList.get(cL).toString());
-				cL = lineNumbers.iterator().next();
+			lines = codeList.entrySet();
+			iter = lines.iterator();
+			
+			while (iter.hasNext()){
+				cL = iter.next();
+				et.append(cL.getKey() + "\t" + cL.getValue() + "\n");
 			}
 		}
-		else {
-			// This actually comes out better than it seems, except for the lineNumber'=null' bit
-			et.append("\nUSER NAME: " + userName
-					+ "\nPROGRAM NAME: " + progName
-					+ "\nINVALID LINE NUMBER SPECIFIED"
-					+ "\nMUST BE BETWEEN " + codeList.firstKey() 
-					+ " AND " + codeList.lastKey());
+		catch (Exception e){
+			et.append(e.toString() + "\n");
 		}
 	}
 
 	public int getFirstLine(){
 		return codeList.firstKey();
 	}
-	
+
 	// Boring parts of the class below. Not the meat of it.
 	public String addLine(int lN, String inputLine){
 		try{ 
@@ -231,15 +228,15 @@ public class BASICProgram implements Runnable{
 	}
 
 	public int getCurrentLine(){
-		return cL;
+		return cL.getKey();
 	}
-	
+
 	public void addData(double data){
 		dataStore.offer(data);
 	}
 
 	// Variables are of type Variable, and can be a Number or Number Array
-	private TreeMap<String, Variable> variables = new TreeMap<String, Variable>();
+	private Map<String, Variable> variables = new TreeMap<String, Variable>();
 	public void putVar(Variable v){
 		variables.put(v.getName(), v);
 	}
@@ -258,9 +255,9 @@ public class BASICProgram implements Runnable{
 		Variable v = variables.get(vName);
 		return v.getType();
 	}
-	
+
 	// Functions are of type Function, and can be user-defined functions only
-	private TreeMap<String, Function> functions = new TreeMap<String, Function>();
+	private Map<String, Function> functions = new TreeMap<String, Function>();
 	public void putFunction(Function f){
 		functions.put(f.getName(), f);
 	}
@@ -275,36 +272,60 @@ public class BASICProgram implements Runnable{
 	public boolean fnExists(String fnName){
 		return functions.containsKey(fnName);
 	}
-	
-	// Using these nice and simple Getters and Setters for using 
-	// during GOSUB / GOTO / IF .. THEN / FOR .. NEXT statements
-	public Set<Integer> getlNs() {
-		return lNs;
+
+	/**
+	 * Get the line number Set to work on. <br>
+	 * Useful for GOTO/GOSUB .. RETURN/IF .. THEN/FOR .. NEXT statements
+	 */
+	public Set<Entry<Integer, String>> getlNs() {
+		return lines;
 	}
 
-	public void setlNs(Set<Integer> lNs) {
-		this.lNs = lNs;
+	/**
+	 * Set the line number Set to a new one. <br>
+	 * Useful for GOTO/GOSUB .. RETURN/IF .. THEN/FOR .. NEXT statements
+	 * @param lNs - Set containing the new line numbers to work with
+	 */
+	public void setlNs(Set<Entry<Integer, String>> lNs) {
+		lines = lNs;
 	}
 
 	// To be able to handle more than one RETURN in a program, they're stored
 	// in a Stack, so in this way, they are accessed in a LIFO order
-	private Set<Integer> RETURNKeySet;
-	private Stack<Set<Integer>> RETURNs;
+	private Set<Entry<Integer, String>> RETURNKeySet;
+	private Stack<Set<Entry<Integer, String>>> RETURNs;
 
-	public Set<Integer> getRETURNKeySet() {
+	/**
+	 * Get the top RETURN keyset
+	 * @return RETURN keyset of entries
+	 */
+	public Set<Entry<Integer, String>> getRETURNKeySet() {
 		RETURNKeySet = RETURNs.pop();
 		return RETURNKeySet;
 	}
+	public boolean getRETURNKeySetisEmpty(){
+		return RETURNKeySet.isEmpty();
+	}
 
-	public void setRETURNKeySet(Set<Integer> RETURNKeySet) {
+	/**
+	 * Add a new RETURN keyset
+	 * @param RETURNKeySet - a keyset of entries for RETURN
+	 */
+	public void setRETURNKeySet(Set<Entry<Integer, String>> RETURNKeySet) {
 		this.RETURNKeySet = RETURNKeySet;
 		RETURNs.push(this.RETURNKeySet);
 	}
 
 	// To aid with GOTO/GOSUB/etc, we make a tail set of the code list, 
 	// which will then act as our new set of keys to execute
-	public Set<Integer> getTailMap(int lN){
-		Set<Integer> lineNumbers = codeList.tailMap(lN).keySet();
+	/**
+	 * Return a set of entries from the tailmap, starting from key as defined by lN.<br>
+	 * Aids in running GOTO/GOSUB/etc, to make a new set of keys to execute
+	 * @param ln - the line number to start tailmap on
+	 * @return Set lineNumbers, entries from tailmap
+	 */
+	public Set<Entry<Integer, String>> getTailSet(int lN){
+		Set<Entry<Integer, String>> lineNumbers = codeList.tailMap(lN).entrySet();
 		return lineNumbers;
 	}
 

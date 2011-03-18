@@ -32,9 +32,9 @@ public class Tokenizer {
 	private int curPos = 0; // Marks the current position in the char array
 	private int markPos = 0; // Used to mark a position temporarily
 	private String t = new String(); // The current token that's being worked
-										// with
+	// with
 	private char buffer[]; // Holds the characters to analyse, easier to move
-							// between chars
+	// between chars
 
 	// than in a String, that involves .substring(char position)
 
@@ -44,147 +44,157 @@ public class Tokenizer {
 	}
 
 	public String nextToken() {
-		// t is the returned String token
-		t = "";
-		// Return EOL if curPos is also EOL or greater
-		if (curPos >= buffer.length) {
-			return "\n";
-		}
-		// We don't need no stinkin' spaces here!
-		eatSpace();
-
-		// Check what to do with current Character
-		switch (buffer[curPos]) {
-		// All of [+ - * / ^ = ( )] are parsed immediately and alone
-		case '+':
-		case '-':
-		case '*':
-		case '/':
-		case '^':
-		case '=':
-		case '(':
-		case ')':
-			t += buffer[curPos++];
-			break;
-		// All of [< > . ,] may have additional operators/chars
-		// If the next char is '=', then token is '<=' or '>='
-		case '<':
-		case '>':
-			t += buffer[curPos];
-			curPos++;
-			if (peek(false) == '=') {
-				t += buffer[curPos++];
+		try {
+			// t is the returned String token
+			t = new String();
+			// Return EOL if curPos is also EOL or greater
+			if (curPos >= buffer.length) {
+				t = "\n";
 			}
-			break;
+			// We don't need no stinkin' spaces here!
 
-		// If the next char is a number, token is a decimal number
-		case '.':
-			t += buffer[curPos];
-			curPos++;
-			while (isDigit(buffer[curPos]) && hasMoreTokens()) {
-				t += buffer[curPos++];
-			}
-			break;
-
-		// Eat space, then check if the next char is a Letter
-		case ',':
-			t += buffer[curPos++];
-			break;
-
-		// Return everything inside double quotes "
-		case '"':
-			t += buffer[curPos++];
-			while (buffer[curPos] != '"' && hasMoreTokens()) {
-				t += buffer[curPos++];
-			}
-			break;
-
-		default:
-			// Under default, if it's not one of the many conditions above
-			// then check if it's a letter or digit, and the operation continues
-
-			// Get the whole sequence of digits and letters, no matter what
-			while (isLetter(buffer[curPos]) || isDigit(buffer[curPos])) {
-				t += buffer[curPos++];
-				// A little costly on processor time, doing these checks every
-				// time a letter
-				// or character is added, but it could minimise mistakes
-
-				// Check if it's a standard BASIC function, if it is return it
-				// immediately
-				for (int i = 0; i < Function.functions.length; i++) {
-					if (t.contains(Function.functions[i]))
-						return t;
-				}
-				// Check if it's a system command, if it is return it
-				// immediately
-				for (int i = 0; i < CommandInterpreter.commands.length; i++) {
-					if (t.contains(CommandInterpreter.commands[i]))
-						return t;
-				}
-				// Check if it's a BASIC command, if it is return it immediately
-				for (int i = 0; i < Statement.statements.length; i++) {
-					if (t.contains(Statement.statements[i]))
-						return t;
-				}
+			if (hasMoreTokens()){
+				eatSpace();
 			}
 
-			// Check if this thing is a variable
-			if (Variable.isVariable(t)) {
-				// It is! So now get the rest of it (if there is a rest of it)
-				if (peek(false) == '(') {
-					// Right, get the whole of the variable's arguments
-					do {
+			if (hasMoreTokens()){
+				// Check what to do with current Character
+				switch (buffer[curPos]) {
+				// All of [+ - * / ^ = ( )] are parsed immediately and alone
+				case '+':
+				case '-':
+				case '*':
+				case '/':
+				case '^':
+				case '=':
+				case '(':
+				case ')':
+					t += buffer[curPos++];
+					break;
+					// All of [< > . ,] may have additional operators/chars
+					// If the next char is '=', then token is '<=' or '>='
+				case '<':
+				case '>':
+					t += buffer[curPos];
+					curPos++;
+					if (peek(false) == '=') {
 						t += buffer[curPos++];
-					} while (buffer[curPos - 1] != ')');
-				}
-				// Either way, return t now, don't check for anything else
-				return t;
-			}
+					}
+					break;
 
-			// Check if it's a function then
-			if (Function.isFunction(t)) {
-				// It certainly is! Get the arguments!
-				if (peek(false) == '(') {
-					// Since it lists arguments, get them!
-					do {
+					// If the next char is a number, token is a decimal number
+				case '.':
+					t += buffer[curPos];
+					curPos++;
+					while (isDigit(buffer[curPos]) & hasMoreTokens()) {
 						t += buffer[curPos++];
-						// Function call can include a reference to one array
-						// element
-						if (buffer[curPos] == '(') {
+					}
+					break;
+
+					// Eat space, then check if the next char is a Letter
+				case ',':
+					t += buffer[curPos++];
+					break;
+
+					// Return everything inside double quotes "
+				case '"':
+					t += buffer[curPos++];
+					while (buffer[curPos] != '"' & hasMoreTokens()) {
+						t += buffer[curPos++];
+					}
+					break;
+
+				default:
+					// Under default, if it's not one of the many conditions above
+					// then check if it's a letter or digit, and the operation continues
+
+					// Get the whole sequence of digits and letters, no matter what
+					while ((isLetter(buffer[curPos]) || isDigit(buffer[curPos])) & hasMoreTokens()) {
+						t += buffer[curPos++];
+						// A little costly on processor time, doing these checks every
+						// time a letter
+						// or character is added, but it could minimise mistakes
+
+						// Check if it's a standard BASIC function, if it is return it
+						// immediately
+						for (int i = 0; i < Function.functions.length; i++) {
+							if (t.contains(Function.functions[i]))
+								return t;
+						}
+						// Check if it's a system command, if it is return it
+						// immediately
+						for (int i = 0; i < CommandInterpreter.commands.length; i++) {
+							if (t.contains(CommandInterpreter.commands[i]))
+								return t;
+						}
+						// Check if it's a BASIC command, if it is return it immediately
+						for (int i = 0; i < Statement.statements.length; i++) {
+							if (t.contains(Statement.statements[i]))
+								return t;
+						}
+					}
+
+					// Check if this thing is a variable
+					if (Variable.isVariable(t)) {
+						// It is! So now get the rest of it (if there is a rest of it)
+						if (peek(false) == '(') {
+							// Right, get the whole of the variable's arguments
 							do {
 								t += buffer[curPos++];
-							} while (buffer[curPos - 1] != ')');
+							} while (buffer[curPos - 1] != ')' & curPos < buffer.length);
 						}
-					} while (buffer[curPos - 1] != ')');
-				}
-				return t;
-			}
+						// Either way, return t now, don't check for anything else
+						return t;
+					}
 
-			// Since it's none of the above, it's likely a number
-			if (Expression.isNumber(t)) {
-				if (buffer[curPos] == '.') {
-					t += buffer[curPos++];
-					while (isDigit(buffer[curPos])) {
-						t += buffer[curPos++];
-					}
-					// BASIC handles exponents with the letter E, at which
-					// point, number after it
-					// is the exponent of the given number i.e. in 111.222E333,
-					// 333 is the exponent
-					if (buffer[curPos] == 'E') {
-						t += buffer[curPos++];
-						while (isDigit(buffer[curPos])) {
-							t += buffer[curPos++];
+					// Check if it's a function then
+					if (Function.isFunction(t)) {
+						// It certainly is! Get the arguments!
+						if (peek(false) == '(') {
+							// Since it lists arguments, get them!
+							do {
+								t += buffer[curPos++];
+								// Function call can include a reference to one array
+								// element
+								if (buffer[curPos] == '(') {
+									do {
+										t += buffer[curPos++];
+									} while (buffer[curPos - 1] != ')' & hasMoreTokens());
+								}
+							} while (buffer[curPos - 1] != ')' & hasMoreTokens());
 						}
+						return t;
 					}
+
+					// Since it's none of the above, it's likely a number
+					if (Expression.isNumber(t)) {
+						if (buffer[curPos] == '.') {
+							t += buffer[curPos++];
+							while (isDigit(buffer[curPos]) & hasMoreTokens()){
+								t += buffer[curPos++];
+							}
+							// BASIC handles exponents with the letter E, at which
+							// point, number after it
+							// is the exponent of the given number i.e. in 111.222E333,
+							// 333 is the exponent
+							if (buffer[curPos] == 'E') {
+								t += buffer[curPos++];
+								while (isDigit(buffer[curPos]) & hasMoreTokens()){
+									t += buffer[curPos++];
+								}
+							}
+						}
+						return t;
+					}
+					break;
 				}
-				return t;
 			}
-			break;
+			// Handles the return, no matter what
+			return t;
 		}
-		// Handles the return, no matter what
-		return t;
+		catch (ArrayIndexOutOfBoundsException e){
+			return "\n";
+		}
 	}
 
 	// Methods and functions for doing the admin stuff
@@ -315,17 +325,17 @@ public class Tokenizer {
 
 	public static boolean isDigit(char c) {
 		// Checks if char is between '0' and '9'
-		return ((c >= '0') && (c <= '9'));
+		return ((c >= '0') & (c <= '9'));
 	}
 
 	public static boolean isLetter(char c) {
 		// Simply checks if the current char is between 'A' and 'Z'
-		return ((c >= 'A') && (c <= 'Z'));
+		return ((c >= 'A') & (c <= 'Z'));
 	}
 
 	private void eatSpace() {
 		// Was part of nextToken, but moved, it's used a fair amount
-		while (isSpace(buffer[curPos]) && hasMoreTokens()) {
+		while (isSpace(buffer[curPos]) & hasMoreTokens()){
 			curPos++;
 		}
 	}

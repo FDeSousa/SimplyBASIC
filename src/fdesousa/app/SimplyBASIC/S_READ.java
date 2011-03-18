@@ -44,15 +44,24 @@ public class S_READ extends Statement {
 						v.setValue(token, p.getData());
 					}
 					else {
-						et.append("NO DATA.\n");
-						p.stopExec();
+						errREAD("NO DATA");
+						return;
 					}
 				}
 				else {
-					et.append("ILLEGAL VARIABLE.\n");
-					p.stopExec();
+					errREAD("ILLEGAL VARIABLE");
+					return;
 				}
 			}
+			else if (token.equals("\n")){
+				// Just acknowledge and leave, on EOL
+				return;
+			}
 		} while (t.hasMoreTokens());
+	}
+	
+	private void errREAD(String type){
+		et.append(type + " - LINE NUMBER " + String.valueOf(p.getCurrentLine()) + "\n");
+		p.stopExec();
 	}
 }

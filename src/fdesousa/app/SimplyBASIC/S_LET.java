@@ -36,7 +36,6 @@ public class S_LET extends Statement {
 
 	@Override
 	public void doSt(){
-		double result = 0.0;
 		String vName = t.nextToken();
 		// Let Variable sort itself out, and return a Variable to work with
 		Variable v = Variable.getVariable(p, vName);
@@ -48,14 +47,31 @@ public class S_LET extends Statement {
 			// Very simple for the moment, will only handle numbers and symbols, hoping to mend that asap
 			while (t.hasMoreTokens()){
 				token = t.nextToken();
-				expression.offer(token);
+				if (! token.equals("\n")){
+					expression.offer(token);
+				}
+				else{
+					// If the token really is an EOL, assign the value, and leave
+					doAssign(expression, v, vName);
+					return;					
+				}
 			}
-			Expression e = new Expression(expression, p, et);
-			result = e.eval(p, et);	// Expression we want to evaluate was parsed while instantiating 'e'
 		}
-		
+		else {
+			errLineNumber("INCORRECT FORMAT");
+			return;
+		}
+	}
+	
+	private void doAssign(PriorityQueue<String> expression, Variable v, String vName){
+		Expression e = new Expression(expression, p, et);
 		// Once the expression has been resolved, have to put it somewhere, ideally in the named variable
-		v.setValue(vName, result);
-		et.append("\n" + String.valueOf(result));
+		v.setValue(vName, e.eval(p, et));
+		et.append(String.valueOf(v.getValue(vName)) + "\n");
+	}
+	
+	private void errLineNumber(String type){
+		et.append(type + " - LINE " + p.getCurrentLine());
+		p.stopExec();
 	}
 }

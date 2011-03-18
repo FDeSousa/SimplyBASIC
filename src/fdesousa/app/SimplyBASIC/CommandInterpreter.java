@@ -169,9 +169,9 @@ public class CommandInterpreter {
 		});// end onKeyListener
 	}
 
-	public int procCommand(String inToken){
+	public int procCommand(String input){
 
-		if (inToken.equals(commands[C_HELLO])){				// Start BASIC system, initialise BP
+		if (input.equals(commands[C_HELLO])){				// Start BASIC system, initialise BP
 			// Ask for user name, get ready for step 1 of HELLO
 			et.append("USER NAME-- ");
 			C_HELLO_Step = 1;
@@ -179,12 +179,12 @@ public class CommandInterpreter {
 		} // end HELLO command
 
 		// Only execute these commands if BP is instantiated
-		else if (BP instanceof BASICProgram){
+		//else if (BP instanceof BASICProgram){
 			// Separated from the other if .. else, this handles BASIC commands
 			// only if and when BP had been instantiated
 
-			if (Expression.isNumber(inToken) == true){
-				lineNumber = Integer.parseInt(inToken.trim());
+			if (Expression.isNumber(input) == true){
+				lineNumber = Integer.parseInt(input.trim());
 				
 				String resultAddLine = BP.addLine(lineNumber, tokenizer.getRestOfLine());
 				if (resultAddLine != null){
@@ -194,20 +194,21 @@ public class CommandInterpreter {
 				return 1;
 			}
 
-			if (inToken.equals(commands[C_NEW])){				// Create new program, with new name
+			if (input.equals(commands[C_NEW])){				// Create new program, with new name
 				et.append("NEW PROGRAM NAME-- ");
 				C_NEW_Step = 1;
 				return 1;
 			} // end NEW command
 
-			else if (inToken.equals(commands[C_OLD])){		// Load old program from file
+			else if (input.equals(commands[C_OLD])){		// Load old program from file
 				et.append("OLD PROGRAM NAME-- ");
 				C_OLD_Step = 1;
 				return 1;
 			} // end OLD command
 
-			else if (inToken.equals(commands[C_LIST])){		// Display current program's code
+			else if (input.equals(commands[C_LIST])){		// Display current program's code
 				// From now on, BP handles listing its own code
+				/*
 				if (tokenizer.hasMoreTokens()){
 					String lN = tokenizer.nextToken();
 					if (Expression.isNumber(lN)){
@@ -217,9 +218,12 @@ public class CommandInterpreter {
 				else {					
 					BP.C_LIST(et, BP.getFirstLine());
 				}
+				*/
+				BP.C_LIST(et);
+				return 0;
 			} // end LIST command
 
-			else if (inToken.equals(commands[C_SAVE])){		// Save loaded program's to file
+			else if (input.equals(commands[C_SAVE])){		// Save loaded program's to file
 				if (C_SAVE(BP.getProgName() + ".bas")){
 					return 0;
 				}
@@ -228,7 +232,7 @@ public class CommandInterpreter {
 				}
 			} // end SAVE command
 
-			else if (inToken.equals(commands[C_UNSAVE])){		// Delete loaded program's file
+			else if (input.equals(commands[C_UNSAVE])){		// Delete loaded program's file
 				if (C_UNSAVE(BP.getProgName() + ".bas")){
 					return 0;
 				}
@@ -237,7 +241,7 @@ public class CommandInterpreter {
 				}
 			} // end UNSAVE command
 
-			else if (inToken.equals(commands[C_CATALOG])){	// Display all previously saved programs
+			else if (input.equals(commands[C_CATALOG])){	// Display all previously saved programs
 				File[] dirList = dir.listFiles();
 
 				if (dirList != null){
@@ -249,38 +253,38 @@ public class CommandInterpreter {
 				return 0;
 			} // end CATALOG command
 
-			else if (inToken.equals(commands[C_SCRATCH])){	// Create new program with same name
+			else if (input.equals(commands[C_SCRATCH])){	// Create new program with same name
 				BP.C_SCRATCH();
 				return 0;
 			} // end SCRATCH command
 
-			else if (inToken.equals(commands[C_RENAME])){		// Rename current program
+			else if (input.equals(commands[C_RENAME])){		// Rename current program
 				BP.setProgName(tokens[1]);
 			} // end RENAME command
 
-			else if (inToken.equals(commands[C_RUN])){		// Run BASIC program in Interpreter
+			else if (input.equals(commands[C_RUN])){		// Run BASIC program in Interpreter
 				// As BP.run() does not return a value, must assume it will keep its own log,
 				// if something goes wrong, and will display an appropriate error message
 				BP.run(et);
 				return 0;
 			} // end RUN command
 
-			else if (inToken.equals(commands[C_BYE])){		// Exit BASIC System
+			else if (input.equals(commands[C_BYE])){		// Exit BASIC System
 				// Needs something here. Like, exit the system, not sure all-in-all
 				;
 			} // end BYE command
 
-			else if (inToken.equals("") || inToken == null){
+			else if (input.equals("") || input == null){
 				return 0;
 			}
 			else{
 				et.append("ERROR WITH SYSTEM COMMAND");
 				return -1;
 			}
-		}
-		else{
-			et.append("ERROR: BASIC NOT STARTED.\nTYPE 'HELLO' TO START.");
-		}
+		//}
+		//else{
+		//	et.append("ERROR: BASIC NOT STARTED.\nTYPE 'HELLO' TO START.");
+		//}
 		return -1;
 	}
 

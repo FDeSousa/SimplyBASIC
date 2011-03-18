@@ -26,7 +26,6 @@
 package fdesousa.app.SimplyBASIC;
 
 import java.util.PriorityQueue;
-
 import android.widget.EditText;
 
 public class S_IF extends Statement {

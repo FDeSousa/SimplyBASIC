@@ -39,16 +39,21 @@ public class S_GOTO extends Statement {
 			String token = t.nextToken();
 			if (Expression.isNumber(token)) {
 				int lN = Integer.parseInt(token);
-				p.setlNs(p.getTailMap(lN));
+				p.setlNs(p.getTailSet(lN));
 			}
 			else {
-				et.append("ILLEGAL LINE NUMBER - LINE " + p.getCurrentLine());
-				p.stopExec();
+				errLineNumber("ILLEGAL");
+				return;
 			}
 		}
 		else {
-			et.append("MISSING LINE NUMBER - LINE " + p.getCurrentLine());
-			p.stopExec();
+			errLineNumber("MISSING");
+			return;
 		}
+	}
+	
+	public void errLineNumber(String type){
+		et.append(type + " LINE NUMBER - LINE " + p.getCurrentLine());
+		p.stopExec();
 	}
 }

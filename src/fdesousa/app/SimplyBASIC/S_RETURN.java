@@ -35,7 +35,14 @@ public class S_RETURN extends Statement {
 
 	@Override
 	public void doSt(){
-		p.setlNs(p.getRETURNKeySet());
-		p.setRETURNKeySet(null);
+		if (! p.getRETURNKeySetisEmpty()){
+			p.setlNs(p.getRETURNKeySet());
+			p.setRETURNKeySet(null);
+		}
+		else{
+			et.append("ILLEGAL RETURN - LINE NUMBER " + String.valueOf(p.getCurrentLine()) + "\n");
+			p.stopExec();
+			return;
+		}
 	}
 }
