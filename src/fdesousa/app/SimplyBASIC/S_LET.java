@@ -71,7 +71,7 @@ public class S_LET extends Statement {
 	}
 	
 	private void errLineNumber(String type){
-		et.append(type + " - LINE " + p.getCurrentLine());
+		et.append(type + " - LINE NUMBER " + p.getCurrentLine());
 		p.stopExec();
 	}
 }

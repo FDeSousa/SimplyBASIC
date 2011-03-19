@@ -25,6 +25,7 @@
 
 package fdesousa.app.SimplyBASIC;
 
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class Variable {
@@ -39,7 +40,7 @@ public class Variable {
 	/**
 	 * regexNUM will match and get the name of a regular Number Variable
 	 */
-	public final static String regexNUM = "^[A-Z]{1}\\d?$";
+	public final static String regexNUM = "^([A-Z]{1}\\d?)$";
 
 	/**
 	 * regexVarName will get the name of a variable array
@@ -66,7 +67,7 @@ public class Variable {
 	 * [2]	Array argument 1
 	 * [3]	Array argument 2
 	 */
-	public final static String regexM_ARR = "^[A-Z]{1}[(]{1}\\s*(\\d+|\\w?\\d?)\\s*[,]{1}\\s*(\\d+|\\w?\\d?)\\s*[)]{1}$";
+	public final static String regexM_ARR = "^([A-Z]{1})[(]{1}\\s*(\\d+|\\w?\\d?)\\s*[,]{1}\\s*(\\d+|\\w?\\d?)\\s*[)]{1}$";
 
 	// General declarations here
 	private String name;
@@ -202,22 +203,29 @@ public class Variable {
 
 	public static String[] splitVariable(String input){
 		String REGEX;
+		String[] varArgs;
 		int varType = checkVariableType(input);
 		// Set the regular expression from one of the pre-defined ones
 		switch (varType){
-		case S_ARR:
-			REGEX = regexS_ARR;
-			break;
 		case M_ARR:
 			REGEX = regexM_ARR;
+			varArgs = new String[3];
+			break;
+		case S_ARR:
+			REGEX = regexS_ARR;
+			varArgs = new String[2];
 			break;
 		default:
-			REGEX = regexVarName;
+			REGEX = regexNUM;
+			varArgs = new String[1];
 			break;
 		}
 		// Compile the pattern from the REGEX, and split into arguments
 		Pattern p = Pattern.compile(REGEX);
-		String[] varArgs = p.split(input);
+		Matcher m = p.matcher(input);
+		for (int i = 0; i <= m.groupCount(); i++){
+			varArgs[i] = m.group(i);
+		}
 		return varArgs;
 	}
 

@@ -27,6 +27,7 @@ package fdesousa.app.SimplyBASIC;
 
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import android.widget.EditText;
 
@@ -102,56 +103,56 @@ public class S_FOR extends Statement {
 	 */
 	private void getFORExp(){
 		String line = t.getRestOfLine();
-		Pattern pt;
-		String[] args;
+		Pattern pT;
+		Matcher m;
 		Tokenizer expTok = new Tokenizer();
 
 		if (Pattern.matches(regexSTEP, line)){
-			pt = Pattern.compile(regexSTEP);
-			args = pt.split(line);
+			pT = Pattern.compile(regexSTEP);
+			m = pT.matcher(line);
 			/*
-			 * Upon using .split we get:
-			 * 0	The whole line
+			 * Upon using .group we get:
+			 * 0	The whole matched portion
 			 * 1	Named Variable
 			 * 2	Assignment Expression
 			 * 3	Limit Expression
 			 * 4	Step Expression
 			 */
-			v = Variable.getVariable(p, args[1]);
-			expTok.reset(args[2]);
+			v = Variable.getVariable(p, m.group(1));
+			expTok.reset(m.group(2));
 			assgn = Expression.getExp(p, et, expTok);
 			first = assgn.eval(p, et);
 			v.setValue(first);
 
-			expTok.reset(args[3]);
+			expTok.reset(m.group(3));
 			limit = Expression.getExp(p, et, expTok);
 			last = limit.eval(p, et);
 
-			expTok.reset(args[4]);
+			expTok.reset(m.group(4));
 			count = Expression.getExp(p, et, expTok);
 			step = count.eval(p, et);
 		}
 		else if (Pattern.matches(regexNOSTEP, line)){
-			pt = Pattern.compile(regexNOSTEP);
-			args = pt.split(line);
+			pT = Pattern.compile(regexNOSTEP);
+			m = pT.matcher(line);
 			/*
-			 * Upon using .split we get:
+			 * Upon using .group we get:
 			 * 0	The whole line
 			 * 1	Named Variable
 			 * 2	Assignment Expression
 			 * 3	Limit Expression
 			 */
-			v = Variable.getVariable(p, args[1]);
-			expTok.reset(args[2]);
+			v = Variable.getVariable(p, m.group(1));
+			expTok.reset(m.group(2));
 			assgn = Expression.getExp(p, et, expTok);
 			first = assgn.eval(p, et);
 			v.setValue(first);
 
-			expTok.reset(args[3]);
+			expTok.reset(m.group(3));
 			limit = Expression.getExp(p, et, expTok);
 			last = limit.eval(p, et);
 
-			step = 0.0;
+			step = 1.0;
 		}
 		else {
 			et.append("INVALID FOR - LINE NUMBER " + p.getCurrentLine() + "\n");

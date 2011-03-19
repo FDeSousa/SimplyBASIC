@@ -26,6 +26,7 @@
 package fdesousa.app.SimplyBASIC;
 
 import java.util.PriorityQueue;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import android.widget.EditText;
@@ -70,8 +71,13 @@ public class Function {
 	
 	public static String getFnName(String token){
 		Pattern pT = Pattern.compile(regexFunctionTokens);
-		String[] args = pT.split(token);
-		return args[1];
+		Matcher m = pT.matcher(token);
+		if (m.find()){
+			return m.group(1);
+		}
+		else {
+			return null;
+		}
 	}
 
 	public Expression getExpression(){
@@ -84,28 +90,34 @@ public class Function {
 
 	public double doUserFn(EditText et, String token, BASICProgram p){
 		Pattern pT = Pattern.compile(regexFunctionTokens);
-		String[] args = pT.split(token);
-		double arg = evalArg(args[2], p, et);
-
-		// Assign the arg value to the Function's named variable, 
-		// which is used by user functions exclusively
-		FN_Variable.setValue(arg);
-
-		// So now, onto the meat of it, do the function!
-		// Convert the function's expression into postfix (this reorganises it
-		// while also resolving the variable names included in the expression)
-		FN_Expression.inToPost(p, et);
-		// And evaluate that expression!
-		FN_Expression.eval(p, et);
-		// Yes, it's only one line. The Function name really just references a certain Expression
-
-		return 0.0;
+		Matcher m = pT.matcher(token);
+		if (m.find()){
+			double arg = evalArg(m.group(2), p, et);
+			// Assign the arg value to the Function's named variable, 
+			// which is used by user functions exclusively
+			FN_Variable.setValue(arg);
+			// So now, onto the meat of it, do the function!
+			// Convert the function's expression into postfix (this reorganises it
+			// while also resolving the variable names included in the expression)
+			FN_Expression.inToPost(p, et);
+			// And evaluate that expression!
+			return FN_Expression.eval(p, et);
+		}
+		else {
+			return 0.0;			
+		}
 	}
 	
 	public static double doFn(EditText et, String token, BASICProgram p){
 		Pattern pT = Pattern.compile(regexFunctionTokens);
-		String[] args = pT.split(token);
-		double arg = evalArg(args[2], p, et);
+		Matcher m = pT.matcher(token);
+		double arg;
+		if (m.find()){
+			arg = evalArg(m.group(2), p, et);
+		}
+		else {
+			return 0.0;
+		}
 		
 		if (token.equals(functions[FN_SIN])){
 			return Math.sin(arg);
@@ -199,7 +211,10 @@ public class Function {
 	
 	public static String getArg(String token){
 		Pattern pT = Pattern.compile(regexFunctionTokens);
-		String[] args = pT.split(token);
-		return args[2];
+		Matcher m = pT.matcher(token);
+		if (m.find()){
+			return m.group(1);
+		}
+		return null;
 	}
 }

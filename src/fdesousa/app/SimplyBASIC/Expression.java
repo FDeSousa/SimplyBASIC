@@ -27,6 +27,7 @@ package fdesousa.app.SimplyBASIC;
 
 import java.util.PriorityQueue;
 import java.util.Stack;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import android.widget.EditText;
 
@@ -234,8 +235,10 @@ public class Expression {
 	 */
 	public static boolean isNumber(String input){
 		// It's a public static just to make it easier to use in BP, which does a check every-so-often.
+		Pattern p = Pattern.compile(regexNumber);
+		Matcher m = p.matcher(input);
 		try {
-			return Pattern.matches(regexNumber, input);
+			return m.find();
 		}
 		catch (NumberFormatException ex) {
 			return false;
@@ -244,8 +247,10 @@ public class Expression {
 
 	public static boolean hasExponent(String input){
 		// It's a public static just to make it easier to use in BP, which does a check every-so-often.
+		Pattern p = Pattern.compile(regexExponent);
+		Matcher m = p.matcher(input);
 		try {
-			return Pattern.matches(regexExponent, input);
+			return m.find();
 		}
 		catch (NumberFormatException ex) {
 			return false;
@@ -254,13 +259,20 @@ public class Expression {
 
 	public static double[] separateNumber(String input){
 		Pattern p = Pattern.compile(regexExponent);
-		String[] split = p.split(input);
-		double[] number = { Double.parseDouble(split[1]), Double.parseDouble(split[2]) };
-		return number;
+		Matcher m = p.matcher(input);
+		double[] numbers = new double[2];
+		if (m.find()){
+			numbers[0] = Double.parseDouble(m.group(1));
+			numbers[1] = Double.parseDouble(m.group(2));
+			return numbers;
+		}
+		else {
+			return null;
+		}
 	}
 
 	public static double calculateExponent(String input){
-		double[] number = separateNumber(input);
-		return Math.pow(number[0], number[1]);
+		double[] numbers = separateNumber(input);
+		return Math.pow(numbers[0], numbers[1]);
 	}
 }

@@ -51,12 +51,11 @@ public class S_PRINT extends Statement {
 			}
 			else if (token.equals(",")){
 				// Acknowledge commas as new line indicator
-				outLine += "\n";
+				outLine += "\t";
 			}
 			else if (token.equals("\n")){
-				// Acknowledge this as a point to append the outLine, and leave
-				et.append(outLine + token);
-				return;
+				// Acknowledge this but ignore it
+				break;
 			}
 			else {
 				// Assume it's an expression, figure that out first
@@ -69,5 +68,6 @@ public class S_PRINT extends Statement {
 				outLine += String.valueOf(e.eval(p, et));
 			}
 		}
+		et.append(outLine + "\n");
 	}
 }

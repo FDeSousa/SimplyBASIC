@@ -25,6 +25,7 @@
 
 package fdesousa.app.SimplyBASIC;
 
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class Tokenizer {
@@ -43,6 +44,14 @@ public class Tokenizer {
 		// the moment as it's used more than once
 	}
 
+	/**
+	 * <p> Gets and returns the next token as String. A token can be:
+	 * <ul><li> A letter </li>
+	 * <li> A digit </li>
+	 * <li> A literal string of characters </li>
+	 * <li> A number (w or w/o Negative/Decimal/Exponent) </li></ul></p>
+	 * @return String containing token
+	 */
 	public String nextToken() {
 		try {
 			// t is the returned String token
@@ -67,7 +76,7 @@ public class Tokenizer {
 					if (isDigit(buffer[curPos])){
 						return getNumber();
 					}
-					break;
+					return t;
 				case '*':
 				case '/':
 				case '^':
@@ -75,7 +84,7 @@ public class Tokenizer {
 				case '(':
 				case ')':
 					t += buffer[curPos++];
-					break;
+					return t;
 					// All of [< > . ,] may have additional operators/chars
 					// If the next char is '=', then token is '<=' or '>='
 				case '<':
@@ -84,7 +93,7 @@ public class Tokenizer {
 					if (buffer[curPos] == '=') {
 						t += buffer[curPos++];
 					}
-					break;
+					return t;
 
 					// If the next char is a number, token is a decimal number
 				case '.':
@@ -92,20 +101,23 @@ public class Tokenizer {
 					if (isDigit(buffer[curPos])) {
 						return getNumber();
 					}
-					break;
+					return t;
 
 					// Eat space, then check if the next char is a Letter
 				case ',':
 					t += buffer[curPos++];
-					break;
+					return t;
 
-					// Return everything inside double quotes "
+					// Return everything inside and including '"'
 				case '"':
+					boolean endQuote = false;
 					t += buffer[curPos++];
-					while (buffer[curPos] != '"' & hasMoreTokens()) {
+					while (! endQuote & hasMoreTokens()){
+						if (buffer[curPos] == '"')
+							endQuote = true;
 						t += buffer[curPos++];
 					}
-					break;
+					return t;
 
 				default:
 					// Under default, if it's not one of the many conditions above
@@ -223,13 +235,24 @@ public class Tokenizer {
 		return num;
 	}
 	
-	// Methods and functions for doing the admin stuff
+	// Methods and functions for doing the "admin" stuff below
+	/**
+	 * Returns true if there is one or more chars in the buffer, 
+	 * returns false otherwise
+	 */
 	public boolean hasMoreTokens() {
 		// Simple enough. If current position is less than buffer length,
 		// returns true
 		return (curPos < buffer.length);
 	}
 
+	/**
+	 * Takes a peek at the next char, before resetting current position
+	 * back to the original point. <br> If eatSpaces is true, it skips the
+	 * space characters to get the next character from buffer.
+	 * @param eatSpaces - if true, it removes spaces before the next char
+	 * @return the next char in the buffer
+	 */
 	public char peek(boolean eatSpaces) {
 		char c;
 		mark();
@@ -311,10 +334,16 @@ public class Tokenizer {
 	}
 
 	public static String removeQuotes(String input) {
-		Pattern p = Pattern.compile("^[\"](\\s*.*\\s*)[\"]$");
+		String regexQuoted = "^[\"]{1}(.*)[\"]{1}$";
+		Pattern p = Pattern.compile(regexQuoted);
+		Matcher m = p.matcher(input);
 		// This pattern matches and returns anything within quotation marks
-		String[] args = p.split(input);
-		return args[1];
+		if (m.find()){
+			return m.group(1);
+		}
+		else {
+			return null;
+		}
 	}
 
 	// Who would have thought? A decade and a half, and Java still
