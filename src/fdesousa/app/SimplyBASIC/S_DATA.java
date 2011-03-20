@@ -40,7 +40,7 @@ public class S_DATA extends Statement {
 		while (t.hasMoreTokens()){
 			s = t.nextToken();
 			if (Expression.isNumber(s)){
-				p.addData(Double.parseDouble(s));
+				p.addData(Double.valueOf(s.trim()).doubleValue());
 			}
 			else if (s.equals(",")){
 				; // Acknowledge, but do nothing about it

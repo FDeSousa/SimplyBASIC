@@ -38,7 +38,7 @@ public class S_GOTO extends Statement {
 		if (t.hasMoreTokens()) {
 			String token = t.nextToken();
 			if (Expression.isNumber(token)) {
-				int lN = Integer.parseInt(token);
+				int lN = Integer.valueOf(token.trim()).intValue();
 				p.setlNs(p.getTailSet(lN));
 			}
 			else {

@@ -171,7 +171,7 @@ public class Function {
 			}
 			else {
 				// Since it doesn't, just parse the converted value
-				arg = Double.parseDouble(argument);
+				arg = Double.valueOf(argument.trim()).doubleValue();
 			}
 		}
 		else {

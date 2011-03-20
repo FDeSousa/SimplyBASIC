@@ -181,7 +181,7 @@ public class CommandInterpreter {
 			// only if and when BP had been instantiated
 
 			if (Expression.isNumber(input) == true){
-				lineNumber = Integer.parseInt(input.trim());
+				lineNumber = Integer.valueOf(input.trim()).intValue();
 				BP.addLine(lineNumber, tokenizer.getRestOfLine());
 				et.append("> ");
 				return 1;

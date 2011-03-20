@@ -145,12 +145,12 @@ public class Expression {
 			String op;
 
 			if (! post.isEmpty() & post.size() < 2)
-				return Double.parseDouble(post.poll());
+				return Double.valueOf(post.poll().trim()).doubleValue();
 
 			// so only parse in one item, and receive nothing.
 			while (! post.isEmpty()){
 				if (isNumber(post.peek())){
-					runningTotal.push(Double.parseDouble(post.poll()));
+					runningTotal.push(Double.valueOf(post.poll().trim()).doubleValue());
 				}
 				else if (isOperator(post.peek())){
 					val2 = runningTotal.pop();
@@ -179,7 +179,7 @@ public class Expression {
 			et.append("ILLEGAL FORMULA - LINE NUMBER " + String.valueOf(p.getCurrentLine()) + "\n");
 			et.append(e + "\n");
 			p.stopExec();
-			return Double.MAX_VALUE;
+			return Double.MIN_VALUE;
 		}
 	}
 
@@ -234,10 +234,10 @@ public class Expression {
 	 * @return true if it matches / false if it doesn't
 	 */
 	public static boolean isNumber(String input){
-		// It's a public static just to make it easier to use in BP, which does a check every-so-often.
-		Pattern p = Pattern.compile(regexNumber);
-		Matcher m = p.matcher(input);
 		try {
+			// It's a public static just to make it easier to use in BP, which does a check every-so-often.
+			Pattern p = Pattern.compile(regexNumber);
+			Matcher m = p.matcher(input);
 			return m.find();
 		}
 		catch (NumberFormatException ex) {
@@ -246,10 +246,10 @@ public class Expression {
 	}
 
 	public static boolean hasExponent(String input){
-		// It's a public static just to make it easier to use in BP, which does a check every-so-often.
-		Pattern p = Pattern.compile(regexExponent);
-		Matcher m = p.matcher(input);
 		try {
+			// It's a public static just to make it easier to use in BP, which does a check every-so-often.
+			Pattern p = Pattern.compile(regexExponent);
+			Matcher m = p.matcher(input);
 			return m.find();
 		}
 		catch (NumberFormatException ex) {
@@ -258,17 +258,25 @@ public class Expression {
 	}
 
 	public static double[] separateNumber(String input){
-		Pattern p = Pattern.compile(regexExponent);
-		Matcher m = p.matcher(input);
-		double[] numbers = new double[2];
-		if (m.find()){
-			numbers[0] = Double.parseDouble(m.group(1));
-			numbers[1] = Double.parseDouble(m.group(2));
-			return numbers;
+		try {
+			Pattern p = Pattern.compile(regexExponent);
+			Matcher m = p.matcher(input);
+			double[] numbers = new double[2];
+			if (m.matches()){
+				if (m.find()){
+					numbers[0] = Double.valueOf(m.group(1).trim()).doubleValue();
+					numbers[1] = Double.valueOf(m.group(2).trim()).doubleValue();
+					return numbers;
+				}
+				else {
+					return null;
+				}
+			}
 		}
-		else {
+		catch (IllegalStateException e){
 			return null;
 		}
+		return null;
 	}
 
 	public static double calculateExponent(String input){

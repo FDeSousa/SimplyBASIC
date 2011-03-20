@@ -97,8 +97,8 @@ public class Tokenizer {
 
 					// If the next char is a number, token is a decimal number
 				case '.':
-					t += buffer[curPos++];
 					if (isDigit(buffer[curPos])) {
+						t += '0' + buffer[curPos++];	// Add a leading zero
 						return getNumber();
 					}
 					return t;
@@ -202,18 +202,19 @@ public class Tokenizer {
 
 	private String getNumber(){
 		String num = t;
-		
-		while (isDigit(buffer[curPos])){
-			num += nextToken();
+		try {
+
+		while (isDigit(buffer[curPos]) & hasMoreTokens()){
+			num += buffer[curPos++];
 		}
-		
+
 		// BASIC handles numbers as double/integer, so look for a decimal place
 		if (buffer[curPos] == '.'){
 			// If this next character is a decimal place, keep getting characters 
-			num += nextToken();
+			num += buffer[curPos++];
 			while (isDigit(buffer[curPos]) & hasMoreTokens()){
 				// But only get them while they're digits
-				num += nextToken();
+				num += buffer[curPos++];
 			}
 		}
 		// BASIC handles exponents with the letter E, at which
@@ -223,18 +224,28 @@ public class Tokenizer {
 		if (buffer[curPos] == 'E'){
 			// If this next character is an E for Exponent, get the rest of it
 			num += buffer[curPos++];
-			if (buffer[curPos] == '-' || buffer[curPos] == '+' || isDigit(buffer[curPos])){
-				num += nextToken();
+			if ((buffer[curPos] == '-' || buffer[curPos] == '+' 
+				|| isDigit(buffer[curPos])) & hasMoreTokens()){
+				
+				num += buffer[curPos++];
 			}
 			while (isDigit(buffer[curPos]) & hasMoreTokens()){
+				
 				// But only if the rest of it consists of digits
-				num += nextToken();
+				num += buffer[curPos++];
 			}
 		}
-		
+
 		return num;
+		}
+		catch (NumberFormatException e){
+			return "\n";
+		}
+		catch (ArrayIndexOutOfBoundsException e){
+			return num;
+		}
 	}
-	
+
 	// Methods and functions for doing the "admin" stuff below
 	/**
 	 * Returns true if there is one or more chars in the buffer, 
@@ -334,15 +345,20 @@ public class Tokenizer {
 	}
 
 	public static String removeQuotes(String input) {
-		String regexQuoted = "^[\"]{1}(.*)[\"]{1}$";
-		Pattern p = Pattern.compile(regexQuoted);
-		Matcher m = p.matcher(input);
-		// This pattern matches and returns anything within quotation marks
-		if (m.find()){
-			return m.group(1);
+		try {
+			String regexQuoted = "^[\"]{1}(.*)[\"]{1}$";
+			Pattern p = Pattern.compile(regexQuoted);
+			Matcher m = p.matcher(input);
+			// This pattern matches and returns anything within quotation marks
+			if (m.find()){
+				return m.group(1);
+			}
+			else {
+				return null;
+			}
 		}
-		else {
-			return null;
+		catch (IllegalStateException e){
+			return "";
 		}
 	}
 

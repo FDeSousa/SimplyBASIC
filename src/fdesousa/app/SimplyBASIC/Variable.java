@@ -83,24 +83,29 @@ public class Variable {
 	 * @param vName - token with argument(s) for new Variable
 	 */
 	public Variable(String vName){
-		if (checkVariableType(vName) == NUM){
-			name = vName;
-			type = NUM;
+		try {
+			if (checkVariableType(vName) == NUM){
+				name = vName;
+				type = NUM;
+			}
+			else if (checkVariableType(vName) == S_ARR){
+				String[] args = splitVariable(vName);
+				name = args[1];
+				dim1 = Integer.valueOf(args[2].trim()).intValue();
+				S_DIM = new double[dim1];
+				type = S_ARR;
+			}
+			else if (checkVariableType(vName) == M_ARR){
+				String[] args = splitVariable(vName);
+				name = args[1];
+				dim1 = Integer.valueOf(args[2].trim()).intValue();
+				dim2 = Integer.valueOf(args[3].trim()).intValue();
+				M_DIM = new double[dim1][dim2];
+				type = M_ARR;
+			}
 		}
-		else if (checkVariableType(vName) == S_ARR){
-			String[] args = splitVariable(vName);
-			name = args[1];
-			dim1 = Integer.parseInt(args[2]);
-			S_DIM = new double[dim1];
-			type = S_ARR;
-		}
-		else if (checkVariableType(vName) == M_ARR){
-			String[] args = splitVariable(vName);
-			name = args[1];
-			dim1 = Integer.parseInt(args[2]);
-			dim2 = Integer.parseInt(args[3]);
-			M_DIM = new double[dim1][dim2];
-			type = M_ARR;
+		catch (IllegalStateException e){
+			return;
 		}
 	}
 
@@ -126,22 +131,27 @@ public class Variable {
 	 * @return value - Value of this Variable
 	 */
 	public double getValue(String vName){
-		String[] varArgs = splitVariable(vName);
-		if (type == S_ARR){
-			int index = Integer.parseInt(varArgs[2]);
-			return S_DIM[index];
+		try {
+			String[] varArgs = splitVariable(vName);
+			if (type == S_ARR){
+				int index = Integer.valueOf(varArgs[2].trim()).intValue();
+				return S_DIM[index];
+			}
+			else if (type == M_ARR){
+				int dim1 = Integer.valueOf(varArgs[2].trim()).intValue();
+				int dim2 = Integer.valueOf(varArgs[3].trim()).intValue();
+				return M_DIM[dim1][dim2];
+			}
+			else {
+				// If it's not a single-/multi-dimension array, return the value
+				return value;			
+			}
 		}
-		else if (type == M_ARR){
-			int dim1 = Integer.parseInt(varArgs[2]);
-			int dim2 = Integer.parseInt(varArgs[3]);
-			return M_DIM[dim1][dim2];
-		}
-		else {
-			// If it's not a single-/multi-dimension array, return the value
-			return value;			
+		catch (IllegalStateException e){
+			return Double.MIN_VALUE;
 		}
 	}
-	
+
 	public double getValue(){
 		return value;
 	}
@@ -152,18 +162,23 @@ public class Variable {
 	 * @param value - the value to place in the variable
 	 */
 	public void setValue(String vName, double value){
-		String[] varArgs = splitVariable(vName);
-		if (type == S_ARR){
-			int index = Integer.parseInt(varArgs[2]);
-			S_DIM[index] = value;
+		try {
+			String[] varArgs = splitVariable(vName);
+			if (type == S_ARR){
+				int index = Integer.valueOf(varArgs[2].trim()).intValue();
+				S_DIM[index] = value;
+			}
+			else if (type == M_ARR){
+				int dim1 = Integer.valueOf(varArgs[2].trim()).intValue();
+				int dim2 = Integer.valueOf(varArgs[3].trim()).intValue();
+				M_DIM[dim1][dim2] = value;
+			}
+			else {
+				this.value = value;
+			}
 		}
-		else if (type == M_ARR){
-			int dim1 = Integer.parseInt(varArgs[2]);
-			int dim2 = Integer.parseInt(varArgs[3]);
-			M_DIM[dim1][dim2] = value;
-		}
-		else {
-			this.value = value;
+		catch (IllegalStateException e){
+			return;
 		}
 	}
 
@@ -180,9 +195,14 @@ public class Variable {
 
 	// Check if the input String is a variable
 	public static boolean isVariable(String input){
-		return (Pattern.matches(regexNUM, input) || 
-				Pattern.matches(regexS_ARR, input) || 
-				Pattern.matches(regexM_ARR, input));
+		try {
+			return (Pattern.matches(regexNUM, input) || 
+					Pattern.matches(regexS_ARR, input) || 
+					Pattern.matches(regexM_ARR, input));
+		}
+		catch (IllegalStateException e){
+			return false;
+		}
 	}
 
 	// Static Variable operations to check type and split it
@@ -195,60 +215,72 @@ public class Variable {
 			else if (Pattern.matches(regexNUM, input))
 				return NUM;
 		}
-		catch(NumberFormatException e){
+		catch(Exception e){
 			return ERR;
 		}
 		return ERR;
 	}
 
 	public static String[] splitVariable(String input){
-		String REGEX;
-		String[] varArgs;
-		int varType = checkVariableType(input);
-		// Set the regular expression from one of the pre-defined ones
-		switch (varType){
-		case M_ARR:
-			REGEX = regexM_ARR;
-			varArgs = new String[3];
-			break;
-		case S_ARR:
-			REGEX = regexS_ARR;
-			varArgs = new String[2];
-			break;
-		default:
-			REGEX = regexNUM;
-			varArgs = new String[1];
-			break;
+		try {
+			String REGEX;
+			String[] varArgs;
+			int varType = checkVariableType(input);
+			// Set the regular expression from one of the pre-defined ones
+			switch (varType){
+			case M_ARR:
+				REGEX = regexM_ARR;
+				varArgs = new String[3];
+				break;
+			case S_ARR:
+				REGEX = regexS_ARR;
+				varArgs = new String[2];
+				break;
+			case NUM:
+				REGEX = regexNUM;
+				varArgs = new String[1];
+				varArgs[0] = input;
+				return varArgs;
+			default: 
+				return null;
+			}
+			// Compile the pattern from the REGEX, and split into arguments
+			Pattern p = Pattern.compile(REGEX);
+			Matcher m = p.matcher(input);
+			for (int i = 0; i <= m.groupCount(); i++){
+				varArgs[i] = m.group(i);
+			}
+			return varArgs;
 		}
-		// Compile the pattern from the REGEX, and split into arguments
-		Pattern p = Pattern.compile(REGEX);
-		Matcher m = p.matcher(input);
-		for (int i = 0; i <= m.groupCount(); i++){
-			varArgs[i] = m.group(i);
+		catch (IllegalStateException e){
+			return null;
 		}
-		return varArgs;
 	}
 
 	public static Variable getVariable(BASICProgram p, String vName){
+		try {
+			int chk = checkVariableType(vName);
+			String[] args = splitVariable(vName);
 
-		int chk = checkVariableType(vName);
-		String[] args = splitVariable(vName);
-
-		Variable tV = p.getVar(args[0]);
-		if (tV != null){	// If it's not null, it exists			
-			if (tV.getType() == chk){	// If the type is the same
-				return tV;	// Return the tempVariable
+			Variable tV = p.getVar(args[0]);
+			if (tV != null){	// If it's not null, it exists			
+				if (tV.getType() == chk){	// If the type is the same
+					return tV;	// Return the tempVariable
+				}
+				else {
+					return null;
+				}
 			}
-			else {
-				return null;
+			else if (tV == null & chk == NUM){
+				// As it doesn't exist and it's a simple number, create it
+				Variable v = new Variable(args[0]);
+				p.putVar(v);
+				return v;
 			}
+			return null;
 		}
-		else if (tV == null & chk == NUM){
-			// As it doesn't exist and it's a simple number, create it
-			Variable v = new Variable(args[0]);
-			p.putVar(v);
-			return v;
+		catch (IllegalStateException e){
+			return null;
 		}
-		return null;
 	}
 }
