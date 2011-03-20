@@ -76,10 +76,10 @@ public class Expression {
 	public void inToPost(BASICProgram p, EditText et){
 		String token = new String();
 
-		if (! in.isEmpty() & in.size() < 2){
-			post.offer(in.poll());
-			return;
-		}
+//		if (! in.isEmpty() & in.size() < 2){
+//			post.offer(in.poll());
+//			return;
+//		}
 
 		while (! in.isEmpty()) {
 			token = in.poll();
@@ -113,8 +113,8 @@ public class Expression {
 				if (ops.isEmpty()){
 					ops.push(token);
 				}
-				else{
-					while (precedence(token) <= precedence(ops.peek()) || ! ops.isEmpty()) {
+				else{	// While ops isn't empty OR precedence current token <= precedence ops.top
+					while (! ops.isEmpty() && (precedence(token) <= precedence(ops.peek()))) {
 						post.offer(ops.pop());
 					}
 					ops.push(token);
@@ -124,13 +124,13 @@ public class Expression {
 				ops.push(token);
 			}
 			else if (token.equals(")")){
-				while (! ops.peek().equals("(")){
+				while (! ops.isEmpty() && ! ops.peek().equals("(")){
 					post.offer(ops.pop());
 				}
 				ops.pop();
 			}
 		}
-		while (! ops.empty()){
+		while (! ops.isEmpty()){
 			post.offer(ops.pop());
 		}
 	}
@@ -144,8 +144,8 @@ public class Expression {
 			// The operator to use on the two values
 			String op;
 
-			if (! post.isEmpty() & post.size() < 2)
-				return Double.valueOf(post.poll().trim()).doubleValue();
+//			if (! post.isEmpty() & post.size() < 2)
+//				return Double.valueOf(post.poll().trim()).doubleValue();
 
 			// so only parse in one item, and receive nothing.
 			while (! post.isEmpty()){
