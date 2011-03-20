@@ -28,6 +28,15 @@ package fdesousa.app.SimplyBASIC;
 import java.util.PriorityQueue;
 import android.widget.EditText;
 
+/**
+ * <h1>S_IF.java</h1>
+ * Handles the IF Statement, by evaluating two given expressions and<br>
+ * checking their results against each other, by the given relation.<br>
+ * If the relation is evaluated as true, the program then moves to execute<br>
+ * the named line number.
+ * @version 0.1
+ * @author Filipe De Sousa
+ */
 public class S_IF extends Statement {
 
 	public S_IF(BASICProgram pgm, Tokenizer tok, EditText edtxt){

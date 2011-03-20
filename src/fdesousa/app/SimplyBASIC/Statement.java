@@ -27,6 +27,12 @@ package fdesousa.app.SimplyBASIC;
 
 import android.widget.EditText;
 
+/**
+ * <h1>Statement.java</h1>
+ * Determines what to do with a BASIC Statement command from the current line.
+ * @version 0.1
+ * @author Filipe De Sousa
+ */
 public class Statement {
 	final static String[] statements = {
 		"IF", "THEN", "FOR", "TO", "STEP", 

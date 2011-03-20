@@ -27,6 +27,13 @@ package fdesousa.app.SimplyBASIC;
 
 import android.widget.EditText;
 
+/**
+ * <h1>S_READ.java</h1>
+ * Handles a READ Statement, by retrieving a value from the DATA stack<br>
+ * and assign it to the named Variable.
+ * @version 0.1
+ * @author Filipe De Sousa
+ */
 public class S_READ extends Statement {
 
 	public S_READ(BASICProgram pgm, Tokenizer tok, EditText edtxt){

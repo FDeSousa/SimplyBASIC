@@ -25,26 +25,41 @@
 
 package fdesousa.app.SimplyBASIC;
 
-import java.util.PriorityQueue;
+import java.util.LinkedList;
+import java.util.Queue;
 import java.util.Stack;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import android.widget.EditText;
 
-public class Expression {
+/**
+ * <h1>Expression.java</h1>
+ * This class handles an expression, consisting of one or more:
+ * <ul>
+ * 	<li>Number</li>
+ * 	<li>Variable</li>
+ * 	<li>Function</li>
+ * 	<li>Operator</li>
+ * </ul>
+ * It follows the execution order defined by BODMAS, using
+ * stacks and queues.
+ * @version 0.1
+ * @author Filipe De Sousa
+ */
+public class Expression{
 
 	static final String[] operators = { "^", "*", "/", "+", "-" };
 
 	boolean FN_Expression = false;
 
 	// A queue of infix values parsed in as a new expression
-	PriorityQueue<String> in = new PriorityQueue<String>();
+	Queue<String> in;
 	// The same expression, but rearranged into postfix notation
-	PriorityQueue<String> post = new PriorityQueue<String>();
+	Queue<String> post = new LinkedList<String>();
 	// A stack of operators. Temporary use while converting
 	Stack<String> ops = new Stack<String>();
 
-	public final static String regexNumber = "^([+-]?\\d*\\.?\\d+)[E]?([+-]?\\d+)$";
+	public final static String regexNumber = "^([+-]?\\d*\\.?\\d+)[E]?([+-]?\\d*)$";
 	public final static String regexExponent = "^([+-]?\\d*\\.?\\d+)[E]{1}([+-]?\\d+)$";
 
 	/**
@@ -60,7 +75,7 @@ public class Expression {
 	 * @param p - an instance of BASICProgram, used with inToPost()
 	 * @param et - an instance of EditText, used with inToPost()
 	 */
-	public Expression (PriorityQueue<String> expr, BASICProgram p, EditText et){
+	public Expression (Queue<String> expr, BASICProgram p, EditText et){
 		in = expr;
 		inToPost(p, et);
 	}
@@ -69,17 +84,17 @@ public class Expression {
 	 * This constructor initialises the expr queue, but does nothing else
 	 * @param expr - the queue holding the expr to calculate
 	 */
-	public Expression (PriorityQueue<String> expr){
+	public Expression (Queue<String> expr){
 		in = expr;
 	}
 
 	public void inToPost(BASICProgram p, EditText et){
 		String token = new String();
 
-//		if (! in.isEmpty() & in.size() < 2){
-//			post.offer(in.poll());
-//			return;
-//		}
+		if (! in.isEmpty() & in.size() < 2){
+			post.offer(in.poll());
+			return;
+		}
 
 		while (! in.isEmpty()) {
 			token = in.poll();
@@ -144,8 +159,8 @@ public class Expression {
 			// The operator to use on the two values
 			String op;
 
-//			if (! post.isEmpty() & post.size() < 2)
-//				return Double.valueOf(post.poll().trim()).doubleValue();
+			if (! post.isEmpty() & post.size() < 2)
+				return Double.valueOf(post.poll().trim()).doubleValue();
 
 			// so only parse in one item, and receive nothing.
 			while (! post.isEmpty()){
@@ -204,7 +219,7 @@ public class Expression {
 	 * @return A new Expression, with data, and convert to postfix
 	 */
 	public static Expression getExp(BASICProgram p, EditText et, Tokenizer expTok){
-		PriorityQueue<String> expr = new PriorityQueue<String>();
+		Queue<String> expr = new LinkedList<String>();
 
 		String token = expTok.nextToken();
 

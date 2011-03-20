@@ -27,6 +27,13 @@ package fdesousa.app.SimplyBASIC;
 
 import android.widget.EditText;
 
+/**
+ * <h1>S_RETURN.java</h1>
+ * Handles RETURN Statement by returning line execution to the<br>
+ * point of the last called GOSUB statement.
+ * @version 0.1
+ * @author Filipe De Sousa
+ */
 public class S_RETURN extends Statement {
 
 	public S_RETURN(BASICProgram pgm, Tokenizer tok, EditText edtxt){

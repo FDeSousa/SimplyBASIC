@@ -27,6 +27,13 @@ package fdesousa.app.SimplyBASIC;
 
 import android.widget.EditText;
 
+/**
+ * <h1>S_NEXT.java</h1>
+ * Handles the NEXT Statement by retrieving the matching FOR Statement<br>
+ * instance from BASIC Program, if it exists, and executes it.
+ * @version 0.1
+ * @author Filipe De Sousa
+ */
 public class S_NEXT extends Statement {
 
 	public S_NEXT(BASICProgram pgm, Tokenizer tok, EditText edtxt){

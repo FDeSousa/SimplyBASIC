@@ -28,6 +28,13 @@ package fdesousa.app.SimplyBASIC;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+/**
+ * <h1>Tokenizer.java</h1>
+ * Separates tokens in an input line into separate Strings depending<br>
+ * upon what they represent i.e. Number, Operator, Variable, etc.
+ * @version 0.1
+ * @author Filipe De Sousa
+ */
 public class Tokenizer {
 
 	private int curPos = 0; // Marks the current position in the char array
@@ -45,11 +52,13 @@ public class Tokenizer {
 	}
 
 	/**
-	 * <p> Gets and returns the next token as String. A token can be:
-	 * <ul><li> A letter </li>
-	 * <li> A digit </li>
-	 * <li> A literal string of characters </li>
-	 * <li> A number (w or w/o Negative/Decimal/Exponent) </li></ul></p>
+	 * Gets and returns the next token as String. A token can be:
+	 * <ul>
+	 * 	<li> A letter </li>
+	 * 	<li> A digit </li>
+	 * 	<li> A literal string of characters </li>
+	 * 	<li> A number (w or w/o Negative/Decimal/Exponent) </li>
+	 * </ul>
 	 * @return String containing token
 	 */
 	public String nextToken() {
@@ -97,9 +106,12 @@ public class Tokenizer {
 
 					// If the next char is a number, token is a decimal number
 				case '.':
-					if (isDigit(buffer[curPos])) {
-						t += '0' + buffer[curPos++];	// Add a leading zero
-						return getNumber();
+					if (isDigit(buffer[curPos + 1])) {	// If next char is a digit
+						t += '0' + buffer[curPos++];	// Add a leading zero to '.'
+						return getNumber();				// And get the whole number
+					}
+					else {
+						t += buffer[curPos++];			// Else, just get the '.'
 					}
 					return t;
 
@@ -204,39 +216,39 @@ public class Tokenizer {
 		String num = t;
 		try {
 
-		while (isDigit(buffer[curPos]) & hasMoreTokens()){
-			num += buffer[curPos++];
-		}
-
-		// BASIC handles numbers as double/integer, so look for a decimal place
-		if (buffer[curPos] == '.'){
-			// If this next character is a decimal place, keep getting characters 
-			num += buffer[curPos++];
 			while (isDigit(buffer[curPos]) & hasMoreTokens()){
-				// But only get them while they're digits
 				num += buffer[curPos++];
 			}
-		}
-		// BASIC handles exponents with the letter E, at which
-		// point, number after it
-		// is the exponent of the given number i.e. in 111.222E333,
-		// 333 is the exponent
-		if (buffer[curPos] == 'E'){
-			// If this next character is an E for Exponent, get the rest of it
-			num += buffer[curPos++];
-			if ((buffer[curPos] == '-' || buffer[curPos] == '+' 
-				|| isDigit(buffer[curPos])) & hasMoreTokens()){
-				
-				num += buffer[curPos++];
-			}
-			while (isDigit(buffer[curPos]) & hasMoreTokens()){
-				
-				// But only if the rest of it consists of digits
-				num += buffer[curPos++];
-			}
-		}
 
-		return num;
+			// BASIC handles numbers as double/integer, so look for a decimal place
+			if (buffer[curPos] == '.'){
+				// If this next character is a decimal place, keep getting characters 
+				num += buffer[curPos++];
+				while (isDigit(buffer[curPos]) & hasMoreTokens()){
+					// But only get them while they're digits
+					num += buffer[curPos++];
+				}
+			}
+			// BASIC handles exponents with the letter E, at which
+			// point, number after it
+			// is the exponent of the given number i.e. in 111.222E333,
+			// 333 is the exponent
+			if (buffer[curPos] == 'E'){
+				// If this next character is an E for Exponent, get the rest of it
+				num += buffer[curPos++];
+				if ((buffer[curPos] == '-' || buffer[curPos] == '+' 
+					|| isDigit(buffer[curPos])) & hasMoreTokens()){
+
+					num += buffer[curPos++];
+				}
+				while (isDigit(buffer[curPos]) & hasMoreTokens()){
+
+					// But only if the rest of it consists of digits
+					num += buffer[curPos++];
+				}
+			}
+
+			return num;
 		}
 		catch (NumberFormatException e){
 			return "\n";

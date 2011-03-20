@@ -25,9 +25,19 @@
 
 package fdesousa.app.SimplyBASIC;
 
-import java.util.PriorityQueue;
+import java.util.LinkedList;
+import java.util.Queue;
+
 import android.widget.EditText;
 
+/**
+ * <h1>S_LET.java</h1>
+ * Handles the LET Statement, by instantiating a new Variable or<br>
+ * retrieving an instantiated one from BASIC Program's storage and<br>
+ * assigning it the given value from the evaluated expression.
+ * @version 0.1
+ * @author Filipe De Sousa
+ */
 public class S_LET extends Statement {
 
 	public S_LET(BASICProgram pgm, Tokenizer tok, EditText edtxt){
@@ -43,7 +53,7 @@ public class S_LET extends Statement {
 		String token = t.nextToken();
 		// If token is an equals sign, the expression begins next
 		if (token.equals("=")){
-			PriorityQueue<String> expression = new PriorityQueue<String>();
+			Queue<String> expression = new LinkedList<String>();
 			// Very simple for the moment, will only handle numbers and symbols, hoping to mend that asap
 			while (t.hasMoreTokens()){
 				token = t.nextToken();
@@ -63,7 +73,7 @@ public class S_LET extends Statement {
 		}
 	}
 	
-	private void doAssign(PriorityQueue<String> expression, Variable v, String vName){
+	private void doAssign(Queue<String> expression, Variable v, String vName){
 		Expression e = new Expression(expression, p, et);
 		// Once the expression has been resolved, have to put it somewhere, ideally in the named variable
 		v.setValue(vName, e.eval(p, et));

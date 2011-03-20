@@ -27,6 +27,13 @@ package fdesousa.app.SimplyBASIC;
 
 import android.widget.EditText;
 
+/**
+ * <h1>S_DIM.java</h1>
+ * Handles a DIM Statement, by instantiating one of more new Number Array(s)<br>
+ * (either One- or Two-Dimensional), without elements.
+ * @version 0.1
+ * @author Filipe De Sousa
+ */
 public class S_DIM extends Statement {
 
 	public S_DIM(BASICProgram pgm, Tokenizer tok, EditText edtxt){

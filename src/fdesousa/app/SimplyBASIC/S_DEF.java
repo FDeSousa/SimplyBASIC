@@ -29,6 +29,13 @@ import java.util.PriorityQueue;
 
 import android.widget.EditText;
 
+/**
+ * <h1>S_DEF.java</h1>
+ * Handles a DEF Statement, by instantiating a new User Function,<br>
+ * which is then stored in an instance of BASIC Program.
+ * @version 0.1
+ * @author Filipe De Sousa
+ */
 public class S_DEF extends Statement {
 
 	public S_DEF(BASICProgram pgm, Tokenizer tok, EditText edtxt){

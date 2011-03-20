@@ -28,6 +28,13 @@ package fdesousa.app.SimplyBASIC;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+/**
+ * <h1>Variable.java</h1>
+ * A class concerning itself with the operations of a BASIC Variable,<br>
+ * such as getting, setting and instantiating a Variable
+ * @version 0.1
+ * @author Filipe De Sousa
+ */
 public class Variable {
 	/**
 	 * ERR	 =	-1	-	Error number, not match with any below

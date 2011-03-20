@@ -29,6 +29,13 @@ import android.app.Activity;
 import android.os.Bundle;
 import android.widget.EditText;
 
+/**
+ * <h1>SimplyBASIC.java</h1>
+ * Called when the application is loaded, off-loads onto the<br>
+ * CommandInterpreter class instance.
+ * @version 0.1
+ * @author Filipe De Sousa
+ */
 public class SimplyBASIC extends Activity {
 	// Called when the activity is first created.
 
@@ -39,9 +46,6 @@ public class SimplyBASIC extends Activity {
 		setContentView(R.layout.main);
 
 		// Declare and initialise variables used class-wide
-		final String lines[] = new String[255];	
-		final String token = lines[0];
-		final String output = lines[0];
 		final EditText et = (EditText)findViewById(R.id.etMain);
 		final CommandInterpreter CommInt = new CommandInterpreter(et);
 

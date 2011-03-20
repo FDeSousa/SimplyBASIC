@@ -27,6 +27,13 @@ package fdesousa.app.SimplyBASIC;
 
 import android.widget.EditText;
 
+/**
+ * <h1>S_END.java</h1>
+ * Handles an END Statement, by ending the execution and<br>
+ * printing the time it took to execute.
+ * @version 0.1
+ * @author Filipe De Sousa
+ */
 public class S_END extends Statement {
 
 	public S_END(BASICProgram pgm, Tokenizer tok, EditText edtxt){
@@ -35,7 +42,7 @@ public class S_END extends Statement {
 
 	@Override
 	public void doSt(){
-		et.append("TIME TO FINISH: " + (p.getTimeToExecute() / 100.0) + " SECONDS.\n");
+		et.append("TIME TO FINISH: " + String.valueOf(p.getTimeToExecute() / 10.0) + " SECONDS.\n");
 		p.stopExec();
 		return;
 	}

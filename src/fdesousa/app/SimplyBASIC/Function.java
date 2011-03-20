@@ -31,7 +31,16 @@ import java.util.regex.Pattern;
 
 import android.widget.EditText;
 
-public class Function {
+/**
+ * <h1>Function.java</h1>
+ * <p>This class handles a Function, which consists of an Expression,<br>
+ * an a named Variable, both for a User Function or a BASIC Function.</p>
+ * <p>BASIC Functions are handled by a static method.</p>
+ * <p>User Functions are instantiated and stored by BASICProgram.</p>
+ * @version 0.1
+ * @author Filipe De Sousa
+ */
+public class Function{
 
 	final static String[] functions = { 
 		"SIN", "COS", "TAN", "ATN", "EXP", 

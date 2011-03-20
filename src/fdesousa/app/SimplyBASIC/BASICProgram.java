@@ -35,10 +35,16 @@ import java.util.Stack;
 import java.util.TreeMap;
 import android.widget.EditText;
 
+/**
+ * <h1> BASICProgram.java </h1>
+ * The Program that a user writes code for, using SimplyBASIC
+ * @version 0.1
+ * @author Filipe De Sousa
+ */
 public class BASICProgram implements Runnable{
 
-	TreeMap<Integer, String> masterCodeList;
-	private TreeMap<Integer, String> codeList = new TreeMap<Integer, String>();
+	private Map<Integer, String> masterCodeList;
+	private Map<Integer, String> codeList = new TreeMap<Integer, String>();
 	private Set<Entry<Integer, String>> lines;		// Holds the set of lines for iter
 	private Iterator<Entry<Integer, String>> iter;	// Used to iterate through Set
 	private Entry<Integer, String> cL;				// Holds an individual entry
@@ -147,7 +153,7 @@ public class BASICProgram implements Runnable{
 		// giving the program a name and user name attributed
 	}
 
-	public BASICProgram(String userName, String progName, TreeMap<Integer, String> oldCodeList){
+	public BASICProgram(String userName, String progName, Map<Integer, String> oldCodeList){
 		// Used for HELLO, OLD
 		setProgName(progName);
 		setUserName(userName);
@@ -166,7 +172,7 @@ public class BASICProgram implements Runnable{
 		return true;
 	}
 
-	public void C_OLD(String progName, TreeMap<Integer, String> oldCodeList){
+	public void C_OLD(String progName, Map<Integer, String> oldCodeList){
 		setProgName(progName);
 		codeList = oldCodeList;
 	}
@@ -192,7 +198,7 @@ public class BASICProgram implements Runnable{
 	}
 
 	public int getFirstLine(){
-		return codeList.firstKey();
+		return ((TreeMap<Integer, String>) codeList).firstKey();
 	}
 
 	// Boring parts of the class below. Not the meat of it.
@@ -324,13 +330,13 @@ public class BASICProgram implements Runnable{
 	 * @return Set lineNumbers, entries from tailmap
 	 */
 	public Set<Entry<Integer, String>> getTailSet(int lN){
-		Set<Entry<Integer, String>> lineNumbers = codeList.tailMap(lN).entrySet();
+		Set<Entry<Integer, String>> lineNumbers = ((TreeMap<Integer, String>) codeList).tailMap(lN).entrySet();
 		return lineNumbers;
 	}
 
 	// As FOR loops can be numerous, we handle them similarly to GOTO/GOSUB .. RETURN
 	// by having a stack, waiting for a NEXT statement to execute it
-	private TreeMap<String, S_FOR> forNexts = new TreeMap<String, S_FOR>();
+	private Map<String, S_FOR> forNexts = new TreeMap<String, S_FOR>();
 
 	public void newFor(String key, S_FOR forLoop){
 		forNexts.put(key, forLoop);

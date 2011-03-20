@@ -25,6 +25,7 @@
 
 package fdesousa.app.SimplyBASIC;
 
+import java.util.Map;
 import java.util.TreeMap;
 import java.io.*;
 import android.os.Environment;
@@ -34,12 +35,20 @@ import android.view.View;
 import android.view.View.OnKeyListener;
 import android.widget.EditText;
 
+/**
+ * <h1>CommandInterpreter.java</h1>
+ * The main execution class. Determines what to do with the user's input.<br>
+ * Input from the user is typed, through an EditText control, and can be a<br>
+ * system command, or a BASIC command, which is parsed into a code store.<br>
+ * @version 0.1
+ * @author Filipe De Sousa
+ */
 public class CommandInterpreter {
 	// Get SD card root, then set working directory:
 	private File sdRoot = Environment.getExternalStorageDirectory();
 	private File dir = new File (sdRoot.getAbsolutePath() + "/SimplyBASIC");
 	// Used for storing the code listing during certain operations:
-	private TreeMap<Integer, String> codeList = new TreeMap<Integer, String>();
+	private Map<Integer, String> codeList = new TreeMap<Integer, String>();
 	private String token = "";	// token to work on. May remove, to replace with inputToken
 	private String[] tokens; // whole line, divided into tokens
 	private int lineNumber = 0;

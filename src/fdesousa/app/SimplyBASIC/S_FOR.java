@@ -31,6 +31,14 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import android.widget.EditText;
 
+/**
+ * <h1>S_FOR.java</h1>
+ * Handles the FOR Statement. It takes an instance of a named Variable,<br>
+ * and the named Expressions for Assigning, checking the Limit, and<br>
+ * setting the Step of a FOR Statement for every iteration.
+ * @author Filipe De Sousa
+ * @version 0.1
+ */
 public class S_FOR extends Statement {
 	/*
 	 * FOR statement syntax is:

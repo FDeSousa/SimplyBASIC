@@ -29,6 +29,14 @@ import java.util.PriorityQueue;
 
 import android.widget.EditText;
 
+/**
+ * <h1>S_PRINT.java</h1>
+ * Handles the PRINT Statement. It can print a string to the screen<br>
+ * consisting of the value of a named Variable, the result of a named<br>
+ * evaluated expression, or a String literal given in double-quotes.
+ * @version 0.1
+ * @author Filipe De Sousa
+ */
 public class S_PRINT extends Statement {
 
 	public S_PRINT(BASICProgram pgm, Tokenizer tok, EditText edtxt){

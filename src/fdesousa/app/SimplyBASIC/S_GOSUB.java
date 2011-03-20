@@ -27,6 +27,13 @@ package fdesousa.app.SimplyBASIC;
 
 import android.widget.EditText;
 
+/**
+ * <h1>S_GOSUB.java</h1>
+ * Handles the GOSUB Statement, by setting a RETURN point and<br>
+ * going to the named line number.
+ * @version 0.1
+ * @author Filipe De Sousa
+ */
 public class S_GOSUB extends Statement {
 
 	public S_GOSUB(BASICProgram pgm, Tokenizer tok, EditText edtxt){

@@ -27,6 +27,13 @@ package fdesousa.app.SimplyBASIC;
 
 import android.widget.EditText;
 
+/**
+ * <h1>S_DATA.java</h1>
+ * Handles a DATA Statement, by adding each piece of data to a<br>
+ * stack in the BASIC Program instance.
+ * @version 0.1
+ * @author Filipe De Sousa
+ */
 public class S_DATA extends Statement {
 
 	public S_DATA(BASICProgram pgm, Tokenizer tok, EditText edtxt){

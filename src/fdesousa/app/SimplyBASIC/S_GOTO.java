@@ -27,6 +27,12 @@ package fdesousa.app.SimplyBASIC;
 
 import android.widget.EditText;
 
+/**
+ * <h1>S_GOTO.java</h1>
+ * Handles the GOTO Statement, by going to the named line number.
+ * @version 0.1
+ * @author Filipe De Sousa
+ */
 public class S_GOTO extends Statement {
 
 	public S_GOTO(BASICProgram pgm, Tokenizer tok, EditText edtxt){
