@@ -58,7 +58,7 @@ public class CommandInterpreter {
 	private String[] lines = null;
 
 	Tokenizer tokenizer = new Tokenizer();
-	
+
 	// Array of commands for the system, to make matching easier:
 	final static String[] commands = {
 		"HELLO", "NEW", "OLD", "STOP", 
@@ -184,8 +184,20 @@ public class CommandInterpreter {
 			return 1;
 		} // end HELLO command
 
+		else if (input.equals(commands[C_CATALOG])){	// Display all previously saved programs
+			File[] dirList = dir.listFiles();
+
+			if (dirList != null){
+				et.append("There are " + dirList.length + " files in program directory\n");
+				for (int i = 0; i < dirList.length; i++){
+					et.append("\t" + dirList[i].getName() + "\n");
+				}
+			}
+			return 0;
+		} // end CATALOG command
+
 		// Only execute these commands if BP is instantiated
-		//else if (BP instanceof BASICProgram){
+		else if (BP instanceof BASICProgram){
 			// Separated from the other if .. else, this handles BASIC commands
 			// only if and when BP had been instantiated
 
@@ -231,25 +243,13 @@ public class CommandInterpreter {
 				}
 			} // end UNSAVE command
 
-			else if (input.equals(commands[C_CATALOG])){	// Display all previously saved programs
-				File[] dirList = dir.listFiles();
-
-				if (dirList != null){
-					et.append("There are " + dirList.length + " files in program directory\n");
-					for (int i = 0; i < dirList.length; i++){
-						et.append("\t" + dirList[i].getName() + "\n");
-					}
-				}
-				return 0;
-			} // end CATALOG command
-
 			else if (input.equals(commands[C_SCRATCH])){	// Create new program with same name
 				BP.C_SCRATCH();
 				return 0;
 			} // end SCRATCH command
 
 			else if (input.equals(commands[C_RENAME])){		// Rename current program
-				BP.setProgName(tokens[1]);
+				BP.setProgName(tokenizer.nextToken());
 			} // end RENAME command
 
 			else if (input.equals(commands[C_RUN])){		// Run BASIC program in Interpreter
@@ -271,6 +271,7 @@ public class CommandInterpreter {
 				et.append("ERROR WITH SYSTEM COMMAND");
 				return -1;
 			}
+		}
 		return -1;
 	}
 
@@ -327,18 +328,27 @@ public class CommandInterpreter {
 					File basFile = new File(dir, token + ".bas");
 					FileReader basReader = new FileReader(basFile);
 					BufferedReader in = new BufferedReader(basReader);
+					Map <Integer, String> oldCodeList = new TreeMap<Integer, String>();
+					String userName = in.readLine();
+					String progName = in.readLine();
+					String line = "";
 					// For now, does nothing with 'in', but should loop
-					// and read in line-by-line
+					// and read it line-by-line, then parse to BP
+					while ((line = in.readLine()) != null){
+						tokenizer.reset(line);
+						oldCodeList.put(Integer.valueOf(tokenizer.nextToken()).intValue()
+								, tokenizer.getRestOfLine());
+					}
 					in.close();
+					BP = BASICProgram.C_OLD(progName, userName, oldCodeList);
 					C_OLD_Step = 0;
 					et.append("PROGRAM OPENED SUCCESSFULLY.\nREADY." + uL);
 				}
 			}
 			catch (IOException e) {
 				et.append("COULD NOT READ FILE: " + e.getMessage().toUpperCase() + uL);
-				break;
 			}
-
+			
 			BP = new BASICProgram(progDetails[1], progDetails[2], codeList);
 			et.append("READY." + uL);
 			break;
@@ -363,10 +373,19 @@ public class CommandInterpreter {
 				File basFile = new File(dir, token + ".bas");
 				FileReader basReader = new FileReader(basFile);
 				BufferedReader in = new BufferedReader(basReader);
+				Map <Integer, String> oldCodeList = new TreeMap<Integer, String>();
+				String userName = in.readLine();
+				String progName = in.readLine();
+				String line = "";
 				// For now, does nothing with 'in', but should loop
 				// and read it line-by-line, then parse to BP
+				while ((line = in.readLine()) != null){
+					tokenizer.reset(line);
+					oldCodeList.put(Integer.valueOf(tokenizer.nextToken()).intValue()
+							, tokenizer.getRestOfLine());
+				}
 				in.close();
-				BP.C_OLD(inputToken, codeList);
+				BP = BASICProgram.C_OLD(progName, userName, oldCodeList);
 				C_OLD_Step = 0;
 				et.append("PROGRAM OPENED SUCCESSFULLY.\nREADY." + uL);
 			}
@@ -385,7 +404,7 @@ public class CommandInterpreter {
 				BufferedWriter out = new BufferedWriter(basWriter);
 				// Temporary write command. To replace with loop, that
 				// writes out the code as plain text
-				out.write("Hello, world!");
+				out.write(BP.C_SAVE());
 				out.close();
 				et.append("PROGRAM SAVED SUCCESSFULLY.");
 				return true;

@@ -172,9 +172,9 @@ public class BASICProgram implements Runnable{
 		return true;
 	}
 
-	public void C_OLD(String progName, Map<Integer, String> oldCodeList){
-		setProgName(progName);
-		codeList = oldCodeList;
+	public static BASICProgram C_OLD(String progName, String userName, Map<Integer, String> oldCodeList){
+		BASICProgram p = new BASICProgram(userName, progName, oldCodeList);
+		return p;
 	}
 
 	public void C_LIST(EditText et){
@@ -195,6 +195,21 @@ public class BASICProgram implements Runnable{
 		catch (Exception e){
 			et.append(e.toString() + "\n");
 		}
+	}
+	
+	public String C_SAVE(){
+		// Return the whole code listing
+		String out = userName + "\n" + progName + "\n";
+		
+		lines = codeList.entrySet();
+		iter = lines.iterator();
+		
+		while (iter.hasNext()){
+			cL = iter.next();
+			out += cL.getKey() + "\t" + cL.getValue() + "\n";
+		}
+		
+		return out;
 	}
 
 	public int getFirstLine(){
