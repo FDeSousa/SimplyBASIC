@@ -42,8 +42,9 @@ public class S_GOSUB extends Statement {
 
 	@Override
 	public void doSt(){
+		String token;
 		if (t.hasMoreTokens()) {
-			String token = t.nextToken();
+			token = t.nextToken();
 			if (Expression.isNumber(token)) {
 				int lN = Integer.valueOf(token.trim()).intValue();
 				p.putRETURNKeySet(p.getlNs());

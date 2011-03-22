@@ -41,8 +41,9 @@ public class S_GOTO extends Statement {
 
 	@Override
 	public void doSt(){
+		String token;
 		if (t.hasMoreTokens()) {
-			String token = t.nextToken();
+			token = t.nextToken();
 			if (Expression.isNumber(token)) {
 				int lN = Integer.valueOf(token.trim()).intValue();
 				p.setlNs(p.getTailSet(lN));

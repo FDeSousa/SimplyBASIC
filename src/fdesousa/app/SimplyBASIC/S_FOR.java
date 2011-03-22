@@ -173,7 +173,6 @@ public class S_FOR extends Statement {
 	}
 
 	public String getName() {
-		// TODO Auto-generated method stub
 		return v.getName();
 	}
 }

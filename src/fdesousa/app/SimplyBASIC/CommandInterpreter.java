@@ -44,13 +44,21 @@ import android.widget.EditText;
  * @author Filipe De Sousa
  */
 public class CommandInterpreter {
+	// Used exclusively for calling the BYE system command
+	SimplyBASIC sbp;
+	
 	// Get SD card root, then set working directory:
 	private File sdRoot = Environment.getExternalStorageDirectory();
 	private File dir = new File (sdRoot.getAbsolutePath() + "/SimplyBASIC");
-	// Used for storing the code listing during certain operations:
-	private Map<Integer, String> codeList = new TreeMap<Integer, String>();
-	private String token = "";	// token to work on. May remove, to replace with inputToken
-	private String[] tokens; // whole line, divided into tokens
+	
+	// The current token to work on. Could be one of:
+	// -	Command
+	// -	Line Number
+	// -	File name
+	// etc depending upon the context
+	private String token = new String();
+	
+	// If token is identified to be a number, it's stored in lineNumber
 	private int lineNumber = 0;
 	private BASICProgram BP;
 	// To take control of et, once SimplyBASIC parses it:
@@ -83,8 +91,8 @@ public class CommandInterpreter {
 	// uL = user line. Users input new commands where they see "> "
 	private static final String uL = "\n> ";
 
-	public CommandInterpreter(EditText edtxt) {
-		super();
+	public CommandInterpreter(EditText edtxt, final SimplyBASIC sbp) {
+		this.sbp = sbp;
 		this.et = edtxt;
 		// Check if the working directory actually exists, if not, make it
 		if (dir.exists() == false 
@@ -120,13 +128,13 @@ public class CommandInterpreter {
 						token = tokenizer.nextToken();
 
 						if (C_HELLO_Step >= 1){
-							C_HELLO(token);
+							C_HELLO();
 						}
 						else if (C_NEW_Step >= 1){
-							C_NEW(token);
+							C_NEW();
 						}
 						else if (C_OLD_Step >= 1){
-							C_OLD(token);
+							C_OLD();
 						}
 					}
 					//=========================================================================
@@ -261,7 +269,7 @@ public class CommandInterpreter {
 
 			else if (input.equals(commands[C_BYE])){		// Exit BASIC System
 				// Needs something here. Like, exit the system, not sure all-in-all
-				;
+				sbp.end();
 			} // end BYE command
 
 			else if (input.equals("") || input == null){
@@ -275,7 +283,7 @@ public class CommandInterpreter {
 		return -1;
 	}
 
-	private void C_HELLO(String inToken){
+	private void C_HELLO(){
 		/**
 		 * switch .. case steps:
 		 * 	0	Not used; first step is in HELLO, ask for userName
@@ -286,9 +294,6 @@ public class CommandInterpreter {
 		 * 	3	Get progName, create new BP w/empty listing
 		 * 	4	Get progName, create new BP w/loaded program listing
 		 */
-
-		token = inToken.trim();
-
 		switch (C_HELLO_Step) {
 
 		case 1:		// Get userName, ask NEW or OLD program
@@ -323,34 +328,7 @@ public class CommandInterpreter {
 			progDetails[2] = token;
 			C_HELLO_Step = 0;
 			// Get listing
-			try {
-				if (dir.canRead()){
-					File basFile = new File(dir, token + ".bas");
-					FileReader basReader = new FileReader(basFile);
-					BufferedReader in = new BufferedReader(basReader);
-					Map <Integer, String> oldCodeList = new TreeMap<Integer, String>();
-					String userName = in.readLine();
-					String progName = in.readLine();
-					String line = "";
-					// For now, does nothing with 'in', but should loop
-					// and read it line-by-line, then parse to BP
-					while ((line = in.readLine()) != null){
-						tokenizer.reset(line);
-						oldCodeList.put(Integer.valueOf(tokenizer.nextToken()).intValue()
-								, tokenizer.getRestOfLine());
-					}
-					in.close();
-					BP = BASICProgram.C_OLD(progName, userName, oldCodeList);
-					C_OLD_Step = 0;
-					et.append("PROGRAM OPENED SUCCESSFULLY.\nREADY." + uL);
-				}
-			}
-			catch (IOException e) {
-				et.append("COULD NOT READ FILE: " + e.getMessage().toUpperCase() + uL);
-			}
-			
-			BP = new BASICProgram(progDetails[1], progDetails[2], codeList);
-			et.append("READY." + uL);
+			C_OLD();
 			break;
 
 		default:
@@ -360,13 +338,13 @@ public class CommandInterpreter {
 
 	// Because of the fact there's an onKeyListener, waiting for Enter key,
 	// NEW, OLD, SAVE, UNSAVE, are all controlled within CI instance
-	private void C_NEW(String inputToken){
-		BP.C_NEW(inputToken);
+	private void C_NEW(){
+		BP.C_NEW(token);
 		C_NEW_Step = 0;
 		et.append("READY." + uL);
 	}
 
-	private void C_OLD(String inputToken){
+	private void C_OLD(){
 		// Get listing for given progName
 		try {
 			if (dir.canRead()){

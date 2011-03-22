@@ -62,20 +62,34 @@ public class S_PRINT extends Statement {
 				outLine += "\t";
 			}
 			else if (token.equals("\n")){
-				// Acknowledge this but ignore it
+				// Acknowledge this but ignore it, we default to adding "\n" later
 				break;
 			}
 			else {
 				// Assume it's an expression, figure that out first
-				PriorityQueue<String> ex = new PriorityQueue<String>();
-				while (! token.equals(",")){
-					ex.offer(token);
-					token = t.nextToken();
-				}
-				Expression e = new Expression(ex, p, et);
-				outLine += String.valueOf(e.eval(p, et));
+				outLine += exp(token);
 			}
 		}
 		et.append(outLine + "\n");
+	}
+	
+	private String exp(String token){
+		String append = new String();
+		PriorityQueue<String> ex = new PriorityQueue<String>();
+		Expression e;
+		ex.offer(token);
+		
+		while (t.hasMoreTokens()){
+			token = t.nextToken();
+			if (token.equals(",") || token.equals("\n")){
+				break;
+			}
+			else{
+				ex.offer(token);
+			}
+		}
+		e = new Expression(ex, p, et);
+		append += String.valueOf(e.eval(p, et)) + "\t";
+		return append;
 	}
 }

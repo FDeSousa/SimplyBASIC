@@ -226,6 +226,9 @@ public class Expression{
 		while (expTok.hasMoreTokens()){
 			expr.offer(token);
 			token = expTok.nextToken();
+			if (token.equals("\n")){
+				break;
+			}
 		}
 
 		Expression e = new Expression(expr, p, et);

@@ -92,9 +92,10 @@ public class Tokenizer {
 				case '=':
 				case '(':
 				case ')':
+				case ',':
 					t += buffer[curPos++];
 					return t;
-					// All of [< > . ,] may have additional operators/chars
+					// All of [< > .] may have additional operators/chars
 					// If the next char is '=', then token is '<=' or '>='
 				case '<':
 				case '>':
@@ -113,11 +114,6 @@ public class Tokenizer {
 					else {
 						t += buffer[curPos++];			// Else, just get the '.'
 					}
-					return t;
-
-					// Eat space, then check if the next char is a Letter
-				case ',':
-					t += buffer[curPos++];
 					return t;
 
 					// Return everything inside and including '"'
@@ -142,14 +138,7 @@ public class Tokenizer {
 						// time a letter
 						// or character is added, but it could minimise mistakes
 
-						// Check if it's a standard BASIC function, if it is return it
-						// immediately
-						for (int i = 0; i < Function.functions.length; i++) {
-							if (t.equals(Function.functions[i]))
-								return t;
-						}
-						// Check if it's a system command, if it is return it
-						// immediately
+						// Check if it's a system command, if it is return it immediately
 						for (int i = 0; i < CommandInterpreter.commands.length; i++) {
 							if (t.equals(CommandInterpreter.commands[i]))
 								return t;
@@ -164,7 +153,7 @@ public class Tokenizer {
 					// Check if this thing is a variable
 					if (Variable.isVariable(t)) {
 						// It is! So now get the rest of it (if there is a rest of it)
-						if (peek(false) == '(') {
+						if (hasMoreTokens() && peek(false) == '(') {
 							// Right, get the whole of the variable's arguments
 							do {
 								t += buffer[curPos++];
@@ -177,7 +166,7 @@ public class Tokenizer {
 					// Check if it's a function then
 					if (Function.isFunction(t)) {
 						// It certainly is! Get the arguments!
-						if (peek(false) == '(') {
+						if (hasMoreTokens() && peek(false) == '(') {
 							// Since it lists arguments, get them!
 							do {
 								t += buffer[curPos++];
@@ -208,7 +197,12 @@ public class Tokenizer {
 			}
 		}
 		catch (ArrayIndexOutOfBoundsException e){
-			return "\n";
+			if (t.equals("")){
+				return "\n";
+			}
+			else {
+				return t;				
+			}
 		}
 	}
 

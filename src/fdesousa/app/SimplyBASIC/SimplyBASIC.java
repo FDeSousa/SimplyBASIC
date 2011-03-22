@@ -47,10 +47,16 @@ public class SimplyBASIC extends Activity {
 
 		// Declare and initialise variables used class-wide
 		final EditText et = (EditText)findViewById(R.id.etMain);
-		final CommandInterpreter CommInt = new CommandInterpreter(et);
+		final CommandInterpreter CommInt = new CommandInterpreter(et, this);
 
 		// Initialise et, display Welcome message to user, set cursor position
 		et.setText("WELCOME TO SIMPLYBASIC\n> ");
 		et.setSelection(et.getText().length());
-	}    
+		
+		
+	}
+	
+	public void end(){
+		this.finish();
+	}
 }

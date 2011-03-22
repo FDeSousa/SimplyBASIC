@@ -118,6 +118,11 @@ public class Function{
 	}
 	
 	public static double doFn(EditText et, String token, BASICProgram p){
+		if (token.equals(functions[FN_RND])){
+			return Math.random();
+		}	// Save some processor time, if it's the RANDOM function
+			// just return a random number right away
+		
 		Pattern pT = Pattern.compile(regexFunctionTokens);
 		Matcher m = pT.matcher(token);
 		double arg;
@@ -151,9 +156,6 @@ public class Function{
 		}
 		else if (token.equals(functions[FN_SQR])){
 			return Math.sqrt(arg);
-		}
-		else if (token.equals(functions[FN_RND])){
-			return Math.random();
 		}
 		else if (token.equals(functions[FN_INT])){
 			return Math.round(arg);

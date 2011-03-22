@@ -61,11 +61,11 @@ public class S_LET extends Statement {
 					expression.offer(token);
 				}
 				else{
-					// If the token really is an EOL, assign the value, and leave
-					doAssign(expression, v, vName);
-					return;					
+					break;
 				}
 			}
+			doAssign(expression, v, vName);
+			return;
 		}
 		else {
 			errLineNumber("INCORRECT FORMAT");

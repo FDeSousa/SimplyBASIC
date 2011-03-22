@@ -78,12 +78,7 @@ public class Statement {
 		if (t.hasMoreTokens()){
 			command = t.nextToken();
 		}
-		
-		// Because a user could potentially type in a line without spaces between the
-		// command and the rest of the line, we're checking here to see if the first n
-		// letters of the command string match up to the command
-		// This makes for messy code, and possibly messy results, so it should be noted
-		// to the user that input should really, ideally, have spaces between tokens
+
 		if (command.equals(statements[S_IF])){
 			s = new S_IF(p, t, et);
 			s.doSt();

@@ -164,7 +164,7 @@ public class BASICProgram implements Runnable{
 
 	public void C_NEW(String progName){				
 		setProgName(progName);
-		// Simple, just re-initialises the variables
+		C_SCRATCH();
 	}
 
 	public boolean C_SCRATCH(){
