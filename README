@@ -1,13 +1,9 @@
 SimplyBASIC for Android.
 A Dartmouth BASIC v2 emulator for Android.
 
-This is my third-year Computing project, and it's tougher than anything I've ever programmed.
-Hopefully this will get me a great passing mark for my project module.
-
-Although there's a lot of code in it, it doesn't exactly work at the moment. It's a real pain,
-and really needs debugging, so it's very unstable, unreliable, and probably broken in every way.
-Documentation will be written once I can get it to do something more than just tell me it can't
-do anything.
+This is my third-year Computing project, and the supposed culmination of my
+work as a student. It's buggy, imperfect, and difficult to use in this early
+version, but I hope to work on it after my exams are finished.
 
 This project is covered under an MIT License.
 Copyright (c) 2011 Filipe De Sousa
