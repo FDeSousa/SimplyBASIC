@@ -1,5 +1,5 @@
 /*
- * S_RETURN.java - Implement a RETURN Statement.
+ * S_READ.java - Implement a READ Statement.
  *
  * Copyright (c) 2011 Filipe De Sousa
  * 
@@ -23,32 +23,56 @@
  * 
  */
 
-package fdesousa.app.SimplyBASIC;
+package fdesousa.app.SimplyBASIC.Statements;
 
+import fdesousa.app.SimplyBASIC.BASICProgram;
+import fdesousa.app.SimplyBASIC.Statement;
+import fdesousa.app.SimplyBASIC.Tokenizer;
+import fdesousa.app.SimplyBASIC.Variable;
 import android.widget.EditText;
 
 /**
- * <h1>S_RETURN.java</h1>
- * Handles RETURN Statement by returning line execution to the<br>
- * point of the last called GOSUB statement.
+ * <h1>S_READ.java</h1>
+ * Handles a READ Statement, by retrieving a value from the DATA stack<br>
+ * and assign it to the named Variable.
  * @version 0.1
  * @author Filipe De Sousa
  */
-public class S_RETURN extends Statement {
+public class S_READ extends Statement {
 
-	public S_RETURN(BASICProgram pgm, Tokenizer tok, EditText edtxt){
+	public S_READ(BASICProgram pgm, Tokenizer tok, EditText edtxt){
 		super(pgm, tok, edtxt);
 	}
 
 	@Override
 	public void doSt(){
-		if (! p.getRETURNKeySetisEmpty()){
-			p.setlNs(p.getRETURNKeySet());
-		}
-		else{
-			et.append("ILLEGAL RETURN - LINE NUMBER " + String.valueOf(p.getCurrentLine()) + "\n");
-			p.stopExec();
-			return;
-		}
+		do {
+			String token = t.nextToken();
+			if (! token.equals(",")){
+				if (Variable.isVariable(token)){
+					if (p.hasData()){
+						Variable v = Variable.getVariable(p, token);
+						v.setValue(token, p.getData());
+					}
+					else {
+						errREAD("NO DATA");
+						return;
+					}
+				}
+				else {
+					errREAD("ILLEGAL VARIABLE");
+					return;
+				}
+			}
+			else if (token.equals("\n")){
+				// Just acknowledge and leave, on EOL
+				return;
+			}
+		} while (t.hasMoreTokens());
+	}
+	
+	private void errREAD(String type){
+		et.append(type + " - LINE NUMBER " + String.valueOf(p.getCurrentLine()) + "\n");
+		p.stopExec();
 	}
 }

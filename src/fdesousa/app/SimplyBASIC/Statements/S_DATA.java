@@ -1,5 +1,5 @@
 /*
- * S_GOSUB.java - Implement a GOSUB Statement.
+ * S_DATA.java - Implement a DATA Statement.
  *
  * Copyright (c) 2011 Filipe De Sousa
  * 
@@ -23,46 +23,54 @@
  * 
  */
 
-package fdesousa.app.SimplyBASIC;
+package fdesousa.app.SimplyBASIC.Statements;
 
+import fdesousa.app.SimplyBASIC.BASICProgram;
+import fdesousa.app.SimplyBASIC.Expression;
+import fdesousa.app.SimplyBASIC.Statement;
+import fdesousa.app.SimplyBASIC.Tokenizer;
 import android.widget.EditText;
 
 /**
- * <h1>S_GOSUB.java</h1>
- * Handles the GOSUB Statement, by setting a RETURN point and<br>
- * going to the named line number.
+ * <h1>S_DATA.java</h1>
+ * Handles a DATA Statement, by adding each piece of data to a<br>
+ * stack in the BASIC Program instance.
  * @version 0.1
  * @author Filipe De Sousa
  */
-public class S_GOSUB extends Statement {
+public class S_DATA extends Statement {
 
-	public S_GOSUB(BASICProgram pgm, Tokenizer tok, EditText edtxt){
+	public S_DATA(BASICProgram pgm, Tokenizer tok, EditText edtxt){
 		super(pgm, tok, edtxt);
 	}
 
 	@Override
 	public void doSt(){
-		String token;
-		if (t.hasMoreTokens()) {
-			token = t.nextToken();
-			if (Expression.isNumber(token)) {
-				int lN = Integer.valueOf(token.trim()).intValue();
-				p.putRETURNKeySet(p.getlNs());
-				p.setlNs(p.getTailSet(lN));
+		String s = new String();
+		
+		while (t.hasMoreTokens()){
+			s = t.nextToken();
+			if (Expression.isNumber(s)){
+				p.addData(Double.valueOf(s.trim()).doubleValue());
+			}
+			else if (s.equals(",")){
+				; // Acknowledge, but do nothing about it
+			}
+			else if (s.equals("\n")){
+				// Break from this Statement if the token is EOL ("\n")
+				// as there's nothing else to do
+				return;
 			}
 			else {
-				errLineNumber("ILLEGAL");
+				// If the token isn't a number/comma/EOL, it's in the wrong place
+				errConstant(s);
 				return;
 			}
 		}
-		else {
-			errLineNumber("MISSING");
-			return;
-		}
 	}
 	
-	public void errLineNumber(String type){
-		et.append(type + " LINE NUMBER - LINE " + p.getCurrentLine());
+	private void errConstant(String s){
+		et.append("ILLEGAL CONSTANT: " + s + " LINE NUMBER " + p.getCurrentLine() +".\n");
 		p.stopExec();
 	}
 }

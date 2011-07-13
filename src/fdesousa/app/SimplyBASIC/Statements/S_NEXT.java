@@ -1,5 +1,5 @@
 /*
- * S_READ.java - Implement a READ Statement.
+ * S_NEXT.java - Implement a NEXT Statement.
  *
  * Copyright (c) 2011 Filipe De Sousa
  * 
@@ -23,52 +23,52 @@
  * 
  */
 
-package fdesousa.app.SimplyBASIC;
+package fdesousa.app.SimplyBASIC.Statements;
 
+import fdesousa.app.SimplyBASIC.BASICProgram;
+import fdesousa.app.SimplyBASIC.Statement;
+import fdesousa.app.SimplyBASIC.Tokenizer;
+import fdesousa.app.SimplyBASIC.Variable;
 import android.widget.EditText;
 
 /**
- * <h1>S_READ.java</h1>
- * Handles a READ Statement, by retrieving a value from the DATA stack<br>
- * and assign it to the named Variable.
+ * <h1>S_NEXT.java</h1>
+ * Handles the NEXT Statement by retrieving the matching FOR Statement<br>
+ * instance from BASIC Program, if it exists, and executes it.
  * @version 0.1
  * @author Filipe De Sousa
  */
-public class S_READ extends Statement {
+public class S_NEXT extends Statement {
 
-	public S_READ(BASICProgram pgm, Tokenizer tok, EditText edtxt){
+	public S_NEXT(BASICProgram pgm, Tokenizer tok, EditText edtxt){
 		super(pgm, tok, edtxt);
 	}
 
 	@Override
 	public void doSt(){
-		do {
-			String token = t.nextToken();
-			if (! token.equals(",")){
-				if (Variable.isVariable(token)){
-					if (p.hasData()){
-						Variable v = Variable.getVariable(p, token);
-						v.setValue(token, p.getData());
-					}
-					else {
-						errREAD("NO DATA");
-						return;
-					}
-				}
-				else {
-					errREAD("ILLEGAL VARIABLE");
-					return;
-				}
+		String vName;
+		S_FOR forNext;
+		
+		if (t.hasMoreTokens()){
+			vName = t.nextToken();
+			if (Variable.isVariable(vName) & 
+					Variable.checkVariableType(vName) == Variable.NUM){
+				forNext = p.getFor(vName);
+				forNext.doStNext();
 			}
-			else if (token.equals("\n")){
-				// Just acknowledge and leave, on EOL
+			else {
+				errNEXT("INVALID VARIABLE");
 				return;
 			}
-		} while (t.hasMoreTokens());
+		}
+		else {
+			errNEXT("NEXT WITHOUT VARIABLE");
+			return;
+		}
 	}
 	
-	private void errREAD(String type){
-		et.append(type + " - LINE NUMBER " + String.valueOf(p.getCurrentLine()) + "\n");
+	private void errNEXT(String type){
+		et.append(type + " - LINE NUMBER " + p.getCurrentLine() + "\n");
 		p.stopExec();
 	}
 }

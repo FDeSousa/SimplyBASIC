@@ -52,8 +52,6 @@ public class SimplyBASIC extends Activity {
 		// Initialise et, display Welcome message to user, set cursor position
 		et.setText("WELCOME TO SIMPLYBASIC\n> ");
 		et.setSelection(et.getText().length());
-		
-		
 	}
 	
 	public void end(){

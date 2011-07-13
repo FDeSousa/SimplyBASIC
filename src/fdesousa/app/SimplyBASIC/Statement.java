@@ -25,6 +25,18 @@
 
 package fdesousa.app.SimplyBASIC;
 
+import fdesousa.app.SimplyBASIC.Statements.S_DEF;
+import fdesousa.app.SimplyBASIC.Statements.S_DIM;
+import fdesousa.app.SimplyBASIC.Statements.S_END;
+import fdesousa.app.SimplyBASIC.Statements.S_FOR;
+import fdesousa.app.SimplyBASIC.Statements.S_GOSUB;
+import fdesousa.app.SimplyBASIC.Statements.S_GOTO;
+import fdesousa.app.SimplyBASIC.Statements.S_IF;
+import fdesousa.app.SimplyBASIC.Statements.S_LET;
+import fdesousa.app.SimplyBASIC.Statements.S_NEXT;
+import fdesousa.app.SimplyBASIC.Statements.S_PRINT;
+import fdesousa.app.SimplyBASIC.Statements.S_READ;
+import fdesousa.app.SimplyBASIC.Statements.S_RETURN;
 import android.widget.EditText;
 
 /**

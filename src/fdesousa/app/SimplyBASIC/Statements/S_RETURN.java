@@ -1,5 +1,5 @@
 /*
- * S_DIM.java - Implement a DIM Statement.
+ * S_RETURN.java - Implement a RETURN Statement.
  *
  * Copyright (c) 2011 Filipe De Sousa
  * 
@@ -23,50 +23,35 @@
  * 
  */
 
-package fdesousa.app.SimplyBASIC;
+package fdesousa.app.SimplyBASIC.Statements;
 
+import fdesousa.app.SimplyBASIC.BASICProgram;
+import fdesousa.app.SimplyBASIC.Statement;
+import fdesousa.app.SimplyBASIC.Tokenizer;
 import android.widget.EditText;
 
 /**
- * <h1>S_DIM.java</h1>
- * Handles a DIM Statement, by instantiating one of more new Number Array(s)<br>
- * (either One- or Two-Dimensional), without elements.
+ * <h1>S_RETURN.java</h1>
+ * Handles RETURN Statement by returning line execution to the<br>
+ * point of the last called GOSUB statement.
  * @version 0.1
  * @author Filipe De Sousa
  */
-public class S_DIM extends Statement {
+public class S_RETURN extends Statement {
 
-	public S_DIM(BASICProgram pgm, Tokenizer tok, EditText edtxt){
+	public S_RETURN(BASICProgram pgm, Tokenizer tok, EditText edtxt){
 		super(pgm, tok, edtxt);
 	}
 
 	@Override
 	public void doSt(){
-		while (t.hasMoreTokens()){
-			String vName = t.nextToken();
-			// Check if it's a Variable
-			if (Variable.isVariable(vName)){
-				Variable v = new Variable(vName);
-				// Since putting all of the constructors of Variable into one
-				// unified constructor, that figures out, splits, and then assigns
-				// initialises itself, it's much easier here
-				p.putVar(v);
-			}
-			else if (t.equals(",")){
-				;	// Don't do anything with it, just acknowledge its existence
-			}
-			else if (t.equals("\n")){
-				return;	// Not an error condition, but an exit condition
-			}
-			else {
-				errVariable();
-				return;
-			}
+		if (! p.getRETURNKeySetisEmpty()){
+			p.setlNs(p.getRETURNKeySet());
 		}
-	}
-	
-	private void errVariable(){
-		et.append("ILLEGAL VARIABLE - LINE NUMBER " + p.getCurrentLine() +".\n");
-		p.stopExec();
+		else{
+			et.append("ILLEGAL RETURN - LINE NUMBER " + String.valueOf(p.getCurrentLine()) + "\n");
+			p.stopExec();
+			return;
+		}
 	}
 }

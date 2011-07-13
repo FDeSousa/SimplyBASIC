@@ -1,5 +1,5 @@
 /*
- * S_NEXT.java - Implement a NEXT Statement.
+ * S_END.java - Implement the END Statement.
  *
  * Copyright (c) 2011 Filipe De Sousa
  * 
@@ -23,48 +23,30 @@
  * 
  */
 
-package fdesousa.app.SimplyBASIC;
+package fdesousa.app.SimplyBASIC.Statements;
 
+import fdesousa.app.SimplyBASIC.BASICProgram;
+import fdesousa.app.SimplyBASIC.Statement;
+import fdesousa.app.SimplyBASIC.Tokenizer;
 import android.widget.EditText;
 
 /**
- * <h1>S_NEXT.java</h1>
- * Handles the NEXT Statement by retrieving the matching FOR Statement<br>
- * instance from BASIC Program, if it exists, and executes it.
+ * <h1>S_END.java</h1>
+ * Handles an END Statement, by ending the execution and<br>
+ * printing the time it took to execute.
  * @version 0.1
  * @author Filipe De Sousa
  */
-public class S_NEXT extends Statement {
+public class S_END extends Statement {
 
-	public S_NEXT(BASICProgram pgm, Tokenizer tok, EditText edtxt){
+	public S_END(BASICProgram pgm, Tokenizer tok, EditText edtxt){
 		super(pgm, tok, edtxt);
 	}
 
 	@Override
 	public void doSt(){
-		String vName;
-		S_FOR forNext;
-		
-		if (t.hasMoreTokens()){
-			vName = t.nextToken();
-			if (Variable.isVariable(vName) & 
-					Variable.checkVariableType(vName) == Variable.NUM){
-				forNext = p.getFor(vName);
-				forNext.doStNext();
-			}
-			else {
-				errNEXT("INVALID VARIABLE");
-				return;
-			}
-		}
-		else {
-			errNEXT("NEXT WITHOUT VARIABLE");
-			return;
-		}
-	}
-	
-	private void errNEXT(String type){
-		et.append(type + " - LINE NUMBER " + p.getCurrentLine() + "\n");
+		et.append("TIME TO FINISH: " + String.valueOf(p.getTimeToExecute() / 10.0) + " SECONDS.\n");
 		p.stopExec();
+		return;
 	}
 }

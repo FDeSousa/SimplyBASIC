@@ -1,5 +1,5 @@
 /*
- * S_GOTO.java - Implement a GOTO Statement.
+ * S_DIM.java - Implement a DIM Statement.
  *
  * Copyright (c) 2011 Filipe De Sousa
  * 
@@ -23,44 +23,54 @@
  * 
  */
 
-package fdesousa.app.SimplyBASIC;
+package fdesousa.app.SimplyBASIC.Statements;
 
+import fdesousa.app.SimplyBASIC.BASICProgram;
+import fdesousa.app.SimplyBASIC.Statement;
+import fdesousa.app.SimplyBASIC.Tokenizer;
+import fdesousa.app.SimplyBASIC.Variable;
 import android.widget.EditText;
 
 /**
- * <h1>S_GOTO.java</h1>
- * Handles the GOTO Statement, by going to the named line number.
+ * <h1>S_DIM.java</h1>
+ * Handles a DIM Statement, by instantiating one of more new Number Array(s)<br>
+ * (either One- or Two-Dimensional), without elements.
  * @version 0.1
  * @author Filipe De Sousa
  */
-public class S_GOTO extends Statement {
+public class S_DIM extends Statement {
 
-	public S_GOTO(BASICProgram pgm, Tokenizer tok, EditText edtxt){
+	public S_DIM(BASICProgram pgm, Tokenizer tok, EditText edtxt){
 		super(pgm, tok, edtxt);
 	}
 
 	@Override
 	public void doSt(){
-		String token;
-		if (t.hasMoreTokens()) {
-			token = t.nextToken();
-			if (Expression.isNumber(token)) {
-				int lN = Integer.valueOf(token.trim()).intValue();
-				p.setlNs(p.getTailSet(lN));
+		while (t.hasMoreTokens()){
+			String vName = t.nextToken();
+			// Check if it's a Variable
+			if (Variable.isVariable(vName)){
+				Variable v = new Variable(vName);
+				// Since putting all of the constructors of Variable into one
+				// unified constructor, that figures out, splits, and then assigns
+				// initialises itself, it's much easier here
+				p.putVar(v);
+			}
+			else if (t.equals(",")){
+				;	// Don't do anything with it, just acknowledge its existence
+			}
+			else if (t.equals("\n")){
+				return;	// Not an error condition, but an exit condition
 			}
 			else {
-				errLineNumber("ILLEGAL");
+				errVariable();
 				return;
 			}
 		}
-		else {
-			errLineNumber("MISSING");
-			return;
-		}
 	}
 	
-	public void errLineNumber(String type){
-		et.append(type + " LINE NUMBER - LINE " + p.getCurrentLine());
+	private void errVariable(){
+		et.append("ILLEGAL VARIABLE - LINE NUMBER " + p.getCurrentLine() +".\n");
 		p.stopExec();
 	}
 }

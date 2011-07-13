@@ -1,5 +1,5 @@
 /*
- * S_DEF.java - Implement a DEF Statement.
+ * S_LET.java - Implement a LET Statement.
  *
  * Copyright (c) 2011 Filipe De Sousa
  * 
@@ -23,74 +23,71 @@
  * 
  */
 
-package fdesousa.app.SimplyBASIC;
+package fdesousa.app.SimplyBASIC.Statements;
 
-import java.util.PriorityQueue;
+import java.util.LinkedList;
+import java.util.Queue;
+
+import fdesousa.app.SimplyBASIC.BASICProgram;
+import fdesousa.app.SimplyBASIC.Expression;
+import fdesousa.app.SimplyBASIC.Statement;
+import fdesousa.app.SimplyBASIC.Tokenizer;
+import fdesousa.app.SimplyBASIC.Variable;
 
 import android.widget.EditText;
 
 /**
- * <h1>S_DEF.java</h1>
- * Handles a DEF Statement, by instantiating a new User Function,<br>
- * which is then stored in an instance of BASIC Program.
+ * <h1>S_LET.java</h1>
+ * Handles the LET Statement, by instantiating a new Variable or<br>
+ * retrieving an instantiated one from BASIC Program's storage and<br>
+ * assigning it the given value from the evaluated expression.
  * @version 0.1
  * @author Filipe De Sousa
  */
-public class S_DEF extends Statement {
+public class S_LET extends Statement {
 
-	public S_DEF(BASICProgram pgm, Tokenizer tok, EditText edtxt){
+	public S_LET(BASICProgram pgm, Tokenizer tok, EditText edtxt){
 		super(pgm, tok, edtxt);
 	}
 
 	@Override
 	public void doSt(){
-		// Next token after "DEF" will be the function call name
-		String fnName = t.nextToken();
-		// Get the argument from within fnName, this is the variable to look for
-		String fnVarName = Function.getArg(fnName);
-		// Create a new Variable for use with this user-defined Function
-		Variable fnVar = new Variable(fnVarName);
-		// Put this new variable into BASIC Program
-		p.putVar(fnVar);
+		String vName = t.nextToken();
+		// Let Variable sort itself out, and return a Variable to work with
+		Variable v = Variable.getVariable(p, vName);
 		
-		PriorityQueue<String> expression = new PriorityQueue<String>();
-		
-		// Since we have the basic stuff sorted, get the expression associated with this new Function
 		String token = t.nextToken();
 		// If token is an equals sign, the expression begins next
 		if (token.equals("=")){
+			Queue<String> expression = new LinkedList<String>();
 			// Very simple for the moment, will only handle numbers and symbols, hoping to mend that asap
 			while (t.hasMoreTokens()){
+				token = t.nextToken();
 				if (! token.equals("\n")){
-					token = t.nextToken();
-					expression.offer(token);					
-				}
-				else if (token.equals("\n")){
-					putFn(fnName, expression, fnVar);
-					return;
+					expression.offer(token);
 				}
 				else{
-					errFormat();
-					return;
+					break;
 				}
 			}
-		}
-		else {
-			// If the token isn't a number/comma/EOL, it's in the wrong place
-			errFormat();
+			doAssign(expression, v, vName);
 			return;
 		}
-		
+		else {
+			errLineNumber("INCORRECT FORMAT");
+			return;
+		}
 	}
 	
-	private void putFn(String fnName, PriorityQueue<String> expression, Variable fnVar){
-		Expression fnExp = new Expression(expression);
-		Function fn = new Function(fnName, fnExp, fnVar);
-		p.putFunction(fn);
+	private void doAssign(Queue<String> expression, Variable v, String vName){
+		Expression e = new Expression(expression, p, et);
+		// Once the expression has been resolved, have to put it somewhere, ideally in the named variable
+		v.setValue(vName, e.eval(p, et));
+		et.append(String.valueOf(v.getValue(vName)) + "\n");
 	}
 	
-	private void errFormat(){
-		et.append("INCORRECT FORMAT - LINE NUMBER " + p.getCurrentLine() +".\n");
+	private void errLineNumber(String type){
+		et.append(type + " - LINE NUMBER " + p.getCurrentLine());
 		p.stopExec();
 	}
 }

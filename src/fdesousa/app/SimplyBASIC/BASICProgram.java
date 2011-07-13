@@ -33,6 +33,9 @@ import java.util.PriorityQueue;
 import java.util.Set;
 import java.util.Stack;
 import java.util.TreeMap;
+
+import fdesousa.app.SimplyBASIC.Statements.S_DATA;
+import fdesousa.app.SimplyBASIC.Statements.S_FOR;
 import android.widget.EditText;
 
 /**

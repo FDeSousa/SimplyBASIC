@@ -1,5 +1,5 @@
 /*
- * S_END.java - Implement the END Statement.
+ * S_GOSUB.java - Implement a GOSUB Statement.
  *
  * Copyright (c) 2011 Filipe De Sousa
  * 
@@ -23,27 +23,50 @@
  * 
  */
 
-package fdesousa.app.SimplyBASIC;
+package fdesousa.app.SimplyBASIC.Statements;
 
+import fdesousa.app.SimplyBASIC.BASICProgram;
+import fdesousa.app.SimplyBASIC.Expression;
+import fdesousa.app.SimplyBASIC.Statement;
+import fdesousa.app.SimplyBASIC.Tokenizer;
 import android.widget.EditText;
 
 /**
- * <h1>S_END.java</h1>
- * Handles an END Statement, by ending the execution and<br>
- * printing the time it took to execute.
+ * <h1>S_GOSUB.java</h1>
+ * Handles the GOSUB Statement, by setting a RETURN point and<br>
+ * going to the named line number.
  * @version 0.1
  * @author Filipe De Sousa
  */
-public class S_END extends Statement {
+public class S_GOSUB extends Statement {
 
-	public S_END(BASICProgram pgm, Tokenizer tok, EditText edtxt){
+	public S_GOSUB(BASICProgram pgm, Tokenizer tok, EditText edtxt){
 		super(pgm, tok, edtxt);
 	}
 
 	@Override
 	public void doSt(){
-		et.append("TIME TO FINISH: " + String.valueOf(p.getTimeToExecute() / 10.0) + " SECONDS.\n");
+		String token;
+		if (t.hasMoreTokens()) {
+			token = t.nextToken();
+			if (Expression.isNumber(token)) {
+				int lN = Integer.valueOf(token.trim()).intValue();
+				p.putRETURNKeySet(p.getlNs());
+				p.setlNs(p.getTailSet(lN));
+			}
+			else {
+				errLineNumber("ILLEGAL");
+				return;
+			}
+		}
+		else {
+			errLineNumber("MISSING");
+			return;
+		}
+	}
+	
+	public void errLineNumber(String type){
+		et.append(type + " LINE NUMBER - LINE " + p.getCurrentLine());
 		p.stopExec();
-		return;
 	}
 }
