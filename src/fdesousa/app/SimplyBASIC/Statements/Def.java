@@ -43,9 +43,9 @@ import android.widget.EditText;
  * @version 0.1
  * @author Filipe De Sousa
  */
-public class S_DEF extends Statement {
+public class Def extends Statement {
 
-	public S_DEF(BASICProgram pgm, Tokenizer tok, EditText edtxt){
+	public Def(BASICProgram pgm, Tokenizer tok, EditText edtxt){
 		super(pgm, tok, edtxt);
 	}
 

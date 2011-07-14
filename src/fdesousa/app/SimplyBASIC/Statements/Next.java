@@ -1,5 +1,5 @@
 /*
- * S_DIM.java - Implement a DIM Statement.
+ * S_NEXT.java - Implement a NEXT Statement.
  *
  * Copyright (c) 2011 Filipe De Sousa
  * 
@@ -32,45 +32,43 @@ import fdesousa.app.SimplyBASIC.Variable;
 import android.widget.EditText;
 
 /**
- * <h1>S_DIM.java</h1>
- * Handles a DIM Statement, by instantiating one of more new Number Array(s)<br>
- * (either One- or Two-Dimensional), without elements.
+ * <h1>S_NEXT.java</h1>
+ * Handles the NEXT Statement by retrieving the matching FOR Statement<br>
+ * instance from BASIC Program, if it exists, and executes it.
  * @version 0.1
  * @author Filipe De Sousa
  */
-public class S_DIM extends Statement {
+public class Next extends Statement {
 
-	public S_DIM(BASICProgram pgm, Tokenizer tok, EditText edtxt){
+	public Next(BASICProgram pgm, Tokenizer tok, EditText edtxt){
 		super(pgm, tok, edtxt);
 	}
 
 	@Override
 	public void doSt(){
-		while (t.hasMoreTokens()){
-			String vName = t.nextToken();
-			// Check if it's a Variable
-			if (Variable.isVariable(vName)){
-				Variable v = new Variable(vName);
-				// Since putting all of the constructors of Variable into one
-				// unified constructor, that figures out, splits, and then assigns
-				// initialises itself, it's much easier here
-				p.putVar(v);
-			}
-			else if (t.equals(",")){
-				;	// Don't do anything with it, just acknowledge its existence
-			}
-			else if (t.equals("\n")){
-				return;	// Not an error condition, but an exit condition
+		String vName;
+		For forNext;
+		
+		if (t.hasMoreTokens()){
+			vName = t.nextToken();
+			if (Variable.isVariable(vName) & 
+					Variable.checkVariableType(vName) == Variable.NUM){
+				forNext = p.getFor(vName);
+				forNext.doStNext();
 			}
 			else {
-				errVariable();
+				errNEXT("INVALID VARIABLE");
 				return;
 			}
 		}
+		else {
+			errNEXT("NEXT WITHOUT VARIABLE");
+			return;
+		}
 	}
 	
-	private void errVariable(){
-		et.append("ILLEGAL VARIABLE - LINE NUMBER " + p.getCurrentLine() +".\n");
+	private void errNEXT(String type){
+		et.append(type + " - LINE NUMBER " + p.getCurrentLine() + "\n");
 		p.stopExec();
 	}
 }

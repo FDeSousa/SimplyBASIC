@@ -42,9 +42,9 @@ import android.widget.EditText;
  * @version 0.1
  * @author Filipe De Sousa
  */
-public class S_PRINT extends Statement {
+public class Print extends Statement {
 
-	public S_PRINT(BASICProgram pgm, Tokenizer tok, EditText edtxt){
+	public Print(BASICProgram pgm, Tokenizer tok, EditText edtxt){
 		super(pgm, tok, edtxt);
 	}
 

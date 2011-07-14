@@ -1,5 +1,5 @@
 /*
- * S_READ.java - Implement a READ Statement.
+ * S_END.java - Implement the END Statement.
  *
  * Copyright (c) 2011 Filipe De Sousa
  * 
@@ -28,51 +28,25 @@ package fdesousa.app.SimplyBASIC.Statements;
 import fdesousa.app.SimplyBASIC.BASICProgram;
 import fdesousa.app.SimplyBASIC.Statement;
 import fdesousa.app.SimplyBASIC.Tokenizer;
-import fdesousa.app.SimplyBASIC.Variable;
 import android.widget.EditText;
 
 /**
- * <h1>S_READ.java</h1>
- * Handles a READ Statement, by retrieving a value from the DATA stack<br>
- * and assign it to the named Variable.
+ * <h1>S_END.java</h1>
+ * Handles an END Statement, by ending the execution and<br>
+ * printing the time it took to execute.
  * @version 0.1
  * @author Filipe De Sousa
  */
-public class S_READ extends Statement {
+public class End extends Statement {
 
-	public S_READ(BASICProgram pgm, Tokenizer tok, EditText edtxt){
+	public End(BASICProgram pgm, Tokenizer tok, EditText edtxt){
 		super(pgm, tok, edtxt);
 	}
 
 	@Override
 	public void doSt(){
-		do {
-			String token = t.nextToken();
-			if (! token.equals(",")){
-				if (Variable.isVariable(token)){
-					if (p.hasData()){
-						Variable v = Variable.getVariable(p, token);
-						v.setValue(token, p.getData());
-					}
-					else {
-						errREAD("NO DATA");
-						return;
-					}
-				}
-				else {
-					errREAD("ILLEGAL VARIABLE");
-					return;
-				}
-			}
-			else if (token.equals("\n")){
-				// Just acknowledge and leave, on EOL
-				return;
-			}
-		} while (t.hasMoreTokens());
-	}
-	
-	private void errREAD(String type){
-		et.append(type + " - LINE NUMBER " + String.valueOf(p.getCurrentLine()) + "\n");
+		et.append("TIME TO FINISH: " + String.valueOf(p.getTimeToExecute() / 10.0) + " SECONDS.\n");
 		p.stopExec();
+		return;
 	}
 }

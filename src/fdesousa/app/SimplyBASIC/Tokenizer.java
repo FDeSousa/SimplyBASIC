@@ -144,8 +144,8 @@ public class Tokenizer {
 								return t;
 						}
 						// Check if it's a BASIC command, if it is return it immediately
-						for (int i = 0; i < Statement.statements.length; i++) {
-							if (t.equals(Statement.statements[i]))
+						for (int i = 0; i < Statement.STATEMENTS.length; i++) {
+							if (t.equals(Statement.STATEMENTS[i]))
 								return t;
 						}
 					}

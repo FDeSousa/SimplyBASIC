@@ -1,5 +1,5 @@
 /*
- * S_DATA.java - Implement a DATA Statement.
+ * S_READ.java - Implement a READ Statement.
  *
  * Copyright (c) 2011 Filipe De Sousa
  * 
@@ -26,51 +26,53 @@
 package fdesousa.app.SimplyBASIC.Statements;
 
 import fdesousa.app.SimplyBASIC.BASICProgram;
-import fdesousa.app.SimplyBASIC.Expression;
 import fdesousa.app.SimplyBASIC.Statement;
 import fdesousa.app.SimplyBASIC.Tokenizer;
+import fdesousa.app.SimplyBASIC.Variable;
 import android.widget.EditText;
 
 /**
- * <h1>S_DATA.java</h1>
- * Handles a DATA Statement, by adding each piece of data to a<br>
- * stack in the BASIC Program instance.
+ * <h1>S_READ.java</h1>
+ * Handles a READ Statement, by retrieving a value from the DATA stack<br>
+ * and assign it to the named Variable.
  * @version 0.1
  * @author Filipe De Sousa
  */
-public class S_DATA extends Statement {
+public class Read extends Statement {
 
-	public S_DATA(BASICProgram pgm, Tokenizer tok, EditText edtxt){
+	public Read(BASICProgram pgm, Tokenizer tok, EditText edtxt){
 		super(pgm, tok, edtxt);
 	}
 
 	@Override
 	public void doSt(){
-		String s = new String();
-		
-		while (t.hasMoreTokens()){
-			s = t.nextToken();
-			if (Expression.isNumber(s)){
-				p.addData(Double.valueOf(s.trim()).doubleValue());
+		do {
+			String token = t.nextToken();
+			if (! token.equals(",")){
+				if (Variable.isVariable(token)){
+					if (p.hasData()){
+						Variable v = Variable.getVariable(p, token);
+						v.setValue(token, p.getData());
+					}
+					else {
+						errREAD("NO DATA");
+						return;
+					}
+				}
+				else {
+					errREAD("ILLEGAL VARIABLE");
+					return;
+				}
 			}
-			else if (s.equals(",")){
-				; // Acknowledge, but do nothing about it
-			}
-			else if (s.equals("\n")){
-				// Break from this Statement if the token is EOL ("\n")
-				// as there's nothing else to do
+			else if (token.equals("\n")){
+				// Just acknowledge and leave, on EOL
 				return;
 			}
-			else {
-				// If the token isn't a number/comma/EOL, it's in the wrong place
-				errConstant(s);
-				return;
-			}
-		}
+		} while (t.hasMoreTokens());
 	}
 	
-	private void errConstant(String s){
-		et.append("ILLEGAL CONSTANT: " + s + " LINE NUMBER " + p.getCurrentLine() +".\n");
+	private void errREAD(String type){
+		et.append(type + " - LINE NUMBER " + String.valueOf(p.getCurrentLine()) + "\n");
 		p.stopExec();
 	}
 }

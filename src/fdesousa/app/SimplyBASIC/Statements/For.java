@@ -45,7 +45,7 @@ import android.widget.EditText;
  * @author Filipe De Sousa
  * @version 0.1
  */
-public class S_FOR extends Statement {
+public class For extends Statement {
 	/*
 	 * FOR statement syntax is:
 	 * 	FOR v = assign TO limit
@@ -80,7 +80,7 @@ public class S_FOR extends Statement {
 	 * @param tok
 	 * @param edtxt
 	 */
-	public S_FOR(BASICProgram pgm, Tokenizer tok, EditText edtxt){
+	public For(BASICProgram pgm, Tokenizer tok, EditText edtxt){
 		super(pgm, tok, edtxt);
 	}
 
@@ -174,7 +174,7 @@ public class S_FOR extends Statement {
 		}
 	}
 
-	public static S_FOR getFOR(BASICProgram p, String vName){
+	public static For getFOR(BASICProgram p, String vName){
 		return p.getFor(vName);
 	}
 

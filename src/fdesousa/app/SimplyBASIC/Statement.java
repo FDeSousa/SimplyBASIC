@@ -25,18 +25,18 @@
 
 package fdesousa.app.SimplyBASIC;
 
-import fdesousa.app.SimplyBASIC.Statements.S_DEF;
-import fdesousa.app.SimplyBASIC.Statements.S_DIM;
-import fdesousa.app.SimplyBASIC.Statements.S_END;
-import fdesousa.app.SimplyBASIC.Statements.S_FOR;
-import fdesousa.app.SimplyBASIC.Statements.S_GOSUB;
-import fdesousa.app.SimplyBASIC.Statements.S_GOTO;
-import fdesousa.app.SimplyBASIC.Statements.S_IF;
-import fdesousa.app.SimplyBASIC.Statements.S_LET;
-import fdesousa.app.SimplyBASIC.Statements.S_NEXT;
-import fdesousa.app.SimplyBASIC.Statements.S_PRINT;
-import fdesousa.app.SimplyBASIC.Statements.S_READ;
-import fdesousa.app.SimplyBASIC.Statements.S_RETURN;
+import fdesousa.app.SimplyBASIC.Statements.Def;
+import fdesousa.app.SimplyBASIC.Statements.Dim;
+import fdesousa.app.SimplyBASIC.Statements.End;
+import fdesousa.app.SimplyBASIC.Statements.For;
+import fdesousa.app.SimplyBASIC.Statements.GoSub;
+import fdesousa.app.SimplyBASIC.Statements.Goto;
+import fdesousa.app.SimplyBASIC.Statements.If;
+import fdesousa.app.SimplyBASIC.Statements.Let;
+import fdesousa.app.SimplyBASIC.Statements.Next;
+import fdesousa.app.SimplyBASIC.Statements.Print;
+import fdesousa.app.SimplyBASIC.Statements.Read;
+import fdesousa.app.SimplyBASIC.Statements.Return;
 import android.widget.EditText;
 
 /**
@@ -46,30 +46,30 @@ import android.widget.EditText;
  * @author Filipe De Sousa
  */
 public class Statement {
-	final static String[] statements = {
+	final static String[] STATEMENTS = {
 		"IF", "THEN", "FOR", "TO", "STEP", 
 		"NEXT", "LET", "READ", "DATA", 
 		"PRINT", "GOTO", "GOSUB", "RETURN", 
 		"DIM", "DEF", "FN", "END", "REM"};
 
-	final static int S_IF	 	=  0;	// Start of IF...THEN statement
-	final static int S_THEN		=  1;	// Continues of IF...THEN statement
-	final static int S_FOR		=  2;	// Start of FOR...TO...STEP statement
-	final static int S_TO		=  3;	// Defines limit of FOR...TO...STEP statement
-	final static int S_STEP		=  4;	// The number to (in/de)crement by in FOR
-	final static int S_NEXT		=  5;	// (in/de)crements variable defined by FOR with variable 
-	final static int S_LET		=  6;	// Assignment statement
-	final static int S_READ		=  7;	// Reads the next Data value (FIFO ordering)
-	final static int S_DATA		=  8;	// Provides data values for the program
-	final static int S_PRINT	=  9;	// Print something to screen
-	final static int S_GOTO		= 10;	// Unconditional transferal of program execution to a different line
-	final static int S_GOSUB	= 11;	// As GOTO, but can be used to define a sub-routine that is returnable
-	final static int S_RETURN	= 12;	// Returns execution to where GOSUB left off
-	final static int S_DIM		= 13;	// Used to define one- or two-dimensional arrays
-	final static int S_DEF		= 14;	// Used to define a function
-	final static int S_FN		= 15;	// Beginning two letters of a user-defined function
-	final static int S_END		= 16;	// Ends the program on that line, no matter what
-	final static int S_REM		= 17;	// Signifies the line is a comment, and should be ignored by interpreter
+	final static int IF	 		=  0;	// Start of IF...THEN statement
+	final static int THEN		=  1;	// Continues of IF...THEN statement
+	final static int FOR		=  2;	// Start of FOR...TO...STEP statement
+	final static int TO			=  3;	// Defines limit of FOR...TO...STEP statement
+	final static int STEP		=  4;	// The number to (in/de)crement by in FOR
+	final static int NEXT		=  5;	// (in/de)crements variable defined by FOR with variable 
+	final static int LET		=  6;	// Assignment statement
+	final static int READ		=  7;	// Reads the next Data value (FIFO ordering)
+	final static int DATA		=  8;	// Provides data values for the program
+	final static int PRINT		=  9;	// Print something to screen
+	final static int GOTO		= 10;	// Unconditional transferal of program execution to a different line
+	final static int GOSUB		= 11;	// As GOTO, but can be used to define a sub-routine that is returnable
+	final static int RETURN		= 12;	// Returns execution to where GOSUB left off
+	final static int DIM		= 13;	// Used to define one- or two-dimensional arrays
+	final static int DEF		= 14;	// Used to define a function
+	final static int FN			= 15;	// Beginning two letters of a user-defined function
+	final static int END		= 16;	// Ends the program on that line, no matter what
+	final static int REM		= 17;	// Signifies the line is a comment, and should be ignored by interpreter
 
 	private String command = new String();
 	
@@ -91,59 +91,59 @@ public class Statement {
 			command = t.nextToken();
 		}
 
-		if (command.equals(statements[S_IF])){
-			s = new S_IF(p, t, et);
+		if (command.equals(STATEMENTS[IF])){
+			s = new If(p, t, et);
 			s.doSt();
 		}
-		else if (command.equals(statements[S_FOR])){
-			s = new S_FOR(p, t, et);
+		else if (command.equals(STATEMENTS[FOR])){
+			s = new For(p, t, et);
 			s.doSt();
 		}
-		else if (command.equals(statements[S_NEXT])){
-			s = new S_NEXT(p, t, et);
+		else if (command.equals(STATEMENTS[NEXT])){
+			s = new Next(p, t, et);
 			s.doSt();
 		}
-		else if (command.equals(statements[S_LET])){
-			s = new S_LET(p, t, et);
+		else if (command.equals(STATEMENTS[LET])){
+			s = new Let(p, t, et);
 			s.doSt();
 		}
-		else if (command.equals(statements[S_READ])){
-			s = new S_READ(p, t, et);
+		else if (command.equals(STATEMENTS[READ])){
+			s = new Read(p, t, et);
 			s.doSt();
 		}
-		else if (command.equals(statements[S_DATA])){
+		else if (command.equals(STATEMENTS[DATA])){
 			return;	// As we have a first-run to get DATA, it's safer to
 					// acknowledge, but ignore it in Statement.java
 		}
-		else if (command.equals(statements[S_PRINT])){
-			s = new S_PRINT(p, t, et);
+		else if (command.equals(STATEMENTS[PRINT])){
+			s = new Print(p, t, et);
 			s.doSt();
 		}
-		else if (command.equals(statements[S_GOTO])){
-			s = new S_GOTO(p, t, et);
+		else if (command.equals(STATEMENTS[GOTO])){
+			s = new Goto(p, t, et);
 			s.doSt();
 		}
-		else if (command.equals(statements[S_GOSUB])){
-			s = new S_GOSUB(p, t, et);
+		else if (command.equals(STATEMENTS[GOSUB])){
+			s = new GoSub(p, t, et);
 			s.doSt();
 		}
-		else if (command.equals(statements[S_RETURN])){
-			s = new S_RETURN(p, t, et);
+		else if (command.equals(STATEMENTS[RETURN])){
+			s = new Return(p, t, et);
 			s.doSt();
 		}
-		else if (command.equals(statements[S_DIM])){
-			s = new S_DIM(p, t, et);
+		else if (command.equals(STATEMENTS[DIM])){
+			s = new Dim(p, t, et);
 			s.doSt();
 		}
-		else if (command.equals(statements[S_DEF])){
-			s = new S_DEF(p, t, et);
+		else if (command.equals(STATEMENTS[DEF])){
+			s = new Def(p, t, et);
 			s.doSt();
 		}
-		else if (command.equals(statements[S_END])){
-			s = new S_END(p, t, et);
+		else if (command.equals(STATEMENTS[END])){
+			s = new End(p, t, et);
 			s.doSt();
 		}
-		else if (command.equals(statements[S_REM])){
+		else if (command.equals(STATEMENTS[REM])){
 			return;	// When encountering a REM statement, the line is ignored, so for
 					// safety, acknowledge but ignore the statement here by using return
 		}

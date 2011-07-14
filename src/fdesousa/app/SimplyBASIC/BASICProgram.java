@@ -34,8 +34,8 @@ import java.util.Set;
 import java.util.Stack;
 import java.util.TreeMap;
 
-import fdesousa.app.SimplyBASIC.Statements.S_DATA;
-import fdesousa.app.SimplyBASIC.Statements.S_FOR;
+import fdesousa.app.SimplyBASIC.Statements.Data;
+import fdesousa.app.SimplyBASIC.Statements.For;
 import android.widget.EditText;
 
 /**
@@ -129,11 +129,11 @@ public class BASICProgram implements Runnable{
 				cL = iter.next();
 				t.reset(cL.getValue());
 				s = t.nextToken();
-				if (s.equals(Statement.statements[Statement.S_DATA])){
-					Statement dataSt = new S_DATA(this, t, et);
+				if (s.equals(Statement.STATEMENTS[Statement.DATA])){
+					Statement dataSt = new Data(this, t, et);
 					dataSt.doSt();
 				}
-				else if (s.equals(Statement.statements[Statement.S_END]) &
+				else if (s.equals(Statement.STATEMENTS[Statement.END]) &
 						iter.hasNext()){
 					et.append("END IS NOT LAST - LINE NUMBER " + String.valueOf(cL.getKey()) + "\n");
 					stopExec();
@@ -354,13 +354,13 @@ public class BASICProgram implements Runnable{
 
 	// As FOR loops can be numerous, we handle them similarly to GOTO/GOSUB .. RETURN
 	// by having a stack, waiting for a NEXT statement to execute it
-	private Map<String, S_FOR> forNexts = new TreeMap<String, S_FOR>();
+	private Map<String, For> forNexts = new TreeMap<String, For>();
 
-	public void newFor(String key, S_FOR forLoop){
+	public void newFor(String key, For forLoop){
 		forNexts.put(key, forLoop);
 	}
 
-	public S_FOR getFor(String key){
+	public For getFor(String key){
 		return forNexts.get(key);
 	}
 }

@@ -42,9 +42,9 @@ import android.widget.EditText;
  * @version 0.1
  * @author Filipe De Sousa
  */
-public class S_IF extends Statement {
+public class If extends Statement {
 
-	public S_IF(BASICProgram pgm, Tokenizer tok, EditText edtxt){
+	public If(BASICProgram pgm, Tokenizer tok, EditText edtxt){
 		super(pgm, tok, edtxt);
 	}
 
@@ -69,7 +69,7 @@ public class S_IF extends Statement {
 			// Token already contains THEN, and it's been checked if it exists too
 			// So we can pass over it, and move to the next token, line number
 			if (Expression.isNumber(token)){
-				S_GOTO gotoLN = new S_GOTO(p, t, et);
+				Goto gotoLN = new Goto(p, t, et);
 				// gotoLN gets the next token, we already have THEN
 				// gotoLN then sets the point of execution in p to the new line number 
 				gotoLN.doSt();

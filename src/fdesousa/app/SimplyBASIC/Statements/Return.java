@@ -1,5 +1,5 @@
 /*
- * S_GOTO.java - Implement a GOTO Statement.
+ * S_RETURN.java - Implement a RETURN Statement.
  *
  * Copyright (c) 2011 Filipe De Sousa
  * 
@@ -26,45 +26,32 @@
 package fdesousa.app.SimplyBASIC.Statements;
 
 import fdesousa.app.SimplyBASIC.BASICProgram;
-import fdesousa.app.SimplyBASIC.Expression;
 import fdesousa.app.SimplyBASIC.Statement;
 import fdesousa.app.SimplyBASIC.Tokenizer;
 import android.widget.EditText;
 
 /**
- * <h1>S_GOTO.java</h1>
- * Handles the GOTO Statement, by going to the named line number.
+ * <h1>S_RETURN.java</h1>
+ * Handles RETURN Statement by returning line execution to the<br>
+ * point of the last called GOSUB statement.
  * @version 0.1
  * @author Filipe De Sousa
  */
-public class S_GOTO extends Statement {
+public class Return extends Statement {
 
-	public S_GOTO(BASICProgram pgm, Tokenizer tok, EditText edtxt){
+	public Return(BASICProgram pgm, Tokenizer tok, EditText edtxt){
 		super(pgm, tok, edtxt);
 	}
 
 	@Override
 	public void doSt(){
-		String token;
-		if (t.hasMoreTokens()) {
-			token = t.nextToken();
-			if (Expression.isNumber(token)) {
-				int lN = Integer.valueOf(token.trim()).intValue();
-				p.setlNs(p.getTailSet(lN));
-			}
-			else {
-				errLineNumber("ILLEGAL");
-				return;
-			}
+		if (! p.getRETURNKeySetisEmpty()){
+			p.setlNs(p.getRETURNKeySet());
 		}
-		else {
-			errLineNumber("MISSING");
+		else{
+			et.append("ILLEGAL RETURN - LINE NUMBER " + String.valueOf(p.getCurrentLine()) + "\n");
+			p.stopExec();
 			return;
 		}
-	}
-	
-	public void errLineNumber(String type){
-		et.append(type + " LINE NUMBER - LINE " + p.getCurrentLine());
-		p.stopExec();
 	}
 }

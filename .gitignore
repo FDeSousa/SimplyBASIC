@@ -2,8 +2,4 @@ bin
 
 bin/*
 
-bin/fdesousa/app/SimplyBASIC/SimplyBASIC.class
-
-bin/fdesousa/app/SimplyBASIC/BASICProgram.class
-
-.gitignore
+bin/fdesousa/app/SimplyBASIC/*

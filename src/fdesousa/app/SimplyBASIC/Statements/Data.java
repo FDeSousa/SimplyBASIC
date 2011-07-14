@@ -1,5 +1,5 @@
 /*
- * S_END.java - Implement the END Statement.
+ * S_DATA.java - Implement a DATA Statement.
  *
  * Copyright (c) 2011 Filipe De Sousa
  * 
@@ -26,27 +26,51 @@
 package fdesousa.app.SimplyBASIC.Statements;
 
 import fdesousa.app.SimplyBASIC.BASICProgram;
+import fdesousa.app.SimplyBASIC.Expression;
 import fdesousa.app.SimplyBASIC.Statement;
 import fdesousa.app.SimplyBASIC.Tokenizer;
 import android.widget.EditText;
 
 /**
- * <h1>S_END.java</h1>
- * Handles an END Statement, by ending the execution and<br>
- * printing the time it took to execute.
+ * <h1>S_DATA.java</h1>
+ * Handles a DATA Statement, by adding each piece of data to a<br>
+ * stack in the BASIC Program instance.
  * @version 0.1
  * @author Filipe De Sousa
  */
-public class S_END extends Statement {
+public class Data extends Statement {
 
-	public S_END(BASICProgram pgm, Tokenizer tok, EditText edtxt){
+	public Data(BASICProgram pgm, Tokenizer tok, EditText edtxt){
 		super(pgm, tok, edtxt);
 	}
 
 	@Override
 	public void doSt(){
-		et.append("TIME TO FINISH: " + String.valueOf(p.getTimeToExecute() / 10.0) + " SECONDS.\n");
+		String s = new String();
+		
+		while (t.hasMoreTokens()){
+			s = t.nextToken();
+			if (Expression.isNumber(s)){
+				p.addData(Double.valueOf(s.trim()).doubleValue());
+			}
+			else if (s.equals(",")){
+				; // Acknowledge, but do nothing about it
+			}
+			else if (s.equals("\n")){
+				// Break from this Statement if the token is EOL ("\n")
+				// as there's nothing else to do
+				return;
+			}
+			else {
+				// If the token isn't a number/comma/EOL, it's in the wrong place
+				errConstant(s);
+				return;
+			}
+		}
+	}
+	
+	private void errConstant(String s){
+		et.append("ILLEGAL CONSTANT: " + s + " LINE NUMBER " + p.getCurrentLine() +".\n");
 		p.stopExec();
-		return;
 	}
 }

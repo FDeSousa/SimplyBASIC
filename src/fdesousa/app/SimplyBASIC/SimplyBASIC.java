@@ -44,6 +44,7 @@ public class SimplyBASIC extends Activity {
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.main);
+		//	Odd set of errors with R.layout.main here, must investigate
 
 		// Declare and initialise variables used class-wide
 		final EditText et = (EditText)findViewById(R.id.etMain);

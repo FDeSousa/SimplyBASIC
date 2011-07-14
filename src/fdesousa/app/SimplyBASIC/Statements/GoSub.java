@@ -1,5 +1,5 @@
 /*
- * S_RETURN.java - Implement a RETURN Statement.
+ * S_GOSUB.java - Implement a GOSUB Statement.
  *
  * Copyright (c) 2011 Filipe De Sousa
  * 
@@ -26,32 +26,47 @@
 package fdesousa.app.SimplyBASIC.Statements;
 
 import fdesousa.app.SimplyBASIC.BASICProgram;
+import fdesousa.app.SimplyBASIC.Expression;
 import fdesousa.app.SimplyBASIC.Statement;
 import fdesousa.app.SimplyBASIC.Tokenizer;
 import android.widget.EditText;
 
 /**
- * <h1>S_RETURN.java</h1>
- * Handles RETURN Statement by returning line execution to the<br>
- * point of the last called GOSUB statement.
+ * <h1>S_GOSUB.java</h1>
+ * Handles the GOSUB Statement, by setting a RETURN point and<br>
+ * going to the named line number.
  * @version 0.1
  * @author Filipe De Sousa
  */
-public class S_RETURN extends Statement {
+public class GoSub extends Statement {
 
-	public S_RETURN(BASICProgram pgm, Tokenizer tok, EditText edtxt){
+	public GoSub(BASICProgram pgm, Tokenizer tok, EditText edtxt){
 		super(pgm, tok, edtxt);
 	}
 
 	@Override
 	public void doSt(){
-		if (! p.getRETURNKeySetisEmpty()){
-			p.setlNs(p.getRETURNKeySet());
+		String token;
+		if (t.hasMoreTokens()) {
+			token = t.nextToken();
+			if (Expression.isNumber(token)) {
+				int lN = Integer.valueOf(token.trim()).intValue();
+				p.putRETURNKeySet(p.getlNs());
+				p.setlNs(p.getTailSet(lN));
+			}
+			else {
+				errLineNumber("ILLEGAL");
+				return;
+			}
 		}
-		else{
-			et.append("ILLEGAL RETURN - LINE NUMBER " + String.valueOf(p.getCurrentLine()) + "\n");
-			p.stopExec();
+		else {
+			errLineNumber("MISSING");
 			return;
 		}
+	}
+	
+	public void errLineNumber(String type){
+		et.append(type + " LINE NUMBER - LINE " + p.getCurrentLine());
+		p.stopExec();
 	}
 }
