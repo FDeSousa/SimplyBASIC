@@ -1,5 +1,7 @@
 bin
+res
 bin/*
+res/*
 bin/fdesousa/app/SimplyBASIC/*
 bin/fdesousa/app/SimplyBASIC/SimplyBASIC.class
 # ignore java class files
@@ -8,3 +10,6 @@ bin/fdesousa/app/SimplyBASIC/SimplyBASIC.class
 *.[oa]
 # ignore temporary files
 *~
+.classpath
+default.properties
+proguard.cfg
