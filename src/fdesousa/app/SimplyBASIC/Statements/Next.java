@@ -26,7 +26,6 @@
 package fdesousa.app.SimplyBASIC.Statements;
 
 import fdesousa.app.SimplyBASIC.BASICProgram;
-import fdesousa.app.SimplyBASIC.Statement;
 import fdesousa.app.SimplyBASIC.Tokenizer;
 import fdesousa.app.SimplyBASIC.Variable;
 import android.widget.EditText;

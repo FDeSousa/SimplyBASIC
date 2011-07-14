@@ -28,6 +28,8 @@ package fdesousa.app.SimplyBASIC;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import fdesousa.app.SimplyBASIC.Statements.Statement;
+
 /**
  * <h1>Tokenizer.java</h1>
  * Separates tokens in an input line into separate Strings depending<br>

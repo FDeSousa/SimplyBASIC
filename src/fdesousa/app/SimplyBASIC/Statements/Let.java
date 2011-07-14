@@ -30,7 +30,6 @@ import java.util.Queue;
 
 import fdesousa.app.SimplyBASIC.BASICProgram;
 import fdesousa.app.SimplyBASIC.Expression;
-import fdesousa.app.SimplyBASIC.Statement;
 import fdesousa.app.SimplyBASIC.Tokenizer;
 import fdesousa.app.SimplyBASIC.Variable;
 

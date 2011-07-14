@@ -29,7 +29,6 @@ import java.util.PriorityQueue;
 
 import fdesousa.app.SimplyBASIC.BASICProgram;
 import fdesousa.app.SimplyBASIC.Expression;
-import fdesousa.app.SimplyBASIC.Statement;
 import fdesousa.app.SimplyBASIC.Tokenizer;
 import android.widget.EditText;
 
