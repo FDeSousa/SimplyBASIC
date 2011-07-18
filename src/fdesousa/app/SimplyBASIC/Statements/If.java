@@ -28,9 +28,11 @@ package fdesousa.app.SimplyBASIC.Statements;
 import java.util.PriorityQueue;
 
 import fdesousa.app.SimplyBASIC.BASICProgram;
-import fdesousa.app.SimplyBASIC.Expression;
+import fdesousa.app.SimplyBASIC.Terminal;
 import fdesousa.app.SimplyBASIC.Tokenizer;
-import android.widget.EditText;
+import fdesousa.app.SimplyBASIC.framework.Expression;
+import fdesousa.app.SimplyBASIC.framework.Statement;
+import fdesousa.app.SimplyBASIC.framework.TextIO;
 
 /**
  * <h1>S_IF.java</h1>
@@ -42,13 +44,19 @@ import android.widget.EditText;
  * @author Filipe De Sousa
  */
 public class If extends Statement {
-
-	public If(BASICProgram pgm, Tokenizer tok, EditText edtxt){
-		super(pgm, tok, edtxt);
+	Tokenizer t;
+	BASICProgram p;
+	TextIO textIO;
+	
+	public If(Terminal terminal) {
+		super(terminal);
+		t = terminal.getTokenizer();
+		p = terminal.getBasicProgram();
+		textIO = terminal.getTextIO();
 	}
 
 	@Override
-	public void doSt(){
+	public void doSt() {
 		// Syntax of IF:
 		//	IF <expression> <relation> <expression> THEN <linenumber>
 		String token = new String();
@@ -68,7 +76,7 @@ public class If extends Statement {
 			// Token already contains THEN, and it's been checked if it exists too
 			// So we can pass over it, and move to the next token, line number
 			if (Expression.isNumber(token)){
-				Goto gotoLN = new Goto(p, t, et);
+				Statement gotoLN = new Goto(terminal);
 				// gotoLN gets the next token, we already have THEN
 				// gotoLN then sets the point of execution in p to the new line number 
 				gotoLN.doSt();
@@ -82,7 +90,7 @@ public class If extends Statement {
 	 * @param endOnTHEN - true to end expression with "THEN", false if with relation
 	 * @return Expression e, new expression based on the written Expression
 	 */
-	private Expression getIFExpr(boolean endOnTHEN){
+	private Expression getIFExpr(boolean endOnTHEN) {
 		PriorityQueue<String> expr = new PriorityQueue<String>();
 		String token = t.nextToken();
 
@@ -96,52 +104,46 @@ public class If extends Statement {
 		}
 		else{			// This gets an expression that ends with relational operator
 			// Get the first expression
-			while (t.hasMoreTokens() & 
-					! isRelation(token)){		// We don't want no stinkin' relations here!
+			while (t.hasMoreTokens() & !isRelation(token)) {		// We don't want no stinkin' relations here!
 				// If t has more tokens, and the token isn't a relational operator, we're still in an expression
 				expr.offer(token);
 				token = t.nextToken();
 			}
 		}
-		Expression e = new Expression(expr, p, et);
+		Expression e = new Expression(expr, terminal);
 		return e;
 	}
 
-	private boolean doIFRel(Expression e1, Expression e2, String relation){
-		if (relation.equals("=")){
-			if (e1.eval(p, et) == e2.eval(p, et))
+	private boolean doIFRel(Expression e1, Expression e2, String relation) {
+		if (relation.equals("=")) {
+			if (e1.eval() == e2.eval())
 				return true;	// The expressions are equal in value
-		}
-		else if (relation.equals("<=")){
-			if (e1.eval(p, et) <= e2.eval(p, et))
+		} else if (relation.equals("<=")) {
+			if (e1.eval() <= e2.eval())
 				return true;	// Expression 1 is less than or equal to expression 2
-		}
-		else if (relation.equals(">=")){
-			if (e1.eval(p, et) >= e2.eval(p, et))
+		} else if (relation.equals(">=")) {
+			if (e1.eval() >= e2.eval())
 				return true;	// Expression 1 is greater than or equal to expression 2
-		}
-		else if (relation.equals("<")){
-			if (e1.eval(p, et) < e2.eval(p, et))
+		} else if (relation.equals("<")) {
+			if (e1.eval() < e2.eval())
 				return true;	// Expression 1 is less than expression 2
-		}
-		else if (relation.equals(">")){
-			if (e1.eval(p, et) > e2.eval(p, et))
+		} else if (relation.equals(">")) {
+			if (e1.eval() > e2.eval())
 				return true;	// Expression 1 is greater than expression 2
-		}
-		else if (relation.equals("<>")){
-			if (e1.eval(p, et) != e2.eval(p, et))
+		} else if (relation.equals("<>")) {
+			if (e1.eval() != e2.eval())
 				return true;	// Expression 1 is not equal to expression 2
 		}
 		return false;			// If any of the above fail, return false
 	}
 
-	public static boolean isRelation(String token){
-		return  (token.equals("=") || 	// Equal to
-				token.equals("<=") || 	// Less than or equal to
-				token.equals(">=") || 	// Greater than or equal to
-				token.equals("<") || 	// Less than
-				token.equals(">") || 	// Greater than
-				token.equals("<>"));	// Not equal to
+	public static boolean isRelation(String token) {
+		return  (token.equals("=")	|| 	// Equal to
+				 token.equals("<=")	|| 	// Less than or equal to
+				 token.equals(">=")	|| 	// Greater than or equal to
+				 token.equals("<")	|| 	// Less than
+				 token.equals(">")	|| 	// Greater than
+				 token.equals("<>"));	// Not equal to
 		// Should return true if any of these is the case
 	}
 }

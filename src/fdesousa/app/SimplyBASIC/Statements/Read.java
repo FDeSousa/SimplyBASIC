@@ -26,52 +26,54 @@
 package fdesousa.app.SimplyBASIC.Statements;
 
 import fdesousa.app.SimplyBASIC.BASICProgram;
+import fdesousa.app.SimplyBASIC.Terminal;
 import fdesousa.app.SimplyBASIC.Tokenizer;
-import fdesousa.app.SimplyBASIC.Variable;
-import android.widget.EditText;
+import fdesousa.app.SimplyBASIC.framework.Statement;
+import fdesousa.app.SimplyBASIC.framework.Variable;
 
 /**
  * <h1>S_READ.java</h1>
  * Handles a READ Statement, by retrieving a value from the DATA stack<br>
  * and assign it to the named Variable.
- * @version 0.1
+ * @version 0.2
  * @author Filipe De Sousa
  */
 public class Read extends Statement {
-
-	public Read(BASICProgram pgm, Tokenizer tok, EditText edtxt){
-		super(pgm, tok, edtxt);
+	Tokenizer t;
+	BASICProgram p;
+	
+	public Read(Terminal terminal) {
+		super(terminal);
+		t = terminal.getTokenizer();
+		p = terminal.getBasicProgram();
 	}
 
 	@Override
-	public void doSt(){
+	public void doSt() {
 		do {
 			String token = t.nextToken();
-			if (! token.equals(",")){
-				if (Variable.isVariable(token)){
-					if (p.hasData()){
+			if (! token.equals(",")) {
+				if (Variable.isVariable(token)) {
+					if (p.hasData()) {
 						Variable v = Variable.getVariable(p, token);
 						v.setValue(token, p.getData());
-					}
-					else {
+					} else {
 						errREAD("NO DATA");
 						return;
 					}
-				}
-				else {
+				} else {
 					errREAD("ILLEGAL VARIABLE");
 					return;
 				}
-			}
-			else if (token.equals("\n")){
+			} else if (token.equals("\n")) {
 				// Just acknowledge and leave, on EOL
 				return;
 			}
 		} while (t.hasMoreTokens());
 	}
 	
-	private void errREAD(String type){
-		et.append(type + " - LINE NUMBER " + String.valueOf(p.getCurrentLine()) + "\n");
+	private void errREAD(String type) {
+		terminal.getTextIO().writeLine(type + " - LINE NUMBER " + p.getCurrentLine());
 		p.stopExec();
 	}
 }

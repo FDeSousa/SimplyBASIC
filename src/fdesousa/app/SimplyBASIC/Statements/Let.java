@@ -29,11 +29,12 @@ import java.util.LinkedList;
 import java.util.Queue;
 
 import fdesousa.app.SimplyBASIC.BASICProgram;
-import fdesousa.app.SimplyBASIC.Expression;
+import fdesousa.app.SimplyBASIC.Terminal;
 import fdesousa.app.SimplyBASIC.Tokenizer;
-import fdesousa.app.SimplyBASIC.Variable;
-
-import android.widget.EditText;
+import fdesousa.app.SimplyBASIC.framework.Expression;
+import fdesousa.app.SimplyBASIC.framework.Statement;
+import fdesousa.app.SimplyBASIC.framework.TextIO;
+import fdesousa.app.SimplyBASIC.framework.Variable;
 
 /**
  * <h1>S_LET.java</h1>
@@ -44,49 +45,53 @@ import android.widget.EditText;
  * @author Filipe De Sousa
  */
 public class Let extends Statement {
-
-	public Let(BASICProgram pgm, Tokenizer tok, EditText edtxt){
-		super(pgm, tok, edtxt);
+	Tokenizer t;
+	BASICProgram p;
+	TextIO et;
+	
+	public Let(Terminal terminal) {
+		super(terminal);
+		t = terminal.getTokenizer();
+		p = terminal.getBasicProgram();
+		et = terminal.getTextIO();
 	}
 
 	@Override
-	public void doSt(){
+	public void doSt() {
 		String vName = t.nextToken();
 		// Let Variable sort itself out, and return a Variable to work with
 		Variable v = Variable.getVariable(p, vName);
 		
 		String token = t.nextToken();
 		// If token is an equals sign, the expression begins next
-		if (token.equals("=")){
+		if (token.equals("=")) {
 			Queue<String> expression = new LinkedList<String>();
 			// Very simple for the moment, will only handle numbers and symbols, hoping to mend that asap
-			while (t.hasMoreTokens()){
+			while (t.hasMoreTokens()) {
 				token = t.nextToken();
-				if (! token.equals("\n")){
+				if (!token.equals("\n")) {
 					expression.offer(token);
-				}
-				else{
+				} else {
 					break;
 				}
 			}
 			doAssign(expression, v, vName);
 			return;
-		}
-		else {
+		} else {
 			errLineNumber("INCORRECT FORMAT");
 			return;
 		}
 	}
 	
-	private void doAssign(Queue<String> expression, Variable v, String vName){
-		Expression e = new Expression(expression, p, et);
+	private void doAssign(Queue<String> expression, Variable v, String vName) {
+		Expression e = new Expression(expression, terminal);
 		// Once the expression has been resolved, have to put it somewhere, ideally in the named variable
-		v.setValue(vName, e.eval(p, et));
-		et.append(String.valueOf(v.getValue(vName)) + "\n");
+		v.setValue(vName, e.eval());
+		et.writeLine(String.valueOf(v.getValue(vName)));
 	}
 	
-	private void errLineNumber(String type){
-		et.append(type + " - LINE NUMBER " + p.getCurrentLine());
+	private void errLineNumber(String type) {
+		et.writeLine(type + " - LINE NUMBER " + p.getCurrentLine());
 		p.stopExec();
 	}
 }

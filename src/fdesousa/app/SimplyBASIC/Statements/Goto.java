@@ -26,9 +26,10 @@
 package fdesousa.app.SimplyBASIC.Statements;
 
 import fdesousa.app.SimplyBASIC.BASICProgram;
-import fdesousa.app.SimplyBASIC.Expression;
+import fdesousa.app.SimplyBASIC.Terminal;
 import fdesousa.app.SimplyBASIC.Tokenizer;
-import android.widget.EditText;
+import fdesousa.app.SimplyBASIC.framework.Expression;
+import fdesousa.app.SimplyBASIC.framework.Statement;
 
 /**
  * <h1>S_GOTO.java</h1>
@@ -37,33 +38,35 @@ import android.widget.EditText;
  * @author Filipe De Sousa
  */
 public class Goto extends Statement {
+	Tokenizer tokenizer;
+	BASICProgram program;
 
-	public Goto(BASICProgram pgm, Tokenizer tok, EditText edtxt){
-		super(pgm, tok, edtxt);
+	public Goto(Terminal terminal){
+		super(terminal);
+		tokenizer = terminal.getTokenizer();
+		program = terminal.getBasicProgram();
 	}
 
 	@Override
 	public void doSt(){
 		String token;
-		if (t.hasMoreTokens()) {
-			token = t.nextToken();
+		if (tokenizer.hasMoreTokens()) {
+			token = tokenizer.nextToken();
 			if (Expression.isNumber(token)) {
 				int lN = Integer.valueOf(token.trim()).intValue();
-				p.setlNs(p.getTailSet(lN));
-			}
-			else {
+				program.setlNs(program.getTailSet(lN));
+			} else {
 				errLineNumber("ILLEGAL");
 				return;
 			}
-		}
-		else {
+		} else {
 			errLineNumber("MISSING");
 			return;
 		}
 	}
-	
+
 	public void errLineNumber(String type){
-		et.append(type + " LINE NUMBER - LINE " + p.getCurrentLine());
-		p.stopExec();
+		(terminal.getTextIO()).writeLine(type + " LINE NUMBER - LINE " + program.getCurrentLine());
+		program.stopExec();
 	}
 }

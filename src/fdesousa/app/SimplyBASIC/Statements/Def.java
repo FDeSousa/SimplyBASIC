@@ -28,60 +28,61 @@ package fdesousa.app.SimplyBASIC.Statements;
 import java.util.PriorityQueue;
 
 import fdesousa.app.SimplyBASIC.BASICProgram;
-import fdesousa.app.SimplyBASIC.Expression;
-import fdesousa.app.SimplyBASIC.Function;
+import fdesousa.app.SimplyBASIC.Terminal;
 import fdesousa.app.SimplyBASIC.Tokenizer;
-import fdesousa.app.SimplyBASIC.Variable;
-
-import android.widget.EditText;
+import fdesousa.app.SimplyBASIC.framework.Expression;
+import fdesousa.app.SimplyBASIC.framework.Function;
+import fdesousa.app.SimplyBASIC.framework.Statement;
+import fdesousa.app.SimplyBASIC.framework.Variable;
 
 /**
  * <h1>S_DEF.java</h1>
  * Handles a DEF Statement, by instantiating a new User Function,<br>
  * which is then stored in an instance of BASIC Program.
- * @version 0.1
+ * @version 0.2
  * @author Filipe De Sousa
  */
 public class Def extends Statement {
-
-	public Def(BASICProgram pgm, Tokenizer tok, EditText edtxt){
-		super(pgm, tok, edtxt);
+	Tokenizer tokenizer;
+	BASICProgram program;
+	
+	public Def(Terminal terminal) {
+		super(terminal);
+		tokenizer = terminal.getTokenizer();
+		program = terminal.getBasicProgram();
 	}
 
 	@Override
-	public void doSt(){
+	public void doSt() {
 		// Next token after "DEF" will be the function call name
-		String fnName = t.nextToken();
+		String fnName = tokenizer.nextToken();
 		// Get the argument from within fnName, this is the variable to look for
 		String fnVarName = Function.getArg(fnName);
 		// Create a new Variable for use with this user-defined Function
 		Variable fnVar = new Variable(fnVarName);
 		// Put this new variable into BASIC Program
-		p.putVar(fnVar);
+		program.putVar(fnVar);
 		
 		PriorityQueue<String> expression = new PriorityQueue<String>();
 		
 		// Since we have the basic stuff sorted, get the expression associated with this new Function
-		String token = t.nextToken();
+		String token = tokenizer.nextToken();
 		// If token is an equals sign, the expression begins next
-		if (token.equals("=")){
+		if (token.equals("=")) {
 			// Very simple for the moment, will only handle numbers and symbols, hoping to mend that asap
-			while (t.hasMoreTokens()){
-				if (! token.equals("\n")){
-					token = t.nextToken();
+			while (tokenizer.hasMoreTokens()) {
+				if (! token.equals("\n")) {
+					token = tokenizer.nextToken();
 					expression.offer(token);					
-				}
-				else if (token.equals("\n")){
+				} else if (token.equals("\n")) {
 					putFn(fnName, expression, fnVar);
 					return;
-				}
-				else{
+				} else {
 					errFormat();
 					return;
 				}
 			}
-		}
-		else {
+		} else {
 			// If the token isn't a number/comma/EOL, it's in the wrong place
 			errFormat();
 			return;
@@ -89,14 +90,14 @@ public class Def extends Statement {
 		
 	}
 	
-	private void putFn(String fnName, PriorityQueue<String> expression, Variable fnVar){
+	private void putFn(String fnName, PriorityQueue<String> expression, Variable fnVar) {
 		Expression fnExp = new Expression(expression);
-		Function fn = new Function(fnName, fnExp, fnVar);
-		p.putFunction(fn);
+		Function fn = new Function(terminal, fnName, fnExp, fnVar);
+		program.putFunction(fn);
 	}
 	
-	private void errFormat(){
-		et.append("INCORRECT FORMAT - LINE NUMBER " + p.getCurrentLine() +".\n");
-		p.stopExec();
+	private void errFormat() {
+		terminal.getTextIO().writeLine("INCORRECT FORMAT - LINE NUMBER " + program.getCurrentLine());
+		program.stopExec();
 	}
 }

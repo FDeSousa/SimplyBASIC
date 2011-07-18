@@ -26,50 +26,51 @@
 package fdesousa.app.SimplyBASIC.Statements;
 
 import fdesousa.app.SimplyBASIC.BASICProgram;
-import fdesousa.app.SimplyBASIC.Expression;
+import fdesousa.app.SimplyBASIC.Terminal;
 import fdesousa.app.SimplyBASIC.Tokenizer;
-import android.widget.EditText;
+import fdesousa.app.SimplyBASIC.framework.Expression;
+import fdesousa.app.SimplyBASIC.framework.Statement;
+import fdesousa.app.SimplyBASIC.framework.TextIO;
 
 /**
  * <h1>S_DATA.java</h1>
  * Handles a DATA Statement, by adding each piece of data to a<br>
  * stack in the BASIC Program instance.
- * @version 0.1
+ * @version 0.2
  * @author Filipe De Sousa
  */
 public class Data extends Statement {
+	Tokenizer tokenizer;
+	BASICProgram program;
+	TextIO textIO;
 
-	public Data(BASICProgram pgm, Tokenizer tok, EditText edtxt){
-		super(pgm, tok, edtxt);
+	public Data(Terminal terminal){
+		super(terminal);
+		tokenizer = terminal.getTokenizer();
+		textIO = terminal.getTextIO();
 	}
 
 	@Override
 	public void doSt(){
 		String s = new String();
-		
-		while (t.hasMoreTokens()){
-			s = t.nextToken();
-			if (Expression.isNumber(s)){
-				p.addData(Double.valueOf(s.trim()).doubleValue());
-			}
-			else if (s.equals(",")){
-				; // Acknowledge, but do nothing about it
-			}
-			else if (s.equals("\n")){
-				// Break from this Statement if the token is EOL ("\n")
-				// as there's nothing else to do
-				return;
-			}
-			else {
-				// If the token isn't a number/comma/EOL, it's in the wrong place
+
+		while (tokenizer.hasMoreTokens()){
+			s = tokenizer.nextToken();
+			if (Expression.isNumber(s)){	//	Add numbers to program's data list
+				program.addData(Double.valueOf(s.trim()).doubleValue());
+			} else if (s.equals(",")){		// Ignore and continue past commas
+				continue;
+			} else if (s.equals("\n")){		// Break from this Statement if the token is EOL
+				return;						// ("\n") as there's nothing else to do
+			} else {						// If the token isn't a number/comma/EOL, it's in the wrong place
 				errConstant(s);
 				return;
 			}
 		}
 	}
-	
+
 	private void errConstant(String s){
-		et.append("ILLEGAL CONSTANT: " + s + " LINE NUMBER " + p.getCurrentLine() +".\n");
-		p.stopExec();
+		textIO.writeLine("ILLEGAL CONSTANT: " + s + " LINE NUMBER " + program.getCurrentLine() +".\n");
+		program.stopExec();
 	}
 }

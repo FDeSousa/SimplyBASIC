@@ -27,60 +27,54 @@ package fdesousa.app.SimplyBASIC.Statements;
 
 import java.util.PriorityQueue;
 
-import fdesousa.app.SimplyBASIC.BASICProgram;
-import fdesousa.app.SimplyBASIC.Expression;
+import fdesousa.app.SimplyBASIC.Terminal;
 import fdesousa.app.SimplyBASIC.Tokenizer;
-
-import android.widget.EditText;
+import fdesousa.app.SimplyBASIC.framework.Expression;
+import fdesousa.app.SimplyBASIC.framework.Statement;
 
 /**
  * <h1>S_PRINT.java</h1>
  * Handles the PRINT Statement. It can print a string to the screen<br>
  * consisting of the value of a named Variable, the result of a named<br>
  * evaluated expression, or a String literal given in double-quotes.
- * @version 0.1
+ * @version 0.2
  * @author Filipe De Sousa
  */
 public class Print extends Statement {
+	Tokenizer t;
+	StringBuilder out = new StringBuilder();
 
-	public Print(BASICProgram pgm, Tokenizer tok, EditText edtxt){
-		super(pgm, tok, edtxt);
+	public Print(Terminal terminal) {
+		super(terminal);
+		t = terminal.getTokenizer();
+		out = new StringBuilder();
 	}
 
 	@Override
-	public void doSt(){
+	public void doSt() {
 		String token = new String();
-		String outLine = new String();
 		// while t has more tokens, keep them coming, and evaluate whatever needs evaluation on-the-spot, before printing
 		// start/end of printable string: '"'
 		// separator of sections: ','
 		while (t.hasMoreTokens()){
 			token = t.nextToken();
 			
-			if (token.contains("\"")){
+			if (token.contains("\"")) {
 				// If the token has a double-quotation mark, it's a literal, print it
-				outLine += Tokenizer.removeQuotes(token);
-			}
-			else if (token.equals(",")){
-				// Acknowledge commas as new line indicator
-				outLine += "\t";
-			}
-			else if (token.equals("\n")){
+				out.append(Tokenizer.removeQuotes(token));
+			} else if (token.equals("\n")) {
 				// Acknowledge this but ignore it, we default to adding "\n" later
 				break;
-			}
-			else {
+			} else {
 				// Assume it's an expression, figure that out first
-				outLine += exp(token);
+				exp(token);
 			}
 		}
-		et.append(outLine + "\n");
+		terminal.getTextIO().writeLine(out.toString());
 	}
 	
-	private String exp(String token){
-		String append = new String();
+	private void exp(String token) {
 		PriorityQueue<String> ex = new PriorityQueue<String>();
-		Expression e;
 		ex.offer(token);
 		
 		while (t.hasMoreTokens()){
@@ -92,8 +86,7 @@ public class Print extends Statement {
 				ex.offer(token);
 			}
 		}
-		e = new Expression(ex, p, et);
-		append += String.valueOf(e.eval(p, et)) + "\t";
-		return append;
+		Expression e = new Expression(ex, terminal);
+		out.append(String.valueOf(e.eval()));
 	}
 }

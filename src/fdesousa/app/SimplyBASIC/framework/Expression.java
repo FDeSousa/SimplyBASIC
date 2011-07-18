@@ -23,14 +23,17 @@
  * 
  */
 
-package fdesousa.app.SimplyBASIC;
+package fdesousa.app.SimplyBASIC.framework;
 
 import java.util.LinkedList;
 import java.util.Queue;
 import java.util.Stack;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import android.widget.EditText;
+
+import fdesousa.app.SimplyBASIC.BASICProgram;
+import fdesousa.app.SimplyBASIC.Terminal;
+import fdesousa.app.SimplyBASIC.Tokenizer;
 
 /**
  * <h1>Expression.java</h1>
@@ -43,12 +46,15 @@ import android.widget.EditText;
  * </ul>
  * It follows the execution order defined by BODMAS, using
  * stacks and queues.
- * @version 0.1
+ * @version 0.2
  * @author Filipe De Sousa
  */
 public class Expression{
 
-	static final String[] operators = { "^", "*", "/", "+", "-" };
+	public final static String regexNumber = "^([+-]?\\d*\\.?\\d+)[E]?([+-]?\\d*)$";
+	public final static String regexExponent = "^([+-]?\\d*\\.?\\d+)[E]{1}([+-]?\\d+)$";
+	public static final String[] operators = { "^", "*", "/", "+", "-" };
+	public static final String[] relations = { "=", "<", ">", "<=", ">=", "<>" };
 
 	boolean FN_Expression = false;
 
@@ -59,36 +65,38 @@ public class Expression{
 	// A stack of operators. Temporary use while converting
 	Stack<String> ops = new Stack<String>();
 
-	public final static String regexNumber = "^([+-]?\\d*\\.?\\d+)[E]?([+-]?\\d*)$";
-	public final static String regexExponent = "^([+-]?\\d*\\.?\\d+)[E]{1}([+-]?\\d+)$";
+	Terminal terminal;
+	Tokenizer t;
+	BASICProgram p;
+	TextIO et;
 
 	/**
 	 * This empty constructor is used by DEF statement, which then resets the queue later
 	 */
-	public Expression (){
+	public Expression () {
 		FN_Expression = true;
 	}
 
 	/**
 	 * This constructor initialises the expr queue, and convert input queue to postfix immediately
 	 * @param expr - the queue holding the expr to calculate
-	 * @param p - an instance of BASICProgram, used with inToPost()
-	 * @param et - an instance of EditText, used with inToPost()
+	 * @param program - an instance of BASICProgram, used with inToPost()
+	 * @param textIO - an instance of EditText, used with inToPost()
 	 */
-	public Expression (Queue<String> expr, BASICProgram p, EditText et){
+	public Expression (Queue<String> expr, Terminal terminal) {
 		in = expr;
-		inToPost(p, et);
+		inToPost();
 	}
 
 	/**
 	 * This constructor initialises the expr queue, but does nothing else
 	 * @param expr - the queue holding the expr to calculate
 	 */
-	public Expression (Queue<String> expr){
+	public Expression (Queue<String> expr) {
 		in = expr;
 	}
 
-	public void inToPost(BASICProgram p, EditText et){
+	public void inToPost() {
 		String token = new String();
 
 		if (! in.isEmpty() & in.size() < 2){
@@ -101,56 +109,49 @@ public class Expression{
 			// This used to be simpler, it was originally just isNumber(token)
 			// but as a number can also have the letter 'E', to mark the exponent, 
 			// things have been changed around a little bit to match the possibility
-			if (isNumber(token)){
-				if (hasExponent(token)){
+			if (isNumber(token)) {
+				if (hasExponent(token)) {
 					// If there's an exponent, calculate it first
 					String n = String.valueOf(calculateExponent(token));
 					token = n;
 				}
 				// Add the number to the Queue
 				post.offer(token);
-			}
-			else if (Variable.isVariable(token)){
+			} else if (Variable.isVariable(token)) {
 				// If it's a variable value, get the value of that variable first
 				Variable v = Variable.getVariable(p, token);
 				post.offer(String.valueOf(v.getValue(token)));
-			}
-			else if (Function.isFunction(token)){
+			} else if (Function.isFunction(token)) {
 				// If it's a function call, calculate it before adding it
-				if (Function.isUserFunction(token)){
+				if (Function.isUserFunction(token)) {
 					p.getFunction(token);
+				} else {
+					Function.doFn(terminal, token);
 				}
-				else {
-					Function.doFn(et, token, p);
-				}
-			}
-			else if (isOperator(token)){
-				if (ops.isEmpty()){
+			} else if (isOperator(token)) {
+				if (ops.isEmpty()) {
 					ops.push(token);
-				}
-				else{	// While ops isn't empty OR precedence current token <= precedence ops.top
+				} else {	// While ops isn't empty OR precedence current token <= precedence ops.top
 					while (! ops.isEmpty() && (precedence(token) <= precedence(ops.peek()))) {
 						post.offer(ops.pop());
 					}
 					ops.push(token);
 				}
-			}
-			else if (token.equals("(")){
+			} else if (token.equals("(")) {
 				ops.push(token);
-			}
-			else if (token.equals(")")){
-				while (! ops.isEmpty() && ! ops.peek().equals("(")){
+			} else if (token.equals(")")) {
+				while (! ops.isEmpty() && ! ops.peek().equals("(")) {
 					post.offer(ops.pop());
 				}
 				ops.pop();
 			}
 		}
-		while (! ops.isEmpty()){
+		while (! ops.isEmpty()) {
 			post.offer(ops.pop());
 		}
 	}
 
-	public double eval(BASICProgram p, EditText et){
+	public double eval() {
 		try {
 			// The stack with the values to be operated on, in their order
 			Stack<Double> runningTotal = new Stack<Double>();
@@ -163,42 +164,36 @@ public class Expression{
 				return Double.valueOf(post.poll().trim()).doubleValue();
 
 			// so only parse in one item, and receive nothing.
-			while (! post.isEmpty()){
-				if (isNumber(post.peek())){
+			while (! post.isEmpty()) {
+				if (isNumber(post.peek())) {
 					runningTotal.push(Double.valueOf(post.poll().trim()).doubleValue());
-				}
-				else if (isOperator(post.peek())){
+				} else if (isOperator(post.peek())) {
 					val2 = runningTotal.pop();
 					val1 = runningTotal.pop();
 					op = post.poll();
 					if (op.equals("^")){
 						runningTotal.push(Math.pow(val1, val2));
-					}
-					else if (op.equals("*")){
+					} else if (op.equals("*")) {
 						runningTotal.push(val1 * val2);
-					}
-					else if (op.equals("/")){
+					} else if (op.equals("/")) {
 						runningTotal.push(val1 / val2);
-					}
-					else if (op.equals("+")){
+					} else if (op.equals("+")) {
 						runningTotal.push(val1 + val2);
-					}
-					else if (op.equals("-")){
+					} else if (op.equals("-")) {
 						runningTotal.push(val1 - val2);
 					}
 				}
 			}	
 			return runningTotal.pop();
-		}
-		catch (Exception e){
-			et.append("ILLEGAL FORMULA - LINE NUMBER " + String.valueOf(p.getCurrentLine()) + "\n");
-			et.append(e + "\n");
+		} catch (Exception e) {
+			et.writeLine("ILLEGAL FORMULA - LINE NUMBER " + String.valueOf(p.getCurrentLine()));
+			et.writeLine(e.toString());
 			p.stopExec();
 			return Double.MIN_VALUE;
 		}
 	}
 
-	private int precedence(String token){
+	private int precedence(String token) {
 		if (token.equals("(") || token.equals(")"))
 			return 3;
 		else if (token.equals("^"))
@@ -213,30 +208,31 @@ public class Expression{
 
 	/**
 	 * Get the expression Queue, and create and parse a new Expression instance
-	 * @param p - an instance of BASICProgram
-	 * @param et - an instance of EditText for output
+	 * @param program - an instance of BASICProgram
+	 * @param textIO - an instance of EditText for output
 	 * @param expTok - a Tokenizer, for tokenizing the expression
 	 * @return A new Expression, with data, and convert to postfix
 	 */
-	public static Expression getExp(BASICProgram p, EditText et, Tokenizer expTok){
+	public static Expression getExp(Terminal terminal, Tokenizer expressionTokenizer) {
+		Tokenizer tokenizer = expressionTokenizer;
 		Queue<String> expr = new LinkedList<String>();
 
-		String token = expTok.nextToken();
+		String token = tokenizer.nextToken();
 
-		while (expTok.hasMoreTokens()){
+		while (tokenizer.hasMoreTokens()) {
 			expr.offer(token);
-			token = expTok.nextToken();
-			if (token.equals("\n")){
+			token = tokenizer.nextToken();
+			if (token.equals("\n")) {
 				break;
 			}
 		}
 
-		Expression e = new Expression(expr, p, et);
+		Expression e = new Expression(expr);
 		return e;
 	}
 
-	public static boolean isOperator(String token){
-		for (int i = 0; i < operators.length; i++){
+	public static boolean isOperator(String token) {
+		for (int i = 0; i < operators.length; i++) {
 			if (token.equals(operators[i]))
 				return true;
 		}
@@ -251,53 +247,48 @@ public class Expression{
 	 * @param input String
 	 * @return true if it matches / false if it doesn't
 	 */
-	public static boolean isNumber(String input){
+	public static boolean isNumber(String input) {
 		try {
 			// It's a public static just to make it easier to use in BP, which does a check every-so-often.
 			Pattern p = Pattern.compile(regexNumber);
 			Matcher m = p.matcher(input);
 			return m.find();
-		}
-		catch (NumberFormatException ex) {
+		} catch (NumberFormatException ex) {
 			return false;
 		}
 	}
 
-	public static boolean hasExponent(String input){
+	public static boolean hasExponent(String input) {
 		try {
 			// It's a public static just to make it easier to use in BP, which does a check every-so-often.
 			Pattern p = Pattern.compile(regexExponent);
 			Matcher m = p.matcher(input);
 			return m.find();
-		}
-		catch (NumberFormatException ex) {
+		} catch (NumberFormatException ex) {
 			return false;
 		}
 	}
 
-	public static double[] separateNumber(String input){
+	public static double[] separateNumber(String input) {
 		try {
 			Pattern p = Pattern.compile(regexExponent);
 			Matcher m = p.matcher(input);
 			double[] numbers = new double[2];
-			if (m.matches()){
-				if (m.find()){
+			if (m.matches()) {
+				if (m.find()) {
 					numbers[0] = Double.valueOf(m.group(1).trim()).doubleValue();
 					numbers[1] = Double.valueOf(m.group(2).trim()).doubleValue();
 					return numbers;
 				}
-				else {
-					return null;
-				}
+				//	Not bothering with an else as we return null otherwise
 			}
-		}
-		catch (IllegalStateException e){
-			return null;
+		} catch (IllegalStateException e) {
+			//	Ignore, since we'll be returning null either way
 		}
 		return null;
 	}
 
-	public static double calculateExponent(String input){
+	public static double calculateExponent(String input) {
 		double[] numbers = separateNumber(input);
 		return Math.pow(numbers[0], numbers[1]);
 	}

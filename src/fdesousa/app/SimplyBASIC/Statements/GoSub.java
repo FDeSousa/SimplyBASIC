@@ -26,9 +26,11 @@
 package fdesousa.app.SimplyBASIC.Statements;
 
 import fdesousa.app.SimplyBASIC.BASICProgram;
-import fdesousa.app.SimplyBASIC.Expression;
+import fdesousa.app.SimplyBASIC.Terminal;
 import fdesousa.app.SimplyBASIC.Tokenizer;
-import android.widget.EditText;
+import fdesousa.app.SimplyBASIC.framework.Expression;
+import fdesousa.app.SimplyBASIC.framework.Statement;
+import fdesousa.app.SimplyBASIC.framework.TextIO;
 
 /**
  * <h1>S_GOSUB.java</h1>
@@ -38,34 +40,40 @@ import android.widget.EditText;
  * @author Filipe De Sousa
  */
 public class GoSub extends Statement {
+	Tokenizer t;
+	BASICProgram p;
+	TextIO et;
 
-	public GoSub(BASICProgram pgm, Tokenizer tok, EditText edtxt){
-		super(pgm, tok, edtxt);
+	public GoSub(Terminal terminal){
+		super(terminal);
+		t = terminal.getTokenizer();
+		p = terminal.getBasicProgram();
+		et = terminal.getTextIO();
 	}
 
 	@Override
 	public void doSt(){
 		String token;
+		
 		if (t.hasMoreTokens()) {
 			token = t.nextToken();
+		
 			if (Expression.isNumber(token)) {
 				int lN = Integer.valueOf(token.trim()).intValue();
 				p.putRETURNKeySet(p.getlNs());
 				p.setlNs(p.getTailSet(lN));
-			}
-			else {
+			} else {
 				errLineNumber("ILLEGAL");
 				return;
 			}
-		}
-		else {
+		} else {
 			errLineNumber("MISSING");
 			return;
 		}
 	}
 	
 	public void errLineNumber(String type){
-		et.append(type + " LINE NUMBER - LINE " + p.getCurrentLine());
+		et.writeLine(type + " LINE NUMBER - LINE " + p.getCurrentLine());
 		p.stopExec();
 	}
 }

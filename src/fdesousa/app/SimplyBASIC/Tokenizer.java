@@ -28,7 +28,9 @@ package fdesousa.app.SimplyBASIC;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import fdesousa.app.SimplyBASIC.Statements.Statement;
+import fdesousa.app.SimplyBASIC.framework.Expression;
+import fdesousa.app.SimplyBASIC.framework.Function;
+import fdesousa.app.SimplyBASIC.framework.Variable;
 
 /**
  * <h1>Tokenizer.java</h1>
@@ -146,8 +148,8 @@ public class Tokenizer {
 								return t;
 						}
 						// Check if it's a BASIC command, if it is return it immediately
-						for (int i = 0; i < Statement.STATEMENTS.length; i++) {
-							if (t.equals(Statement.STATEMENTS[i]))
+						for (int i = 0; i < BASICProgram.STATEMENTS.length; i++) {
+							if (t.equals(BASICProgram.STATEMENTS[i]))
 								return t;
 						}
 					}

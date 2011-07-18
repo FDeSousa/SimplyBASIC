@@ -34,10 +34,11 @@ import java.util.Set;
 import java.util.Stack;
 import java.util.TreeMap;
 
-import fdesousa.app.SimplyBASIC.Statements.Data;
-import fdesousa.app.SimplyBASIC.Statements.For;
-import fdesousa.app.SimplyBASIC.Statements.Statement;
-import android.widget.EditText;
+import fdesousa.app.SimplyBASIC.framework.Function;
+import fdesousa.app.SimplyBASIC.framework.Statement;
+import fdesousa.app.SimplyBASIC.framework.TextIO;
+import fdesousa.app.SimplyBASIC.framework.Variable;
+import fdesousa.app.SimplyBASIC.Statements.*;
 
 /**
  * <h1> BASICProgram.java </h1>
@@ -45,10 +46,10 @@ import android.widget.EditText;
  * @version 0.1
  * @author Filipe De Sousa
  */
-public class BASICProgram implements Runnable{
+public class BASICProgram {
 
 	private Map<Integer, String> masterCodeList;
-	private Map<Integer, String> codeList = new TreeMap<Integer, String>();
+	private Map<Integer, String> codeList;
 	private Set<Entry<Integer, String>> lines;		// Holds the set of lines for iter
 	private Iterator<Entry<Integer, String>> iter;	// Used to iterate through Set
 	private Entry<Integer, String> cL;				// Holds an individual entry
@@ -56,50 +57,133 @@ public class BASICProgram implements Runnable{
 	private String progName = "", userName = "";
 	// Using the tokenizer again here, will be making good use of this too
 	private Tokenizer t = new Tokenizer();
-	// cL = current line, nL = next line, pL = previous line, rL = return line, lL = last line
+	private TextIO et;
 
 	private boolean stop = new Boolean(false);
 
-	EditText et;
-	
+
 	// Using Calendar to get the running time in milliseconds
 	Calendar timer = Calendar.getInstance();
 	long startTime;
 
+	public final static String[] STATEMENTS = {
+		"IF", "THEN", "FOR", "TO", "STEP", 
+		"NEXT", "LET", "READ", "DATA", 
+		"PRINT", "GOTO", "GOSUB", "RETURN", 
+		"DIM", "DEF", "FN", "END", "REM" };
+
+	public final static int IF		=  0;	// Start of IF...THEN statement
+	public final static int THEN	=  1;	// Continues of IF...THEN statement
+	public final static int FOR		=  2;	// Start of FOR...TO...STEP statement
+	public final static int TO		=  3;	// Defines limit of FOR...TO...STEP statement
+	public final static int STEP	=  4;	// The number to (in/de)crement by in FOR
+	public final static int NEXT	=  5;	// (in/de)crements variable defined by FOR with variable 
+	public final static int LET		=  6;	// Assignment statement
+	public final static int READ	=  7;	// Reads the next Data value (FIFO ordering)
+	public final static int DATA	=  8;	// Provides data values for the program
+	public final static int PRINT	=  9;	// Print something to screen
+	public final static int GOTO	= 10;	// Unconditional transferal of program execution to a different line
+	public final static int GOSUB	= 11;	// As GOTO, but can be used to define a sub-routine that is returnable
+	public final static int RETURN	= 12;	// Returns execution to where GOSUB left off
+	public final static int DIM		= 13;	// Used to define one- or two-dimensional arrays
+	public final static int DEF		= 14;	// Used to define a function
+	public final static int FN		= 15;	// Beginning two letters of a user-defined function
+	public final static int END		= 16;	// Ends the program on that line, no matter what
+	public final static int REM		= 17;	// Signifies the line is a comment, and should be ignored by interpreter
+
+	private String command;
+
+	Statement s;
+	Terminal terminal;
+	
+	public BASICProgram(Terminal terminal) {
+		codeList = new TreeMap<Integer, String>();
+		this.terminal = terminal;
+	}
+	
+	public void doSt() {
+		if (t.hasMoreTokens())
+			command = t.nextToken();
+
+		if (command.equals(STATEMENTS[IF])){
+			s = new If(terminal);
+			s.doSt();
+		} else if (command.equals(STATEMENTS[FOR])) {
+			s = new For(terminal);
+			s.doSt();
+		} else if (command.equals(STATEMENTS[NEXT])) {
+			s = new Next(terminal);
+			s.doSt();
+		} else if (command.equals(STATEMENTS[LET])) {
+			s = new Let(terminal);
+			s.doSt();
+		} else if (command.equals(STATEMENTS[READ])) {
+			s = new Read(terminal);
+			s.doSt();
+		} else if (command.equals(STATEMENTS[DATA])) {
+			return;    // As we have a first-run to get DATA, it's safer to
+			// acknowledge, but ignore it in Statement.java
+		} else if (command.equals(STATEMENTS[PRINT])) {
+			s = new Print(terminal);
+			s.doSt();
+		} else if (command.equals(STATEMENTS[GOTO])) {
+			s = new Goto(terminal);
+			s.doSt();
+		} else if (command.equals(STATEMENTS[GOSUB])) {
+			s = new GoSub(terminal);
+			s.doSt();
+		} else if (command.equals(STATEMENTS[RETURN])) {
+			s = new Return(terminal);
+			s.doSt();
+		} else if (command.equals(STATEMENTS[DIM])) {
+			s = new Dim(terminal);
+			s.doSt();
+		} else if (command.equals(STATEMENTS[DEF])) {
+			s = new Def(terminal);
+			s.doSt();
+		} else if (command.equals(STATEMENTS[END])) {
+			s = new End(terminal);
+			s.doSt();
+		} else if (command.equals(STATEMENTS[REM])) {
+			return;    // When encountering a REM statement, the line is ignored, so for
+			// safety, acknowledge but ignore the statement here by using return
+		} else {
+			et.writeLine("ILLEGAL INSTRUCTION - LINE NUMBER " + getCurrentLine());
+			stopExec();
+			return;
+		}
+	}
+
 	/**
 	 * The main run() method here, and the one that's called by CommandInterpreter
 	 * It executes run() to get all DATA values plotted into a Queue
-	 * An EditText is required for output only
 	 */
-	public void run(EditText edtxt) {
+	public void run() {
 		try {
-			et = edtxt;
 			// We want to keep a backup codeList, as the key sets are all linked to codeList,
 			// this might give us trouble if something is changed/added/removed.
 			masterCodeList = codeList;
 			// To calculate the running time, we set a start time
 			startTime = timer.getTimeInMillis();
-			
+
 			// reset stop, just in case it's been done at a bad time
 			stop = false;
-			
+
 			// Do the first-run, to get all DATA stored into a FIFO list
-			run();
+			firstRun();
 			// Re-initialise lNs here for use while final run is going
 			lines = codeList.entrySet();
 			iter = lines.iterator();
-			
-			while (iter.hasNext() & ! stop){
+
+			while (iter.hasNext() & ! stop) {
 				cL = iter.next();
 				t.reset(cL.getValue());
-				Statement s = new Statement(this, t, et);
-				s.doSt();
+				doSt();
 			}
 			// Now, it's ended the run, so we can revert back to the original codeList
 			codeList = masterCodeList;
-		}
-		catch (Exception e){
-			et.append(e.toString().toUpperCase() + " " + String.valueOf(getCurrentLine()) + ".\n");
+		} catch (Exception e) {
+			et.writeLine(e.toString().toUpperCase() + " " + getCurrentLine());
 			codeList = masterCodeList;
 		}
 	}
@@ -109,47 +193,44 @@ public class BASICProgram implements Runnable{
 	// real numbers (all float as far as BASIC is concerned), I'll resolve this later 
 	private PriorityQueue<Double> dataStore = new PriorityQueue<Double>();
 
-	public double getData(){
+	public double getData() {
 		return dataStore.poll();
 	}
 
-	public boolean hasData(){
-		return (! dataStore.isEmpty());
+	public boolean hasData() {
+		return (!dataStore.isEmpty());
 	}
 
-	public void run() {
+	public void firstRun() {
 		// The generic, auto-generated, must-have version of run(), defined by Runnable
 		// Will see implementation as a first-run method placing DATA in FIFO list
 		String s = new String();
 		try {
-			
+
 			lines = codeList.entrySet();
 			iter = lines.iterator();
-			
-			while (iter.hasNext() & ! stop){
+
+			while (iter.hasNext() & ! stop) {
 				cL = iter.next();
 				t.reset(cL.getValue());
 				s = t.nextToken();
-				if (s.equals(Statement.STATEMENTS[Statement.DATA])){
-					Statement dataSt = new Data(this, t, et);
+				if (s.equals(BASICProgram.STATEMENTS[BASICProgram.DATA])) {
+					Statement dataSt = new Data(terminal);
 					dataSt.doSt();
-				}
-				else if (s.equals(Statement.STATEMENTS[Statement.END]) &
-						iter.hasNext()){
-					et.append("END IS NOT LAST - LINE NUMBER " + String.valueOf(cL.getKey()) + "\n");
+				} else if (s.equals(BASICProgram.STATEMENTS[BASICProgram.END]) & iter.hasNext()) {
+					et.writeLine("END IS NOT LAST - LINE NUMBER " + cL.getKey());
 					stopExec();
 				}
 			}
 			// Reset stop just here so the other run can continue
 			stop = false;
-		}
-		catch (Exception e){
+		} catch (Exception e) {
 			return;
 		}
 	}
 
 	// Two ways to instantiate a BASIC Program, with or without source code.
-	public BASICProgram(String userName, String progName){
+	public BASICProgram(String userName, String progName) {
 		// Used for HELLO, NEW
 		setProgName(progName);
 		setUserName(userName);
@@ -157,7 +238,7 @@ public class BASICProgram implements Runnable{
 		// giving the program a name and user name attributed
 	}
 
-	public BASICProgram(String userName, String progName, Map<Integer, String> oldCodeList){
+	public BASICProgram(String userName, String progName, Map<Integer, String> oldCodeList) {
 		// Used for HELLO, OLD
 		setProgName(progName);
 		setUserName(userName);
@@ -165,73 +246,75 @@ public class BASICProgram implements Runnable{
 		// As above, but this is used for an older program, to load the listing
 	}
 
-
-	public void C_NEW(String progName){				
+	public void C_NEW(String progName) {				
 		setProgName(progName);
 		C_SCRATCH();
 	}
 
-	public boolean C_SCRATCH(){
+	public boolean C_SCRATCH() {
 		codeList.clear();
 		return true;
 	}
 
-	public static BASICProgram C_OLD(String progName, String userName, Map<Integer, String> oldCodeList){
+	public static BASICProgram C_OLD(String progName, String userName, Map<Integer, String> oldCodeList) {
 		BASICProgram p = new BASICProgram(userName, progName, oldCodeList);
 		return p;
 	}
 
-	public void C_LIST(EditText et){
-		// Return parts of program code listing
+	public void C_LIST() {
+		StringBuilder out = new StringBuilder();
+
 		try {
-			et.append("USER NAME: " + userName
-					+ "\nPROGRAM NAME: " + progName 
-					+ "\n");
+			out.append("USER NAME: ");
+			out.append(userName);
+			out.append("\nPROGRAM NAME: ");
+			out.append(progName);
+			et.writeLine(out.toString());
 
 			lines = codeList.entrySet();
 			iter = lines.iterator();
-			
+
 			while (iter.hasNext()){
 				cL = iter.next();
-				et.append(cL.getKey() + "\t" + cL.getValue() + "\n");
+				et.writeLine(cL.getKey() + "\t" + cL.getValue() + "\n");
 			}
+		} catch (Exception e) {
+			et.writeLine(e.toString() + "\n");
 		}
-		catch (Exception e){
-			et.append(e.toString() + "\n");
-		}
-	}
-	
-	public String C_SAVE(){
-		// Return the whole code listing
-		String out = userName + "\n" + progName + "\n";
-		
-		lines = codeList.entrySet();
-		iter = lines.iterator();
-		
-		while (iter.hasNext()){
-			cL = iter.next();
-			out += cL.getKey() + "\t" + cL.getValue() + "\n";
-		}
-		
-		return out;
 	}
 
-	public int getFirstLine(){
+	public String C_SAVE() {
+		StringBuilder out = new StringBuilder();
+		
+		out.append(userName + "\n");
+		out.append(progName + "\n");
+
+		lines = codeList.entrySet();
+		iter = lines.iterator();
+
+		while (iter.hasNext()) {
+			cL = iter.next();
+			out.append(cL.getKey() + "\t" + cL.getValue() + "\n");
+		}
+		return out.toString();
+	}
+
+	public int getFirstLine() {
 		return ((TreeMap<Integer, String>) codeList).firstKey();
 	}
 
 	// Boring parts of the class below. Not the meat of it.
-	public void addLine(int lN, String inputLine){
-			codeList.put(lN, inputLine);
+	public void addLine(int lN, String inputLine) {
+		codeList.put(lN, inputLine);
 	}
 
-	public long getTimeToExecute(){
+	public long getTimeToExecute() {
 		long tte = timer.getTimeInMillis() - startTime;
 		return tte;
 	}
 
 	// Stop execution of a next iteration
-	public void stopExec(){
+	public void stopExec() {
 		stop = true;
 	}
 
@@ -251,49 +334,54 @@ public class BASICProgram implements Runnable{
 		return userName;
 	}
 
-	public int getCurrentLine(){
+	public int getCurrentLine() {
 		return cL.getKey();
 	}
 
-	public void addData(double data){
+	public void addData(double data) {
 		dataStore.offer(data);
 	}
 
 	// Variables are of type Variable, and can be a Number or Number Array
 	private Map<String, Variable> variables = new TreeMap<String, Variable>();
-	public void putVar(Variable v){
+	
+	public void putVar(Variable v) {
 		variables.put(v.getName(), v);
 	}
-	public Variable getVar(String vName){
-		if (variables.containsKey(vName)){
+	
+	public Variable getVar(String vName) {
+		if (variables.containsKey(vName)) {
 			return variables.get(vName);			
-		}
-		else {
+		} else {
 			return null;
 		}
 	}
-	public boolean varExists(String vName){
+	
+	public boolean varExists(String vName) {
 		return variables.containsKey(vName);
 	}
-	public int varType(String vName){
+	
+	public int varType(String vName) {
 		Variable v = variables.get(vName);
 		return v.getType();
 	}
 
 	// Functions are of type Function, and can be user-defined functions only
 	private Map<String, Function> functions = new TreeMap<String, Function>();
-	public void putFunction(Function f){
+	
+	public void putFunction(Function f) {
 		functions.put(f.getName(), f);
 	}
-	public Function getFunction(String fnName){
-		if (functions.containsKey(fnName)){
+	
+	public Function getFunction(String fnName) {
+		if (functions.containsKey(fnName)) {
 			return functions.get(fnName);			
-		}
-		else {
+		} else {
 			return null;
 		}
 	}
-	public boolean fnExists(String fnName){
+	
+	public boolean fnExists(String fnName) {
 		return functions.containsKey(fnName);
 	}
 
@@ -327,7 +415,8 @@ public class BASICProgram implements Runnable{
 		RETURNKeySet = RETURNs.pop();
 		return RETURNKeySet;
 	}
-	public boolean getRETURNKeySetisEmpty(){
+	
+	public boolean getRETURNKeySetisEmpty() {
 		return RETURNKeySet.isEmpty();
 	}
 
@@ -348,7 +437,7 @@ public class BASICProgram implements Runnable{
 	 * @param ln - the line number to start tailmap on
 	 * @return Set lineNumbers, entries from tailmap
 	 */
-	public Set<Entry<Integer, String>> getTailSet(int lN){
+	public Set<Entry<Integer, String>> getTailSet(int lN) {
 		Set<Entry<Integer, String>> lineNumbers = ((TreeMap<Integer, String>) codeList).tailMap(lN).entrySet();
 		return lineNumbers;
 	}
@@ -357,11 +446,11 @@ public class BASICProgram implements Runnable{
 	// by having a stack, waiting for a NEXT statement to execute it
 	private Map<String, For> forNexts = new TreeMap<String, For>();
 
-	public void newFor(String key, For forLoop){
+	public void newFor(String key, For forLoop) {
 		forNexts.put(key, forLoop);
 	}
 
-	public For getFor(String key){
+	public For getFor(String key) {
 		return forNexts.get(key);
 	}
 }

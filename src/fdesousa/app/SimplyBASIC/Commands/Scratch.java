@@ -1,5 +1,19 @@
 package fdesousa.app.SimplyBASIC.Commands;
 
-public class Scratch {
+import fdesousa.app.SimplyBASIC.Terminal;
+import fdesousa.app.SimplyBASIC.framework.Command;
 
+public class Scratch extends Command {
+
+	public Scratch(Terminal terminal) {
+		super(terminal);
+		// TODO Auto-generated constructor stub
+	}
+
+	@Override
+	public void run() {
+		// TODO Auto-generated method stub
+		
+	}
+	
 }

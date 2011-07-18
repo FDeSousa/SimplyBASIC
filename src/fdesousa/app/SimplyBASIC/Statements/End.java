@@ -25,9 +25,8 @@
 
 package fdesousa.app.SimplyBASIC.Statements;
 
-import fdesousa.app.SimplyBASIC.BASICProgram;
-import fdesousa.app.SimplyBASIC.Tokenizer;
-import android.widget.EditText;
+import fdesousa.app.SimplyBASIC.Terminal;
+import fdesousa.app.SimplyBASIC.framework.Statement;
 
 /**
  * <h1>S_END.java</h1>
@@ -38,14 +37,16 @@ import android.widget.EditText;
  */
 public class End extends Statement {
 
-	public End(BASICProgram pgm, Tokenizer tok, EditText edtxt){
-		super(pgm, tok, edtxt);
+	public End(Terminal terminal) {
+		super(terminal);
 	}
 
 	@Override
-	public void doSt(){
-		et.append("TIME TO FINISH: " + String.valueOf(p.getTimeToExecute() / 10.0) + " SECONDS.\n");
-		p.stopExec();
+	public void doSt() {
+		(terminal.getTextIO()).writeLine("TIME TO FINISH: " + 
+				String.valueOf((terminal.getBasicProgram()).getTimeToExecute() / 10.0) + 
+				" SECONDS.");	//	Display the time it took to execute and finish
+		(terminal.getBasicProgram()).stopExec();
 		return;
 	}
 }

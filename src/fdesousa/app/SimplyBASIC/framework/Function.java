@@ -23,13 +23,14 @@
  * 
  */
 
-package fdesousa.app.SimplyBASIC;
+package fdesousa.app.SimplyBASIC.framework;
 
 import java.util.PriorityQueue;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import android.widget.EditText;
+import fdesousa.app.SimplyBASIC.Terminal;
+import fdesousa.app.SimplyBASIC.Tokenizer;
 
 /**
  * <h1>Function.java</h1>
@@ -41,7 +42,8 @@ import android.widget.EditText;
  * @author Filipe De Sousa
  */
 public class Function{
-
+	Terminal terminal;
+	
 	final static String[] functions = { 
 		"SIN", "COS", "TAN", "ATN", "EXP", 
 		"ABS", "LOG", "SQR", "RND", "INT" };
@@ -65,60 +67,60 @@ public class Function{
 	// This regex gets the argument, no matter what type of function it is
 	public static String regexFunctionTokens = "^([A-Z]{3})[(](.+)[)]$";
 
-	private String FN_Name;
-	private Expression FN_Expression;
-	private Variable FN_Variable;
-	public Function (String fnName, Expression fnExpression, Variable fnVariable){
-		FN_Name = fnName;
-		FN_Expression = fnExpression;
-		FN_Variable = fnVariable;
+	private String fnName;
+	private Expression fnExpression;
+	private Variable fnVariable;
+	
+	public Function (Terminal terminal, String fnName, Expression fnExpression, Variable fnVariable) {
+		this.terminal = terminal;
+		this.fnName = fnName;
+		this.fnExpression = fnExpression;
+		this.fnVariable = fnVariable;
 	}
 
-	public String getName(){
-		return FN_Name;
+	public String getName() {
+		return fnName;
 	}
 	
-	public static String getFnName(String token){
+	public static String getFnName(String token) {
 		Pattern pT = Pattern.compile(regexFunctionTokens);
 		Matcher m = pT.matcher(token);
-		if (m.find()){
+		if (m.find()) {
 			return m.group(1);
-		}
-		else {
+		} else {
 			return null;
 		}
 	}
 
-	public Expression getExpression(){
-		return FN_Expression;
+	public Expression getExpression() {
+		return fnExpression;
 	}
 
-	public Variable getVariable(){
-		return FN_Variable;
+	public Variable getVariable() {
+		return fnVariable;
 	}
 
-	public double doUserFn(EditText et, String token, BASICProgram p){
+	public double doUserFn(String token) {
 		Pattern pT = Pattern.compile(regexFunctionTokens);
 		Matcher m = pT.matcher(token);
-		if (m.find()){
-			double arg = evalArg(m.group(2), p, et);
+		if (m.find()) {
+			double arg = evalArg(terminal, m.group(2));
 			// Assign the arg value to the Function's named variable, 
 			// which is used by user functions exclusively
-			FN_Variable.setValue(arg);
+			fnVariable.setValue(arg);
 			// So now, onto the meat of it, do the function!
 			// Convert the function's expression into postfix (this reorganises it
 			// while also resolving the variable names included in the expression)
-			FN_Expression.inToPost(p, et);
+			fnExpression.inToPost();
 			// And evaluate that expression!
-			return FN_Expression.eval(p, et);
-		}
-		else {
+			return fnExpression.eval();
+		} else {
 			return 0.0;			
 		}
 	}
 	
-	public static double doFn(EditText et, String token, BASICProgram p){
-		if (token.equals(functions[FN_RND])){
+	public static double doFn(Terminal terminal, String token) {
+		if (token.equals(functions[FN_RND])) {
 			return Math.random();
 		}	// Save some processor time, if it's the RANDOM function
 			// just return a random number right away
@@ -126,104 +128,102 @@ public class Function{
 		Pattern pT = Pattern.compile(regexFunctionTokens);
 		Matcher m = pT.matcher(token);
 		double arg;
-		if (m.find()){
-			arg = evalArg(m.group(2), p, et);
-		}
-		else {
+		if (m.find()) {
+			arg = evalArg(terminal, m.group(2));
+		} else {
 			return 0.0;
 		}
 		
-		if (token.equals(functions[FN_SIN])){
+		if (token.equals(functions[FN_SIN])) {
+			//	Sine operation
 			return Math.sin(arg);
-		}
-		else if (token.equals(functions[FN_COS])){
+		} else if (token.equals(functions[FN_COS])) {
+			//	Cosine operation
 			return Math.cos(arg);
-		}
-		else if (token.equals(functions[FN_TAN])){
+		} else if (token.equals(functions[FN_TAN])) {
+			//	Tangent operation
 			return Math.tan(arg);
-		}
-		else if (token.equals(functions[FN_ATN])){
+		} else if (token.equals(functions[FN_ATN])) {
+			//	Arctangent operation
 			return Math.atan(arg);
-		}
-		else if (token.equals(functions[FN_EXP])){
+		} else if (token.equals(functions[FN_EXP])) {
+			//	Natural exponential operation
 			return Math.exp(arg);
-		}
-		else if (token.equals(functions[FN_ABS])){
+		} else if (token.equals(functions[FN_ABS])) {
+			//	Modulus/Absolute operation
 			return Math.abs(arg);
-		}
-		else if (token.equals(functions[FN_LOG])){
+		} else if (token.equals(functions[FN_LOG])) {
+			//	Logarithm operation
 			return Math.log(arg);
-		}
-		else if (token.equals(functions[FN_SQR])){
+		} else if (token.equals(functions[FN_SQR])) {
+			//	Square Root operation
 			return Math.sqrt(arg);
-		}
-		else if (token.equals(functions[FN_INT])){
+		} else if (token.equals(functions[FN_INT])) {
+			//	Integer operation
 			return Math.round(arg);
-		}
-		else{
+		} else {
 			// Return 0.0 is none-of-the-above
 			return 0.0;
 		}
 	}
 	
-	public static double evalArg(String argument, BASICProgram p, EditText et){
+	public static double evalArg(Terminal terminal, String argument) {
 		double arg = 0.0;
 		// Have to do a few checks here first, as a Function call can accept a Variable or Number literal
-		if (Variable.isVariable(argument)){
+		if (Variable.isVariable(argument)) {
 			// If it's a variable, get the variable, and get the value from the variable
-			Variable v = Variable.getVariable(p, argument);
+			Variable v = Variable.getVariable(terminal.getBasicProgram(), argument);
 			arg = v.getValue(argument);
-		}
-		else if (Expression.isNumber(argument)){
+		} else if (Expression.isNumber(argument)) {
 			// If it's a number, do one important test: does it have an exponent?
-			if (Expression.hasExponent(argument)){
+			if (Expression.hasExponent(argument)) {
 				// Since it does, calculate it, and set arg to be that new value
 				arg = Expression.calculateExponent(argument);
-			}
-			else {
+			} else {
 				// Since it doesn't, just parse the converted value
 				arg = Double.valueOf(argument.trim()).doubleValue();
 			}
-		}
-		else {
+		} else {
 			// Since it's not a Variable or a Number, assume it's an expression within the
 			// Function call's arguments list, tokenize into a queue, to get the results from
 			// a new Expression instance into arg.
 			PriorityQueue<String> expr = new PriorityQueue<String>();
-			Tokenizer eT = new Tokenizer();
-			eT.reset(argument);
-			while (eT.hasMoreTokens()){
-				expr.offer(eT.nextToken());
+			Tokenizer expTok = new Tokenizer();
+			expTok.reset(argument);
+			
+			while (expTok.hasMoreTokens()) {
+				expr.offer(expTok.nextToken());
 			}
-			Expression e = new Expression(expr, p, et);
-			arg = e.eval(p, et);
+			Expression e = new Expression(expr, terminal);
+			arg = e.eval();
 		}
 		return arg;
 	}
 	
-	public static boolean isFunction (String token){
+	public static boolean isFunction (String token) {
 		boolean isFN = false;
 		if (Pattern.matches(regexUserFunctions, token))
 			isFN = true;
 
-		for (int i = 0; i < functions.length; i++){
+		for (int i = 0; i < functions.length; i++) {
 			if (token.equals(functions[i]))
 				return true;
 		}
 		return isFN;
 	}
 
-	public static boolean isUserFunction (String token){
+	public static boolean isUserFunction (String token) {
 		if (Pattern.matches(regexUserFunctions, token))
 			return true;
 		else
 			return false;
 	}
 	
-	public static String getArg(String token){
+	public static String getArg(String token) {
 		Pattern pT = Pattern.compile(regexFunctionTokens);
 		Matcher m = pT.matcher(token);
-		if (m.find()){
+		
+		if (m.find()) {
 			return m.group(1);
 		}
 		return null;

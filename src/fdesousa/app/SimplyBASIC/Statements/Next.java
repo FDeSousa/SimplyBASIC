@@ -26,9 +26,10 @@
 package fdesousa.app.SimplyBASIC.Statements;
 
 import fdesousa.app.SimplyBASIC.BASICProgram;
+import fdesousa.app.SimplyBASIC.Terminal;
 import fdesousa.app.SimplyBASIC.Tokenizer;
-import fdesousa.app.SimplyBASIC.Variable;
-import android.widget.EditText;
+import fdesousa.app.SimplyBASIC.framework.Statement;
+import fdesousa.app.SimplyBASIC.framework.Variable;
 
 /**
  * <h1>S_NEXT.java</h1>
@@ -38,36 +39,37 @@ import android.widget.EditText;
  * @author Filipe De Sousa
  */
 public class Next extends Statement {
-
-	public Next(BASICProgram pgm, Tokenizer tok, EditText edtxt){
-		super(pgm, tok, edtxt);
+	Tokenizer t;
+	BASICProgram p;
+	
+	public Next(Terminal terminal){
+		super(terminal);
+		t = terminal.getTokenizer();
+		p = terminal.getBasicProgram();
 	}
 
 	@Override
-	public void doSt(){
+	public void doSt() {
 		String vName;
 		For forNext;
 		
-		if (t.hasMoreTokens()){
+		if (t.hasMoreTokens()) {
 			vName = t.nextToken();
-			if (Variable.isVariable(vName) & 
-					Variable.checkVariableType(vName) == Variable.NUM){
+			if (Variable.isVariable(vName) & Variable.checkVariableType(vName) == Variable.NUM) {
 				forNext = p.getFor(vName);
 				forNext.doStNext();
-			}
-			else {
+			} else {
 				errNEXT("INVALID VARIABLE");
 				return;
 			}
-		}
-		else {
+		} else {
 			errNEXT("NEXT WITHOUT VARIABLE");
 			return;
 		}
 	}
 	
-	private void errNEXT(String type){
-		et.append(type + " - LINE NUMBER " + p.getCurrentLine() + "\n");
+	private void errNEXT(String type) {
+		terminal.getTextIO().writeLine(type + " - LINE NUMBER " + p.getCurrentLine());
 		p.stopExec();
 	}
 }

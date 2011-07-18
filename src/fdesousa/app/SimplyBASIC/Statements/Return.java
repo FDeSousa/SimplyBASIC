@@ -26,29 +26,30 @@
 package fdesousa.app.SimplyBASIC.Statements;
 
 import fdesousa.app.SimplyBASIC.BASICProgram;
-import fdesousa.app.SimplyBASIC.Tokenizer;
-import android.widget.EditText;
+import fdesousa.app.SimplyBASIC.Terminal;
+import fdesousa.app.SimplyBASIC.framework.Statement;
 
 /**
  * <h1>S_RETURN.java</h1>
  * Handles RETURN Statement by returning line execution to the<br>
  * point of the last called GOSUB statement.
- * @version 0.1
+ * @version 0.2
  * @author Filipe De Sousa
  */
 public class Return extends Statement {
-
-	public Return(BASICProgram pgm, Tokenizer tok, EditText edtxt){
-		super(pgm, tok, edtxt);
+	BASICProgram p;
+	
+	public Return(Terminal terminal) {
+		super(terminal);
+		p = terminal.getBasicProgram();
 	}
 
 	@Override
-	public void doSt(){
-		if (! p.getRETURNKeySetisEmpty()){
+	public void doSt() {
+		if (!p.getRETURNKeySetisEmpty()) {
 			p.setlNs(p.getRETURNKeySet());
-		}
-		else{
-			et.append("ILLEGAL RETURN - LINE NUMBER " + String.valueOf(p.getCurrentLine()) + "\n");
+		} else {
+			(terminal.getTextIO()).writeLine("ILLEGAL RETURN - LINE NUMBER " + p.getCurrentLine());
 			p.stopExec();
 			return;
 		}

@@ -28,12 +28,11 @@ package fdesousa.app.SimplyBASIC;
 import java.util.Map;
 import java.util.TreeMap;
 import java.io.*;
+
+import fdesousa.app.SimplyBASIC.framework.Expression;
+import fdesousa.app.SimplyBASIC.framework.FileIO;
+import fdesousa.app.SimplyBASIC.framework.TextIO;
 import android.os.Environment;
-//import android.util.Log; // Unused for now, may use for logging activity
-import android.view.KeyEvent;
-import android.view.View;
-import android.view.View.OnKeyListener;
-import android.widget.EditText;
 
 /**
  * <h1>CommandInterpreter.java</h1>
@@ -43,35 +42,36 @@ import android.widget.EditText;
  * @version 0.1
  * @author Filipe De Sousa
  */
-public class CommandInterpreter {
-	// Used exclusively for calling the BYE system command
-	SimplyBASIC sbp;
-	
+public class CommandInterpreter extends Thread {
+	//	Out of convenience, we keep the below here for now, until this class
+	//+	is replaced by Terminal in functionality
+	private Terminal terminal;
+	private TextIO textIO;
+	private FileIO fileIO;
+	private Tokenizer tokenizer;
+	private BASICProgram program;
+
 	// Get SD card root, then set working directory:
 	private File sdRoot = Environment.getExternalStorageDirectory();
 	private File dir = new File (sdRoot.getAbsolutePath() + "/SimplyBASIC");
-	
+
 	// The current token to work on. Could be one of:
 	// -	Command
 	// -	Line Number
 	// -	File name
 	// etc depending upon the context
 	private String token = new String();
-	
+
 	// If token is identified to be a number, it's stored in lineNumber
 	private int lineNumber = 0;
-	private BASICProgram BP;
-	// To take control of et, once SimplyBASIC parses it:
-	private EditText et;
 	private String[] lines = null;
-
-	Tokenizer tokenizer = new Tokenizer();
 
 	// Array of commands for the system, to make matching easier:
 	final static String[] commands = {
 		"HELLO", "NEW", "OLD", "STOP", 
 		"LIST", "SAVE", "UNSAVE", "CATALOG",
 		"SCRATCH", "RENAME", "RUN", "BYE" };
+
 	// Makes it easier to find the right command in the above array:
 	final int C_HELLO	 =  0;	// Start BASIC Interpreter
 	final int C_NEW		 =  1;	// Make new program, erasing current
@@ -91,21 +91,19 @@ public class CommandInterpreter {
 	// uL = user line. Users input new commands where they see "> "
 	private static final String uL = "\n> ";
 
-	public CommandInterpreter(EditText edtxt, final SimplyBASIC sbp) {
-		this.sbp = sbp;
-		this.et = edtxt;
-		// Check if the working directory actually exists, if not, make it
-		if (dir.exists() == false 
-				&& dir.isDirectory() == false){
-			dir.mkdir();
-		}
-
+	public CommandInterpreter(Terminal terminal) {
+		this.terminal = terminal;
+		this.textIO = terminal.getTextIO();
+		this.fileIO = terminal.getFileIO();
+		this.tokenizer = terminal.getTokenizer();
+		this.program = terminal.getBasicProgram();
+		/*
 		this.et.setOnKeyListener(new OnKeyListener() {
 			@Override
 			public boolean onKey(View v, int keyCode, KeyEvent event) {
 				if(event.getAction()==KeyEvent.ACTION_UP
 						&& event.getKeyCode() == KeyEvent.KEYCODE_ENTER) {
-					/**
+					**
 					 * PRELIMINARY NOTE!
 					 * For now, file names with numbers or symbols attached WILL NOT WORK!
 					 * The tokenizer takes it to mean that a word has only letters, a variable
@@ -117,77 +115,68 @@ public class CommandInterpreter {
 					 * ========================================================================
 					 * I can work around this, and will have to for the PRINT command, 
 					 * but for now, this is how it will be, and there's no other choice.
-					 */
-					if (C_HELLO_Step >= 1 || C_NEW_Step >= 1 || C_OLD_Step >= 1){
+					 
+					if (C_HELLO_Step >= 1 || C_NEW_Step >= 1 || C_OLD_Step >= 1) {
 						// We're only interested in the last entered item, which is after '-- '
 						// So split the text from edtxt into "lines" by '-- '
-						lines = et.getText().toString().split("-- ");
+						//	Used to have a line of code here, now doesn't. Deal with it!
+						
 						// Give the tokenizer the last line, which is what we're interested in
-						tokenizer.reset(lines[lines.length - 1]);
+						tokenizer.reset(textIO.readLine());
 						// Tell tokenizer to pass us the next token, store is token
 						token = tokenizer.nextToken();
 
-						if (C_HELLO_Step >= 1){
+						if (C_HELLO_Step >= 1) {
 							C_HELLO();
-						}
-						else if (C_NEW_Step >= 1){
+						} else if (C_NEW_Step >= 1) {
 							C_NEW();
-						}
-						else if (C_OLD_Step >= 1){
+						} else if (C_OLD_Step >= 1) {
 							C_OLD();
 						}
-					}
-					//=========================================================================
-					// Once I've tested tokenizer with those system commands, I'll implement its use here
-					else {
-						lines = et.getText().toString().split("\n> ");
-						tokenizer.reset(lines[lines.length - 1]);
+					} else {
+						tokenizer.reset(textIO.readLine());
 						token = tokenizer.nextToken();
 
-						/*
+						
 						 * Numbers returned upon ending execution:
 						 * 	--	PROBLEMS WITH SYSTEM COMMANDS
 						 * -2:	Problem during execution, need nL and generic error
 						 * -1:	Problem during execution, need nL, error already shown
 						 * 	0:	No problems, needs nL
 						 *  1:	No problems, doesn't need nL
-						 */
-
-						switch(procCommand(token)){
+						 
+						switch(procCommand(token)) {
 						case -2:
-							et.append("ERROR WITH SYSTEM COMMAND." + uL);
+							textIO.writeLine("ERROR WITH SYSTEM COMMAND." + uL);
 							break;
-
-						case -1:
-							// Should send something log, but does nothing at the moment,
-							// other than append a new line with nL
-						case 0:
-							et.append(uL);
+						case -1:	// Should send something log, but does nothing at the moment,
+						case 0:		// other than append a new line with nL
+							textIO.writeLine(uL);
 							break;
-
-						case 1:
-							// Do nothing for now, no action needed
+						case 1:		// Do nothing for now, no action needed
 							break;
-
-						default:
-							// Just in case an odd error value is sent
-							et.append("ERROR WITH RETURN VALUE." + uL);
+						default:	// Just in case an odd error value is sent
+							textIO.writeLine("ERROR WITH RETURN VALUE." + uL);
 							break;
 						}
-					}					
-
+					}
 					return true;
 				}
 				return false;
 			}
-		});// end onKeyListener
+		});// end onKeyListener	*/
+		
+		/*
+		 * We don't need no stinkin' onKeyListener in these here parts!
+		 * Moved to somewhere more useful, our TextIO class
+		 */
 	}
 
 	public int procCommand(String input){
 
 		if (input.equals(commands[C_HELLO])){				// Start BASIC system, initialise BP
 			// Ask for user name, get ready for step 1 of HELLO
-			et.append("USER NAME-- ");
+			textIO.writeLine("USER NAME-- ");
 			C_HELLO_Step = 1;
 			return 1;
 		} // end HELLO command
@@ -196,45 +185,45 @@ public class CommandInterpreter {
 			File[] dirList = dir.listFiles();
 
 			if (dirList != null){
-				et.append("There are " + dirList.length + " files in program directory\n");
+				textIO.writeLine("There are " + dirList.length + " files in program directory");
 				for (int i = 0; i < dirList.length; i++){
-					et.append("\t" + dirList[i].getName() + "\n");
+					textIO.writeLine("\t" + dirList[i].getName());
 				}
 			}
 			return 0;
 		} // end CATALOG command
 
 		// Only execute these commands if BP is instantiated
-		else if (BP instanceof BASICProgram){
+		else if (program instanceof BASICProgram){
 			// Separated from the other if .. else, this handles BASIC commands
 			// only if and when BP had been instantiated
 
 			if (Expression.isNumber(input) == true){
 				lineNumber = Integer.valueOf(input.trim()).intValue();
-				BP.addLine(lineNumber, tokenizer.getRestOfLine());
-				et.append("> ");
+				program.addLine(lineNumber, tokenizer.getRestOfLine());
+				textIO.writeLine("> ");
 				return 1;
 			}
 
 			if (input.equals(commands[C_NEW])){				// Create new program, with new name
-				et.append("NEW PROGRAM NAME-- ");
+				textIO.writeLine("NEW PROGRAM NAME-- ");
 				C_NEW_Step = 1;
 				return 1;
 			} // end NEW command
 
 			else if (input.equals(commands[C_OLD])){		// Load old program from file
-				et.append("OLD PROGRAM NAME-- ");
+				textIO.writeLine("OLD PROGRAM NAME-- ");
 				C_OLD_Step = 1;
 				return 1;
 			} // end OLD command
 
 			else if (input.equals(commands[C_LIST])){		// Display current program's code
-				BP.C_LIST(et);
+				program.C_LIST();
 				return 0;
 			} // end LIST command
 
 			else if (input.equals(commands[C_SAVE])){		// Save loaded program's to file
-				if (C_SAVE(BP.getProgName() + ".bas")){
+				if (C_SAVE(program.getProgName() + ".bas")){
 					return 0;
 				}
 				else {
@@ -243,7 +232,7 @@ public class CommandInterpreter {
 			} // end SAVE command
 
 			else if (input.equals(commands[C_UNSAVE])){		// Delete loaded program's file
-				if (C_UNSAVE(BP.getProgName() + ".bas")){
+				if (C_UNSAVE(program.getProgName() + ".bas")){
 					return 0;
 				}
 				else {
@@ -252,35 +241,39 @@ public class CommandInterpreter {
 			} // end UNSAVE command
 
 			else if (input.equals(commands[C_SCRATCH])){	// Create new program with same name
-				BP.C_SCRATCH();
+				program.C_SCRATCH();
 				return 0;
 			} // end SCRATCH command
 
 			else if (input.equals(commands[C_RENAME])){		// Rename current program
-				BP.setProgName(tokenizer.nextToken());
+				program.setProgName(tokenizer.nextToken());
 			} // end RENAME command
 
 			else if (input.equals(commands[C_RUN])){		// Run BASIC program in Interpreter
 				// As BP.run() does not return a value, must assume it will keep its own log,
 				// if something goes wrong, and will display an appropriate error message
-				BP.run(et);
+				program.run();
 				return 0;
 			} // end RUN command
 
 			else if (input.equals(commands[C_BYE])){		// Exit BASIC System
 				// Needs something here. Like, exit the system, not sure all-in-all
-				sbp.end();
+				terminal.end();
 			} // end BYE command
 
 			else if (input.equals("") || input == null){
 				return 0;
 			}
 			else{
-				et.append("ERROR WITH SYSTEM COMMAND");
+				textIO.writeLine("ERROR WITH SYSTEM COMMAND");
 				return -1;
 			}
 		}
 		return -1;
+	}
+
+	public TextIO getTextIO() {
+		return textIO;
 	}
 
 	private void C_HELLO(){
@@ -298,7 +291,7 @@ public class CommandInterpreter {
 
 		case 1:		// Get userName, ask NEW or OLD program
 			progDetails[1] = token;
-			et.append("NEW OR OLD-- ");
+			textIO.writeLine("NEW OR OLD-- ");
 			C_HELLO_Step++;
 			break;
 
@@ -310,18 +303,18 @@ public class CommandInterpreter {
 				C_HELLO_Step = 4;
 			}
 			else{
-				et.append("ONLY TYPE 'NEW' OR 'OLD'-- ");
+				textIO.writeLine("ONLY TYPE 'NEW' OR 'OLD'-- ");
 				break;
 			}
 
-			et.append(token + " PROGRAM NAME-- ");
+			textIO.writeLine(token + " PROGRAM NAME-- ");
 			break;
 
 		case 3:		// NEW, so instantiate BP
 			progDetails[2] = token;
 			C_HELLO_Step = 0;
-			BP = new BASICProgram(progDetails[1], progDetails[2]);
-			et.append("READY." + uL);
+			program = new BASICProgram(progDetails[1], progDetails[2]);
+			textIO.writeLine("READY." + uL);
 			break;
 
 		case 4:		// OLD, so read file, instantiate BP
@@ -339,9 +332,9 @@ public class CommandInterpreter {
 	// Because of the fact there's an onKeyListener, waiting for Enter key,
 	// NEW, OLD, SAVE, UNSAVE, are all controlled within CI instance
 	private void C_NEW(){
-		BP.C_NEW(token);
+		program.C_NEW(token);
 		C_NEW_Step = 0;
-		et.append("READY." + uL);
+		textIO.writeLine("READY." + uL);
 	}
 
 	private void C_OLD(){
@@ -363,55 +356,45 @@ public class CommandInterpreter {
 							, tokenizer.getRestOfLine());
 				}
 				in.close();
-				BP = BASICProgram.C_OLD(progName, userName, oldCodeList);
+				program = BASICProgram.C_OLD(progName, userName, oldCodeList);
 				C_OLD_Step = 0;
-				et.append("PROGRAM OPENED SUCCESSFULLY.\nREADY." + uL);
+				textIO.writeLine("PROGRAM OPENED SUCCESSFULLY.\nREADY." + uL);
 			}
 		}
 		catch (IOException e) {
-			et.append("COULD NOT READ FILE: " + e.getMessage().toUpperCase() + uL);
+			textIO.writeLine("COULD NOT READ FILE: " + e.getMessage().toUpperCase() + uL);
 		}
 
 	}
 
-	private boolean C_SAVE(String fileName){
+	private boolean C_SAVE(String filename){
 		try {
-			if (dir.canWrite()){
-				File basFile = new File(dir, fileName);
+			if (dir.canWrite()) {
+				File basFile = new File(dir, filename);
 				FileWriter basWriter = new FileWriter(basFile);
 				BufferedWriter out = new BufferedWriter(basWriter);
 				// Temporary write command. To replace with loop, that
 				// writes out the code as plain text
-				out.write(BP.C_SAVE());
+				out.write(program.C_SAVE());
 				out.close();
-				et.append("PROGRAM SAVED SUCCESSFULLY.");
+				textIO.writeLine("PROGRAM SAVED SUCCESSFULLY.");
 				return true;
-			}
-			else{
-				et.append("COULD NOT WRITE TO FOLDER.");
+			} else {
+				textIO.writeLine("COULD NOT WRITE TO FOLDER.");
 				return false;
 			}
-		}
-		catch (IOException e) {
-			et.append("COULD NOT WRITE TO FILE " + e.getMessage().toUpperCase());
+		} catch (IOException e) {
+			textIO.writeLine("COULD NOT WRITE TO FILE " + e.getMessage().toUpperCase());
 			return false;
 		}
 	}
 
-	private boolean C_UNSAVE(String fileName){
-		if (dir.canWrite()){
-			File basFileToDelete = new File(dir, fileName);
-			if (basFileToDelete.delete()){
-				et.append("PROGRAM UNSAVED SUCCESSFULLY.");
-				return true;
-			}
-			else{
-				et.append("COULD NOT UNSAVE FROM FOLDER.");
-				return false;
-			}
-		}
-		else{
-			et.append("FILE CANNOT BE UNSAVED - NOT ENOUGH PERMISSIONS");
+	private boolean C_UNSAVE(String filename) {
+		try {
+			fileIO.deleteFile(filename);
+			return true;
+		} catch (IOException e) {
+			textIO.writeLine("COULD NOT DELETE FILE " + e.getMessage().toUpperCase());
 			return false;
 		}
 	}

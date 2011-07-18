@@ -23,10 +23,12 @@
  * 
  */
 
-package fdesousa.app.SimplyBASIC;
+package fdesousa.app.SimplyBASIC.framework;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import fdesousa.app.SimplyBASIC.BASICProgram;
 
 /**
  * <h1>Variable.java</h1>

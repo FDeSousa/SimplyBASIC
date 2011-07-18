@@ -37,9 +37,9 @@ import android.widget.EditText;
  * @author Filipe De Sousa
  */
 public class SimplyBASIC extends Activity {
-	// Called when the activity is first created.
-
-	@SuppressWarnings("unused")
+	EditText et;
+	Terminal terminal;
+	
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -47,15 +47,13 @@ public class SimplyBASIC extends Activity {
 		//	Odd set of errors with R.layout.main here, must investigate
 
 		// Declare and initialise variables used class-wide
-		final EditText et = (EditText)findViewById(R.id.etMain);
-		final CommandInterpreter CommInt = new CommandInterpreter(et, this);
-
-		// Initialise et, display Welcome message to user, set cursor position
-		et.setText("WELCOME TO SIMPLYBASIC\n> ");
-		et.setSelection(et.getText().length());
+		et = (EditText)findViewById(R.id.etMain);
+		terminal = new Terminal(this, et);
+		
+		terminal.run();
 	}
 	
-	public void end(){
+	public void end() {
 		this.finish();
 	}
 }

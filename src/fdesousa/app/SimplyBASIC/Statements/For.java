@@ -31,10 +31,12 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import fdesousa.app.SimplyBASIC.BASICProgram;
-import fdesousa.app.SimplyBASIC.Expression;
+import fdesousa.app.SimplyBASIC.Terminal;
 import fdesousa.app.SimplyBASIC.Tokenizer;
-import fdesousa.app.SimplyBASIC.Variable;
-import android.widget.EditText;
+import fdesousa.app.SimplyBASIC.framework.Expression;
+import fdesousa.app.SimplyBASIC.framework.Statement;
+import fdesousa.app.SimplyBASIC.framework.TextIO;
+import fdesousa.app.SimplyBASIC.framework.Variable;
 
 /**
  * <h1>S_FOR.java</h1>
@@ -73,40 +75,40 @@ public class For extends Statement {
 	// Store the code list to return to
 	private Set<Entry<Integer, String>> codeList;
 
-	/**
-	 * 
-	 * @param pgm
-	 * @param tok
-	 * @param edtxt
-	 */
-	public For(BASICProgram pgm, Tokenizer tok, EditText edtxt){
-		super(pgm, tok, edtxt);
+	Tokenizer tokenizer;
+	BASICProgram program;
+	TextIO textIO;
+
+	public For(Terminal terminal) {
+		super(terminal);
+		tokenizer = terminal.getTokenizer();
+		program = terminal.getBasicProgram();
+		textIO = terminal.getTextIO();
 	}
 
 	@Override
 	/**
 	 * Do the statement first-time, when run by Statement
 	 */
-	public void doSt(){
+	public void doSt() {
 		// Get the FOR expressions, and calculate them
 		getFORExp();
-		if (v.getValue() < last){
-			codeList = p.getlNs();
-			p.newFor(getName(), this);			
-		}
-		else {
-			et.append("ERROR ASSIGNING FOR - LINE NUMBER " + p.getCurrentLine() + "\n");
-			p.stopExec();
+		if (v.getValue() < last) {
+			codeList = program.getlNs();
+			program.newFor(getName(), this);			
+		} else {
+			textIO.writeLine("ERROR ASSIGNING FOR - LINE NUMBER " + program.getCurrentLine());
+			program.stopExec();
 		}
 	}
 
 	/**
 	 * Do the statement a subsequent time, when run by NEXT
 	 */
-	public void doStNext(){
-		if (v.getValue() < last){
+	public void doStNext() {
+		if (v.getValue() < last) {
 			v.setValue(v.getValue() + step);
-			p.setlNs(codeList);
+			program.setlNs(codeList);
 		}
 	}
 
@@ -114,13 +116,13 @@ public class For extends Statement {
 	 * Get the FOR expressions, for either type of FOR statement.<br>
 	 * Once these calculations are done, set the variables to measure against
 	 */
-	private void getFORExp(){
-		String line = t.getRestOfLine();
+	private void getFORExp() {
+		String line = tokenizer.getRestOfLine();
 		Pattern pT;
 		Matcher m;
 		Tokenizer expTok = new Tokenizer();
 
-		if (Pattern.matches(regexSTEP, line)){
+		if (Pattern.matches(regexSTEP, line)) {
 			pT = Pattern.compile(regexSTEP);
 			m = pT.matcher(line);
 			/*
@@ -131,21 +133,21 @@ public class For extends Statement {
 			 * 3	Limit Expression
 			 * 4	Step Expression
 			 */
-			v = Variable.getVariable(p, m.group(1));
+			v = Variable.getVariable(program, m.group(1));
 			expTok.reset(m.group(2));
-			assgn = Expression.getExp(p, et, expTok);
-			first = assgn.eval(p, et);
+			assgn = Expression.getExp(terminal, expTok);
+			first = assgn.eval();
 			v.setValue(first);
 
 			expTok.reset(m.group(3));
-			limit = Expression.getExp(p, et, expTok);
-			last = limit.eval(p, et);
+			limit = Expression.getExp(terminal, expTok);
+			last = limit.eval();
 
 			expTok.reset(m.group(4));
-			count = Expression.getExp(p, et, expTok);
-			step = count.eval(p, et);
-		}
-		else if (Pattern.matches(regexNOSTEP, line)){
+			count = Expression.getExp(terminal, expTok);
+			step = count.eval();
+			
+		} else if (Pattern.matches(regexNOSTEP, line)) {
 			pT = Pattern.compile(regexNOSTEP);
 			m = pT.matcher(line);
 			/*
@@ -155,25 +157,25 @@ public class For extends Statement {
 			 * 2	Assignment Expression
 			 * 3	Limit Expression
 			 */
-			v = Variable.getVariable(p, m.group(1));
+			v = Variable.getVariable(program, m.group(1));
 			expTok.reset(m.group(2));
-			assgn = Expression.getExp(p, et, expTok);
-			first = assgn.eval(p, et);
+			assgn = Expression.getExp(terminal, expTok);
+			first = assgn.eval();
 			v.setValue(first);
 
 			expTok.reset(m.group(3));
-			limit = Expression.getExp(p, et, expTok);
-			last = limit.eval(p, et);
+			limit = Expression.getExp(terminal, expTok);
+			last = limit.eval();
 
 			step = 1.0;
-		}
-		else {
-			et.append("INVALID FOR - LINE NUMBER " + p.getCurrentLine() + "\n");
-			p.stopExec();
+			
+		} else {
+			textIO.writeLine("INVALID FOR - LINE NUMBER " + program.getCurrentLine());
+			program.stopExec();
 		}
 	}
 
-	public static For getFOR(BASICProgram p, String vName){
+	public static For getFOR(BASICProgram p, String vName) {
 		return p.getFor(vName);
 	}
 

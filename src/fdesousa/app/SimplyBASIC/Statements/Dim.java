@@ -26,39 +26,47 @@
 package fdesousa.app.SimplyBASIC.Statements;
 
 import fdesousa.app.SimplyBASIC.BASICProgram;
+import fdesousa.app.SimplyBASIC.Terminal;
 import fdesousa.app.SimplyBASIC.Tokenizer;
-import fdesousa.app.SimplyBASIC.Variable;
-import android.widget.EditText;
+import fdesousa.app.SimplyBASIC.framework.Statement;
+import fdesousa.app.SimplyBASIC.framework.TextIO;
+import fdesousa.app.SimplyBASIC.framework.Variable;
 
 /**
  * <h1>S_DIM.java</h1>
  * Handles a DIM Statement, by instantiating one of more new Number Array(s)<br>
  * (either One- or Two-Dimensional), without elements.
- * @version 0.1
+ * @version 0.2
  * @author Filipe De Sousa
  */
 public class Dim extends Statement {
-
-	public Dim(BASICProgram pgm, Tokenizer tok, EditText edtxt){
-		super(pgm, tok, edtxt);
+	Tokenizer tokenizer;
+	BASICProgram program;
+	TextIO textIO;
+	
+	public Dim(Terminal terminal){
+		super(terminal);
+		tokenizer = terminal.getTokenizer();
+		program = terminal.getBasicProgram();
+		textIO = terminal.getTextIO();
 	}
 
 	@Override
 	public void doSt(){
-		while (t.hasMoreTokens()){
-			String vName = t.nextToken();
+		while (tokenizer.hasMoreTokens()){
+			String vName = tokenizer.nextToken();
 			// Check if it's a Variable
 			if (Variable.isVariable(vName)){
 				Variable v = new Variable(vName);
 				// Since putting all of the constructors of Variable into one
 				// unified constructor, that figures out, splits, and then assigns
 				// initialises itself, it's much easier here
-				p.putVar(v);
+				program.putVar(v);
 			}
-			else if (t.equals(",")){
+			else if (tokenizer.equals(",")){
 				;	// Don't do anything with it, just acknowledge its existence
 			}
-			else if (t.equals("\n")){
+			else if (tokenizer.equals("\n")){
 				return;	// Not an error condition, but an exit condition
 			}
 			else {
@@ -69,7 +77,7 @@ public class Dim extends Statement {
 	}
 	
 	private void errVariable(){
-		et.append("ILLEGAL VARIABLE - LINE NUMBER " + p.getCurrentLine() +".\n");
-		p.stopExec();
+		textIO.writeLine("ILLEGAL VARIABLE - LINE NUMBER " + program.getCurrentLine());
+		program.stopExec();
 	}
 }
