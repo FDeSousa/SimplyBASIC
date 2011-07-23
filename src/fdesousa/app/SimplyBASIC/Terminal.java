@@ -1,6 +1,9 @@
 package fdesousa.app.SimplyBASIC;
 
 import android.widget.EditText;
+import fdesousa.app.SimplyBASIC.Commands.*;
+import fdesousa.app.SimplyBASIC.framework.Command;
+import fdesousa.app.SimplyBASIC.framework.Expression;
 import fdesousa.app.SimplyBASIC.framework.FileIO;
 import fdesousa.app.SimplyBASIC.framework.TextIO;
 
@@ -15,18 +18,18 @@ public class Terminal implements Runnable {
 		"SCRATCH", "RENAME", "RUN", "BYE" };
 
 	// Makes it easier to find the right command in the above array:
-	public final static int C_HELLO		=  0;	// Start BASIC Interpreter
-	public final static int C_NEW		=  1;	// Make new program, erasing current
-	public final static int C_OLD		=  2;	// Open a previously saved program
-	public final static int C_STOP		=  3;	// Stop execution of the current program
-	public final static int C_LIST		=  4;	// List the entered commands in the program
-	public final static int C_SAVE		=  5;	// Save the current program to storage
-	public final static int C_UNSAVE	=  6;	// Delete the currently running program from storage
-	public final static int C_CATALOG	=  7;	// Display all previously saved programs
-	public final static int C_SCRATCH	=  8;	// Empty program listing, but keep name
-	public final static int C_RENAME	=  9;	// Rename the program without removing program listing
-	public final static int C_RUN		= 10;	// Run the BASIC program as per the listing 
-	public final static int C_BYE		= 11;	// Exit BASIC Interpreter
+	public final static int HELLO	=  0;	// Start BASIC Interpreter
+	public final static int NEW		=  1;	// Make new program, erasing current
+	public final static int OLD		=  2;	// Open a previously saved program
+	public final static int STOP	=  3;	// Stop execution of the current program
+	public final static int LIST	=  4;	// List the entered commands in the program
+	public final static int SAVE	=  5;	// Save the current program to storage
+	public final static int UNSAVE	=  6;	// Delete the currently running program from storage
+	public final static int CATALOG	=  7;	// Display all previously saved programs
+	public final static int SCRATCH	=  8;	// Empty program listing, but keep name
+	public final static int RENAME	=  9;	// Rename the program without removing program listing
+	public final static int RUN		= 10;	// Run the BASIC program as per the listing 
+	public final static int BYE		= 11;	// Exit BASIC Interpreter
 
 	private SimplyBASIC simplyBasic;	//	Instance of the calling class, for using the BYE command
 	private TextIO textIO;				//	We use this for readLine() and writeLine()
@@ -38,6 +41,7 @@ public class Terminal implements Runnable {
 	volatile boolean running = false;	//	Volatile to help keep loop structure and order in JITC
 	Thread terminalThread = null;
 
+	Command command;
 	String token = null;	//	We'll hold a token one at a time here when tokenizing
 
 	public Terminal(SimplyBASIC simplyBasic, EditText editText) {
@@ -65,9 +69,68 @@ public class Terminal implements Runnable {
 			tokenizer.reset(textIO.readLine());
 			if (tokenizer.hasNext())
 				token = tokenizer.next();
+			else
+				continue;
 
-			
-		}
+			//	As we've got a token to process, figure it out and run it
+			if (token.equals(COMMANDS[HELLO])) {
+				//	Instantiate and run the Hello command
+				command = new Hello(this);
+			} else if (token.equals(COMMANDS[CATALOG])) {
+				//	Instantiate and run the Catalog command
+				command = new Catalog(this);
+			} else if (basicProgram instanceof BASICProgram) {
+				if (Expression.isNumber(token))	{
+					//	First token is a number, assume it's a BASIC line and parse it
+					basicProgram.addLine(Integer.valueOf(token.trim()).intValue(), tokenizer.getRestOfLine());
+				} else if (token.equals(COMMANDS[NEW])) {
+					//	Instantiate and run the New command
+					command = new New(this);
+				} else if (token.equals(COMMANDS[OLD])) {
+					//	Instantiate and run the Old command
+					command = new Old(this);
+				} else if (token.equals(COMMANDS[STOP])) {
+					//	Instantiate and run the Stop command
+					command = new Stop(this);
+				} else if (token.equals(COMMANDS[LIST])) {
+					//	Instantiate and run the List command
+					command = new List(this);
+				} else if (token.equals(COMMANDS[SAVE])) {
+					//	Instantiate and run the Save command
+					command = new Save(this);
+				} else if (token.equals(COMMANDS[UNSAVE])) {
+					//	Instantiate and run the Unsave command
+					command = new Unsave(this);
+				} else if (token.equals(COMMANDS[SCRATCH])) {
+					//	Instantiate and run the Scratch command
+					command = new Scratch(this);
+				} else if (token.equals(COMMANDS[RENAME])) {
+					//	Instantiate and run the Rename command
+					command = new Rename(this);
+				} else if (token.equals(COMMANDS[RUN])) {
+					//	Instantiate and run the Run command
+					command = new Run(this);
+				} else if (token.equals(COMMANDS[BYE])) {
+					//	Instantiate and run the Bye command
+					command = new Bye(this);
+				} else if (token.equals("") || token == null) {
+					//	We don't mind empty inputs, but catch them as not being errors
+					//+	Continue the loop on the next iteration because we don't want
+					//+	to execute the previously run command by accident
+					continue;
+				} else {
+					//	If it's none of the above, the input is wrong/unknown. Continue loop
+					textIO.writeLine("UNKNOWN INPUT");
+					continue;
+				}
+			} else {
+				//	If there's no instance of BASICProgram, then you've got to go through HELLO
+				textIO.writeLine("MUST TYPE 'HELLO' FIRST");
+				continue;
+			}
+			//	Common run for all the commands here, for simplicity's sake
+			command.run();
+		}	//	End of while(running) loop
 	}
 
 	public void pause() {

@@ -174,7 +174,7 @@ public class CommandInterpreter extends Thread {
 
 	public int procCommand(String input){
 
-		if (input.equals(commands[C_HELLO])){				// Start BASIC system, initialise BP
+		if (input.equals(commands[C_HELLO])){			// Start BASIC system, initialise BP
 			// Ask for user name, get ready for step 1 of HELLO
 			textIO.writeLine("USER NAME-- ");
 			C_HELLO_Step = 1;
@@ -200,7 +200,7 @@ public class CommandInterpreter extends Thread {
 
 			if (Expression.isNumber(input) == true){
 				lineNumber = Integer.valueOf(input.trim()).intValue();
-				program.addLine(lineNumber, tokenizer.getRestOfLine());
+				program.addLine(Integer.valueOf(input.trim()).intValue(), tokenizer.getRestOfLine());
 				textIO.writeLine("> ");
 				return 1;
 			}
