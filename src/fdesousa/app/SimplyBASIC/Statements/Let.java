@@ -58,17 +58,17 @@ public class Let extends Statement {
 
 	@Override
 	public void doSt() {
-		String vName = t.nextToken();
+		String vName = t.next();
 		// Let Variable sort itself out, and return a Variable to work with
 		Variable v = Variable.getVariable(p, vName);
 		
-		String token = t.nextToken();
+		String token = t.next();
 		// If token is an equals sign, the expression begins next
 		if (token.equals("=")) {
 			Queue<String> expression = new LinkedList<String>();
 			// Very simple for the moment, will only handle numbers and symbols, hoping to mend that asap
-			while (t.hasMoreTokens()) {
-				token = t.nextToken();
+			while (t.hasNext()) {
+				token = t.next();
 				if (!token.equals("\n")) {
 					expression.offer(token);
 				} else {
@@ -92,6 +92,6 @@ public class Let extends Statement {
 	
 	private void errLineNumber(String type) {
 		et.writeLine(type + " - LINE NUMBER " + p.getCurrentLine());
-		p.stopExec();
+		p.stop();
 	}
 }

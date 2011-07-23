@@ -50,8 +50,8 @@ public class Goto extends Statement {
 	@Override
 	public void doSt(){
 		String token;
-		if (tokenizer.hasMoreTokens()) {
-			token = tokenizer.nextToken();
+		if (tokenizer.hasNext()) {
+			token = tokenizer.next();
 			if (Expression.isNumber(token)) {
 				int lN = Integer.valueOf(token.trim()).intValue();
 				program.setlNs(program.getTailSet(lN));
@@ -67,6 +67,6 @@ public class Goto extends Statement {
 
 	public void errLineNumber(String type){
 		(terminal.getTextIO()).writeLine(type + " LINE NUMBER - LINE " + program.getCurrentLine());
-		program.stopExec();
+		program.stop();
 	}
 }

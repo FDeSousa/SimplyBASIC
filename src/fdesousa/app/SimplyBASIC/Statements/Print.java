@@ -56,8 +56,8 @@ public class Print extends Statement {
 		// while t has more tokens, keep them coming, and evaluate whatever needs evaluation on-the-spot, before printing
 		// start/end of printable string: '"'
 		// separator of sections: ','
-		while (t.hasMoreTokens()){
-			token = t.nextToken();
+		while (t.hasNext()){
+			token = t.next();
 			
 			if (token.contains("\"")) {
 				// If the token has a double-quotation mark, it's a literal, print it
@@ -77,8 +77,8 @@ public class Print extends Statement {
 		PriorityQueue<String> ex = new PriorityQueue<String>();
 		ex.offer(token);
 		
-		while (t.hasMoreTokens()){
-			token = t.nextToken();
+		while (t.hasNext()){
+			token = t.next();
 			if (token.equals(",") || token.equals("\n")){
 				break;
 			}

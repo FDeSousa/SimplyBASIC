@@ -41,9 +41,9 @@ import fdesousa.app.SimplyBASIC.framework.Variable;
  */
 public class Tokenizer {
 
-	private int curPos = 0; // Marks the current position in the char array
-	private int markPos = 0; // Used to mark a position temporarily
-	private String t = new String(); // The current token that's being worked
+	private int curPos; // Marks the current position in the char array
+	private int markPos; // Used to mark a position temporarily
+	private String t; // The current token that's being worked
 	// with
 	private char buffer[]; // Holds the characters to analyse, easier to move
 	// between chars
@@ -51,8 +51,9 @@ public class Tokenizer {
 	// than in a String, that involves .substring(char position)
 
 	public Tokenizer() {
-		// Constructor doesn't really need initialisation of anything for
-		// the moment as it's used more than once
+		curPos = 0;
+		markPos = 0;
+		t = new String();
 	}
 
 	/**
@@ -65,7 +66,7 @@ public class Tokenizer {
 	 * </ul>
 	 * @return String containing token
 	 */
-	public String nextToken() {
+	public String next() {
 		try {
 			// t is the returned String token
 			t = new String();
@@ -75,11 +76,11 @@ public class Tokenizer {
 			}
 			// We don't need no stinking spaces here!
 
-			if (hasMoreTokens()){
+			if (hasNext()){
 				eatSpace();
 			}
 
-			if (hasMoreTokens()){
+			if (hasNext()){
 				// Check what to do with current Character
 				switch (buffer[curPos]) {
 				// All of [+ - * / ^ = ( )] are parsed immediately and alone
@@ -124,7 +125,7 @@ public class Tokenizer {
 				case '"':
 					boolean endQuote = false;
 					t += buffer[curPos++];
-					while (! endQuote & hasMoreTokens()){
+					while (! endQuote & hasNext()){
 						if (buffer[curPos] == '"')
 							endQuote = true;
 						t += buffer[curPos++];
@@ -136,7 +137,7 @@ public class Tokenizer {
 					// then check if it's a letter or digit, and the operation continues
 
 					// Get the whole sequence of digits and letters, no matter what
-					while ((isLetter(buffer[curPos]) || isDigit(buffer[curPos])) & hasMoreTokens()) {
+					while ((isLetter(buffer[curPos]) || isDigit(buffer[curPos])) & hasNext()) {
 						t += buffer[curPos++];
 						// A little costly on processor time, doing these checks every
 						// time a letter
@@ -157,7 +158,7 @@ public class Tokenizer {
 					// Check if this thing is a variable
 					if (Variable.isVariable(t)) {
 						// It is! So now get the rest of it (if there is a rest of it)
-						if (hasMoreTokens() && peek(false) == '(') {
+						if (hasNext() && peek(false) == '(') {
 							// Right, get the whole of the variable's arguments
 							do {
 								t += buffer[curPos++];
@@ -170,7 +171,7 @@ public class Tokenizer {
 					// Check if it's a function then
 					if (Function.isFunction(t)) {
 						// It certainly is! Get the arguments!
-						if (hasMoreTokens() && peek(false) == '(') {
+						if (hasNext() && peek(false) == '(') {
 							// Since it lists arguments, get them!
 							do {
 								t += buffer[curPos++];
@@ -179,9 +180,9 @@ public class Tokenizer {
 								if (buffer[curPos] == '(') {
 									do {
 										t += buffer[curPos++];
-									} while (buffer[curPos - 1] != ')' & hasMoreTokens());
+									} while (buffer[curPos - 1] != ')' & hasNext());
 								}
-							} while (buffer[curPos - 1] != ')' & hasMoreTokens());
+							} while (buffer[curPos - 1] != ')' & hasNext());
 						}
 						return t;
 					}
@@ -214,7 +215,7 @@ public class Tokenizer {
 		String num = t;
 		try {
 
-			while (isDigit(buffer[curPos]) & hasMoreTokens()){
+			while (isDigit(buffer[curPos]) & hasNext()){
 				num += buffer[curPos++];
 			}
 
@@ -222,7 +223,7 @@ public class Tokenizer {
 			if (buffer[curPos] == '.'){
 				// If this next character is a decimal place, keep getting characters 
 				num += buffer[curPos++];
-				while (isDigit(buffer[curPos]) & hasMoreTokens()){
+				while (isDigit(buffer[curPos]) & hasNext()){
 					// But only get them while they're digits
 					num += buffer[curPos++];
 				}
@@ -235,11 +236,11 @@ public class Tokenizer {
 				// If this next character is an E for Exponent, get the rest of it
 				num += buffer[curPos++];
 				if ((buffer[curPos] == '-' || buffer[curPos] == '+' 
-					|| isDigit(buffer[curPos])) & hasMoreTokens()){
+					|| isDigit(buffer[curPos])) & hasNext()){
 
 					num += buffer[curPos++];
 				}
-				while (isDigit(buffer[curPos]) & hasMoreTokens()){
+				while (isDigit(buffer[curPos]) & hasNext()){
 
 					// But only if the rest of it consists of digits
 					num += buffer[curPos++];
@@ -261,7 +262,7 @@ public class Tokenizer {
 	 * Returns true if there is one or more chars in the buffer, 
 	 * returns false otherwise
 	 */
-	public boolean hasMoreTokens() {
+	public boolean hasNext() {
 		// Simple enough. If current position is less than buffer length,
 		// returns true
 		return (curPos < buffer.length);
@@ -303,10 +304,10 @@ public class Tokenizer {
 	public String getVariable() {
 		t = "";
 
-		t = nextToken();
+		t = next();
 		if (peek(false) == '(') {
 			do {
-				t += nextToken();
+				t += next();
 			} while (t.substring(t.length() - 2) != ")");
 		}
 		return t.trim();
@@ -316,7 +317,7 @@ public class Tokenizer {
 		String line = "";
 		mark();
 		reset();
-		while (hasMoreTokens()) {
+		while (hasNext()) {
 			line += buffer[curPos++];
 		}
 		resetToMark();
@@ -328,7 +329,7 @@ public class Tokenizer {
 		// Useful for BASIC commands
 		String line = "";
 		mark();
-		while (hasMoreTokens()) {
+		while (hasNext()) {
 			line += buffer[curPos++];
 		}
 		// Reset curPos to markPos, just in case it's still needed
@@ -392,7 +393,7 @@ public class Tokenizer {
 
 	private void eatSpace() {
 		// Was part of nextToken, but moved, it's used a fair amount
-		while (isSpace(buffer[curPos]) & hasMoreTokens()){
+		while (isSpace(buffer[curPos]) & hasNext()){
 			curPos++;
 		}
 	}

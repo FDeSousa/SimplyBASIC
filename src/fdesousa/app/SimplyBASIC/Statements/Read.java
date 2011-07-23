@@ -51,7 +51,7 @@ public class Read extends Statement {
 	@Override
 	public void doSt() {
 		do {
-			String token = t.nextToken();
+			String token = t.next();
 			if (! token.equals(",")) {
 				if (Variable.isVariable(token)) {
 					if (p.hasData()) {
@@ -69,11 +69,11 @@ public class Read extends Statement {
 				// Just acknowledge and leave, on EOL
 				return;
 			}
-		} while (t.hasMoreTokens());
+		} while (t.hasNext());
 	}
 	
 	private void errREAD(String type) {
 		terminal.getTextIO().writeLine(type + " - LINE NUMBER " + p.getCurrentLine());
-		p.stopExec();
+		p.stop();
 	}
 }

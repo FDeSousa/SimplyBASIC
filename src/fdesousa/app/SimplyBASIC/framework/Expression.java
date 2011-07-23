@@ -188,7 +188,7 @@ public class Expression{
 		} catch (Exception e) {
 			et.writeLine("ILLEGAL FORMULA - LINE NUMBER " + String.valueOf(p.getCurrentLine()));
 			et.writeLine(e.toString());
-			p.stopExec();
+			p.stop();
 			return Double.MIN_VALUE;
 		}
 	}
@@ -217,11 +217,11 @@ public class Expression{
 		Tokenizer tokenizer = expressionTokenizer;
 		Queue<String> expr = new LinkedList<String>();
 
-		String token = tokenizer.nextToken();
+		String token = tokenizer.next();
 
-		while (tokenizer.hasMoreTokens()) {
+		while (tokenizer.hasNext()) {
 			expr.offer(token);
-			token = tokenizer.nextToken();
+			token = tokenizer.next();
 			if (token.equals("\n")) {
 				break;
 			}

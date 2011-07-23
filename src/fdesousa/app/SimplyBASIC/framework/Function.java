@@ -191,8 +191,8 @@ public class Function{
 			Tokenizer expTok = new Tokenizer();
 			expTok.reset(argument);
 			
-			while (expTok.hasMoreTokens()) {
-				expr.offer(expTok.nextToken());
+			while (expTok.hasNext()) {
+				expr.offer(expTok.next());
 			}
 			Expression e = new Expression(expr, terminal);
 			arg = e.eval();

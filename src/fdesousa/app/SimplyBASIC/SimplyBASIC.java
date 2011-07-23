@@ -49,10 +49,26 @@ public class SimplyBASIC extends Activity {
 		// Declare and initialise variables used class-wide
 		et = (EditText)findViewById(R.id.etMain);
 		terminal = new Terminal(this, et);
-		
-		terminal.run();
 	}
-	
+
+	/* (non-Javadoc)
+	 * @see android.app.Activity#onResume()
+	 */
+	@Override
+	protected void onResume() {
+		super.onResume();
+		terminal.resume();
+	}
+
+	/* (non-Javadoc)
+	 * @see android.app.Activity#onPause()
+	 */
+	@Override
+	protected void onPause() {
+		super.onPause();
+		terminal.pause();
+	}
+
 	public void end() {
 		this.finish();
 	}

@@ -246,7 +246,7 @@ public class CommandInterpreter extends Thread {
 			} // end SCRATCH command
 
 			else if (input.equals(commands[C_RENAME])){		// Rename current program
-				program.setProgName(tokenizer.nextToken());
+				program.setProgName(tokenizer.next());
 			} // end RENAME command
 
 			else if (input.equals(commands[C_RUN])){		// Run BASIC program in Interpreter
@@ -352,7 +352,7 @@ public class CommandInterpreter extends Thread {
 				// and read it line-by-line, then parse to BP
 				while ((line = in.readLine()) != null){
 					tokenizer.reset(line);
-					oldCodeList.put(Integer.valueOf(tokenizer.nextToken()).intValue()
+					oldCodeList.put(Integer.valueOf(tokenizer.next()).intValue()
 							, tokenizer.getRestOfLine());
 				}
 				in.close();

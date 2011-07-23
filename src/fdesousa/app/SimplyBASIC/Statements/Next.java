@@ -53,8 +53,8 @@ public class Next extends Statement {
 		String vName;
 		For forNext;
 		
-		if (t.hasMoreTokens()) {
-			vName = t.nextToken();
+		if (t.hasNext()) {
+			vName = t.next();
 			if (Variable.isVariable(vName) & Variable.checkVariableType(vName) == Variable.NUM) {
 				forNext = p.getFor(vName);
 				forNext.doStNext();
@@ -70,6 +70,6 @@ public class Next extends Statement {
 	
 	private void errNEXT(String type) {
 		terminal.getTextIO().writeLine(type + " - LINE NUMBER " + p.getCurrentLine());
-		p.stopExec();
+		p.stop();
 	}
 }

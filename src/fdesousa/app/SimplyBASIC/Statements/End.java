@@ -46,7 +46,7 @@ public class End extends Statement {
 		(terminal.getTextIO()).writeLine("TIME TO FINISH: " + 
 				String.valueOf((terminal.getBasicProgram()).getTimeToExecute() / 10.0) + 
 				" SECONDS.");	//	Display the time it took to execute and finish
-		(terminal.getBasicProgram()).stopExec();
+		(terminal.getBasicProgram()).stop();
 		return;
 	}
 }

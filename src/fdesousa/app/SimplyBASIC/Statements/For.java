@@ -98,7 +98,7 @@ public class For extends Statement {
 			program.newFor(getName(), this);			
 		} else {
 			textIO.writeLine("ERROR ASSIGNING FOR - LINE NUMBER " + program.getCurrentLine());
-			program.stopExec();
+			program.stop();
 		}
 	}
 
@@ -171,7 +171,7 @@ public class For extends Statement {
 			
 		} else {
 			textIO.writeLine("INVALID FOR - LINE NUMBER " + program.getCurrentLine());
-			program.stopExec();
+			program.stop();
 		}
 	}
 

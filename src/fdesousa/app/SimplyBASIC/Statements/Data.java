@@ -54,8 +54,8 @@ public class Data extends Statement {
 	public void doSt(){
 		String s = new String();
 
-		while (tokenizer.hasMoreTokens()){
-			s = tokenizer.nextToken();
+		while (tokenizer.hasNext()){
+			s = tokenizer.next();
 			if (Expression.isNumber(s)){	//	Add numbers to program's data list
 				program.addData(Double.valueOf(s.trim()).doubleValue());
 			} else if (s.equals(",")){		// Ignore and continue past commas
@@ -71,6 +71,6 @@ public class Data extends Statement {
 
 	private void errConstant(String s){
 		textIO.writeLine("ILLEGAL CONSTANT: " + s + " LINE NUMBER " + program.getCurrentLine() +".\n");
-		program.stopExec();
+		program.stop();
 	}
 }

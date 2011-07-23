@@ -50,7 +50,7 @@ public class Return extends Statement {
 			p.setlNs(p.getRETURNKeySet());
 		} else {
 			(terminal.getTextIO()).writeLine("ILLEGAL RETURN - LINE NUMBER " + p.getCurrentLine());
-			p.stopExec();
+			p.stop();
 			return;
 		}
 	}

@@ -55,8 +55,8 @@ public class GoSub extends Statement {
 	public void doSt(){
 		String token;
 		
-		if (t.hasMoreTokens()) {
-			token = t.nextToken();
+		if (t.hasNext()) {
+			token = t.next();
 		
 			if (Expression.isNumber(token)) {
 				int lN = Integer.valueOf(token.trim()).intValue();
@@ -74,6 +74,6 @@ public class GoSub extends Statement {
 	
 	public void errLineNumber(String type){
 		et.writeLine(type + " LINE NUMBER - LINE " + p.getCurrentLine());
-		p.stopExec();
+		p.stop();
 	}
 }

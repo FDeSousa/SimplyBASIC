@@ -47,31 +47,12 @@ import fdesousa.app.SimplyBASIC.Statements.*;
  * @author Filipe De Sousa
  */
 public class BASICProgram {
-
-	private Map<Integer, String> masterCodeList;
-	private Map<Integer, String> codeList;
-	private Set<Entry<Integer, String>> lines;		// Holds the set of lines for iter
-	private Iterator<Entry<Integer, String>> iter;	// Used to iterate through Set
-	private Entry<Integer, String> cL;				// Holds an individual entry
-
-	private String progName = "", userName = "";
-	// Using the tokenizer again here, will be making good use of this too
-	private Tokenizer t = new Tokenizer();
-	private TextIO et;
-
-	private boolean stop = new Boolean(false);
-
-
-	// Using Calendar to get the running time in milliseconds
-	Calendar timer = Calendar.getInstance();
-	long startTime;
-
 	public final static String[] STATEMENTS = {
 		"IF", "THEN", "FOR", "TO", "STEP", 
 		"NEXT", "LET", "READ", "DATA", 
 		"PRINT", "GOTO", "GOSUB", "RETURN", 
 		"DIM", "DEF", "FN", "END", "REM" };
-
+	
 	public final static int IF		=  0;	// Start of IF...THEN statement
 	public final static int THEN	=  1;	// Continues of IF...THEN statement
 	public final static int FOR		=  2;	// Start of FOR...TO...STEP statement
@@ -91,6 +72,25 @@ public class BASICProgram {
 	public final static int END		= 16;	// Ends the program on that line, no matter what
 	public final static int REM		= 17;	// Signifies the line is a comment, and should be ignored by interpreter
 
+	private Map<Integer, String> masterCodeList;
+	private Map<Integer, String> codeList;
+	private Set<Entry<Integer, String>> lines;		// Holds the set of lines for iter
+	private Iterator<Entry<Integer, String>> iter;	// Used to iterate through Set
+	private Entry<Integer, String> cL;				// Holds an individual entry
+
+	private String progName = "", userName = "";
+	// Using the tokenizer again here, will be making good use of this too
+	private Tokenizer t = new Tokenizer();
+	private TextIO et;
+
+	private volatile boolean running;
+
+
+	// Using Calendar to get the running time in milliseconds
+	Calendar timer = Calendar.getInstance();
+	long startTime;
+
+
 	private String command;
 
 	Statement s;
@@ -99,59 +99,52 @@ public class BASICProgram {
 	public BASICProgram(Terminal terminal) {
 		codeList = new TreeMap<Integer, String>();
 		this.terminal = terminal;
+		running = false;
 	}
 	
 	public void doSt() {
-		if (t.hasMoreTokens())
-			command = t.nextToken();
+		if (t.hasNext())
+			command = t.next();
 
-		if (command.equals(STATEMENTS[IF])){
+		if (command.equals(STATEMENTS[IF]))
 			s = new If(terminal);
-			s.doSt();
-		} else if (command.equals(STATEMENTS[FOR])) {
+		else if (command.equals(STATEMENTS[FOR]))
 			s = new For(terminal);
-			s.doSt();
-		} else if (command.equals(STATEMENTS[NEXT])) {
+		else if (command.equals(STATEMENTS[NEXT]))
 			s = new Next(terminal);
-			s.doSt();
-		} else if (command.equals(STATEMENTS[LET])) {
+		else if (command.equals(STATEMENTS[LET]))
 			s = new Let(terminal);
-			s.doSt();
-		} else if (command.equals(STATEMENTS[READ])) {
+		else if (command.equals(STATEMENTS[READ]))
 			s = new Read(terminal);
-			s.doSt();
-		} else if (command.equals(STATEMENTS[DATA])) {
-			return;    // As we have a first-run to get DATA, it's safer to
-			// acknowledge, but ignore it in Statement.java
-		} else if (command.equals(STATEMENTS[PRINT])) {
+		else if (command.equals(STATEMENTS[DATA]))
+			return;	// As we have a first-run to get DATA, it's safer to
+					// acknowledge, but ignore it in Statement.java
+		else if (command.equals(STATEMENTS[PRINT]))
 			s = new Print(terminal);
-			s.doSt();
-		} else if (command.equals(STATEMENTS[GOTO])) {
+		else if (command.equals(STATEMENTS[GOTO]))
 			s = new Goto(terminal);
-			s.doSt();
-		} else if (command.equals(STATEMENTS[GOSUB])) {
+		else if (command.equals(STATEMENTS[GOSUB]))
 			s = new GoSub(terminal);
-			s.doSt();
-		} else if (command.equals(STATEMENTS[RETURN])) {
+		else if (command.equals(STATEMENTS[RETURN]))
 			s = new Return(terminal);
-			s.doSt();
-		} else if (command.equals(STATEMENTS[DIM])) {
+		else if (command.equals(STATEMENTS[DIM]))
 			s = new Dim(terminal);
-			s.doSt();
-		} else if (command.equals(STATEMENTS[DEF])) {
+		else if (command.equals(STATEMENTS[DEF]))
 			s = new Def(terminal);
-			s.doSt();
-		} else if (command.equals(STATEMENTS[END])) {
+		else if (command.equals(STATEMENTS[END]))
 			s = new End(terminal);
-			s.doSt();
-		} else if (command.equals(STATEMENTS[REM])) {
+		else if (command.equals(STATEMENTS[REM]))
 			return;    // When encountering a REM statement, the line is ignored, so for
 			// safety, acknowledge but ignore the statement here by using return
-		} else {
+		else {
 			et.writeLine("ILLEGAL INSTRUCTION - LINE NUMBER " + getCurrentLine());
-			stopExec();
+			stop();
 			return;
 		}
+		//	Since all the statements we want to execute do not return, and all the statements
+		//+	and conditions that we do not want to execute do return before reaching this point,
+		//+	we can safely write this one line of code to run the statement
+		s.doSt();
 	}
 
 	/**
@@ -165,9 +158,7 @@ public class BASICProgram {
 			masterCodeList = codeList;
 			// To calculate the running time, we set a start time
 			startTime = timer.getTimeInMillis();
-
-			// reset stop, just in case it's been done at a bad time
-			stop = false;
+			running = true;
 
 			// Do the first-run, to get all DATA stored into a FIFO list
 			firstRun();
@@ -175,7 +166,7 @@ public class BASICProgram {
 			lines = codeList.entrySet();
 			iter = lines.iterator();
 
-			while (iter.hasNext() & ! stop) {
+			while (iter.hasNext() & running) {
 				cL = iter.next();
 				t.reset(cL.getValue());
 				doSt();
@@ -210,20 +201,20 @@ public class BASICProgram {
 			lines = codeList.entrySet();
 			iter = lines.iterator();
 
-			while (iter.hasNext() & ! stop) {
+			while (iter.hasNext() & running) {
 				cL = iter.next();
 				t.reset(cL.getValue());
-				s = t.nextToken();
+				s = t.next();
 				if (s.equals(BASICProgram.STATEMENTS[BASICProgram.DATA])) {
 					Statement dataSt = new Data(terminal);
 					dataSt.doSt();
 				} else if (s.equals(BASICProgram.STATEMENTS[BASICProgram.END]) & iter.hasNext()) {
 					et.writeLine("END IS NOT LAST - LINE NUMBER " + cL.getKey());
-					stopExec();
+					stop();
 				}
 			}
 			// Reset stop just here so the other run can continue
-			stop = false;
+			running = true;
 		} catch (Exception e) {
 			return;
 		}
@@ -314,8 +305,8 @@ public class BASICProgram {
 	}
 
 	// Stop execution of a next iteration
-	public void stopExec() {
-		stop = true;
+	public void stop() {
+		running = false;
 	}
 
 	public void setProgName(String progName) {
@@ -438,8 +429,7 @@ public class BASICProgram {
 	 * @return Set lineNumbers, entries from tailmap
 	 */
 	public Set<Entry<Integer, String>> getTailSet(int lN) {
-		Set<Entry<Integer, String>> lineNumbers = ((TreeMap<Integer, String>) codeList).tailMap(lN).entrySet();
-		return lineNumbers;
+		return ((TreeMap<Integer, String>) codeList).tailMap(lN).entrySet();
 	}
 
 	// As FOR loops can be numerous, we handle them similarly to GOTO/GOSUB .. RETURN

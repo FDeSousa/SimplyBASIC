@@ -55,7 +55,7 @@ public class Def extends Statement {
 	@Override
 	public void doSt() {
 		// Next token after "DEF" will be the function call name
-		String fnName = tokenizer.nextToken();
+		String fnName = tokenizer.next();
 		// Get the argument from within fnName, this is the variable to look for
 		String fnVarName = Function.getArg(fnName);
 		// Create a new Variable for use with this user-defined Function
@@ -66,13 +66,13 @@ public class Def extends Statement {
 		PriorityQueue<String> expression = new PriorityQueue<String>();
 		
 		// Since we have the basic stuff sorted, get the expression associated with this new Function
-		String token = tokenizer.nextToken();
+		String token = tokenizer.next();
 		// If token is an equals sign, the expression begins next
 		if (token.equals("=")) {
 			// Very simple for the moment, will only handle numbers and symbols, hoping to mend that asap
-			while (tokenizer.hasMoreTokens()) {
+			while (tokenizer.hasNext()) {
 				if (! token.equals("\n")) {
-					token = tokenizer.nextToken();
+					token = tokenizer.next();
 					expression.offer(token);					
 				} else if (token.equals("\n")) {
 					putFn(fnName, expression, fnVar);
@@ -98,6 +98,6 @@ public class Def extends Statement {
 	
 	private void errFormat() {
 		terminal.getTextIO().writeLine("INCORRECT FORMAT - LINE NUMBER " + program.getCurrentLine());
-		program.stopExec();
+		program.stop();
 	}
 }

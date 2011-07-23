@@ -53,8 +53,8 @@ public class Dim extends Statement {
 
 	@Override
 	public void doSt(){
-		while (tokenizer.hasMoreTokens()){
-			String vName = tokenizer.nextToken();
+		while (tokenizer.hasNext()){
+			String vName = tokenizer.next();
 			// Check if it's a Variable
 			if (Variable.isVariable(vName)){
 				Variable v = new Variable(vName);
@@ -78,6 +78,6 @@ public class Dim extends Statement {
 	
 	private void errVariable(){
 		textIO.writeLine("ILLEGAL VARIABLE - LINE NUMBER " + program.getCurrentLine());
-		program.stopExec();
+		program.stop();
 	}
 }

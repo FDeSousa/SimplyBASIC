@@ -72,7 +72,7 @@ public class If extends Statement {
 		Expression e2 = getIFExpr(true);
 
 		// Do the operation before considering the THEN
-		if (t.hasMoreTokens() & doIFRel(e1, e2, relation)){
+		if (t.hasNext() & doIFRel(e1, e2, relation)){
 			// Token already contains THEN, and it's been checked if it exists too
 			// So we can pass over it, and move to the next token, line number
 			if (Expression.isNumber(token)){
@@ -92,22 +92,22 @@ public class If extends Statement {
 	 */
 	private Expression getIFExpr(boolean endOnTHEN) {
 		PriorityQueue<String> expr = new PriorityQueue<String>();
-		String token = t.nextToken();
+		String token = t.next();
 
 		if (endOnTHEN){	// This gets an expression that ends with THEN
-			while (t.hasMoreTokens() & 
+			while (t.hasNext() & 
 					! token.equals("THEN")){	// Keep that THEN away!
 				// If t has more tokens, and the token isn't THEN, we're still in an expression
 				expr.offer(token);
-				token = t.nextToken();
+				token = t.next();
 			}
 		}
 		else{			// This gets an expression that ends with relational operator
 			// Get the first expression
-			while (t.hasMoreTokens() & !isRelation(token)) {		// We don't want no stinkin' relations here!
+			while (t.hasNext() & !isRelation(token)) {		// We don't want no stinkin' relations here!
 				// If t has more tokens, and the token isn't a relational operator, we're still in an expression
 				expr.offer(token);
-				token = t.nextToken();
+				token = t.next();
 			}
 		}
 		Expression e = new Expression(expr, terminal);
