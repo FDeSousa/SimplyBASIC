@@ -52,7 +52,7 @@ public class FileIO {
 	 * @throws IOException - thrown if any error occurs
 	 */
 	public InputStream readFile(String filename) throws IOException {
-		return new FileInputStream(externalStoragePath + filename);
+		return new FileInputStream(externalStoragePath + filename + BASIC_FILE_EXTENSION);
 	}
 
 	/**
@@ -62,7 +62,7 @@ public class FileIO {
 	 * @throws IOException - thrown if any error occurs
 	 */
 	public OutputStream writeFile(String filename) throws IOException {
-		return new FileOutputStream(externalStoragePath + filename);
+		return new FileOutputStream(externalStoragePath + filename + BASIC_FILE_EXTENSION);
 	}
 	
 	/**
@@ -71,20 +71,26 @@ public class FileIO {
 	 * @throws IOException if something should fail, we'll throw this
 	 */
 	public void deleteFile(String filename) throws IOException {
-		
+		new File(externalStoragePath + filename + BASIC_FILE_EXTENSION).delete();
 	}
 
+	/**
+	 * Convenience method to list the number and names of all the relevant files
+	 * contained in our program's folder in the device's external storage
+	 * @return String containing the number of files and name of each file, one per line
+	 * @throws IOException - if the file is not readable will throw an IOException
+	 */
 	public String folderListing() throws IOException {
 		StringBuffer sb = new StringBuffer();
 		File[] dirList = dir.listFiles(fileFilter);
 
 		if (dirList != null){
-			sb.append("There are ");
+			sb.append("THERE ARE ");
 			sb.append(dirList.length);
-			sb.append(" files in program directory\n\t");
+			sb.append(" FILES IN PROGRAMS DIRECTORY\n\t");
 
 			for (int i = 0; i < dirList.length; i++){
-				sb.append(dirList[i].getName());
+				sb.append(dirList[i].getName().toUpperCase());
 				sb.append("\n\t");
 			}
 		}

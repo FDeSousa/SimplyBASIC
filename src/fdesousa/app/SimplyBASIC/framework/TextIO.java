@@ -57,10 +57,18 @@ public class TextIO implements OnKeyListener, TextWatcher{
 	}
 	
 	/**
-	 * Convenience method: Append the parsed line to our editText
+	 * Convenience method: Append the parsed line to our editText with a new line added
 	 * @param line what we want to write out
 	 */
 	public void writeLine(String line) {
+		editText.append(line + "\n");
+	}
+	
+	/**
+	 * Convenience method: Append the parsed line to our editText
+	 * @param line what we want to write out
+	 */
+	public void write(String line) {
 		editText.append(line);
 	}
 }

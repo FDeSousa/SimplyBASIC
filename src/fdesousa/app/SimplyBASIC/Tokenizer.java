@@ -144,8 +144,8 @@ public class Tokenizer {
 						// or character is added, but it could minimise mistakes
 
 						// Check if it's a system command, if it is return it immediately
-						for (int i = 0; i < CommandInterpreter.commands.length; i++) {
-							if (t.equals(CommandInterpreter.commands[i]))
+						for (int i = 0; i < Terminal.COMMANDS.length; i++) {
+							if (t.equals(Terminal.COMMANDS[i]))
 								return t;
 						}
 						// Check if it's a BASIC command, if it is return it immediately

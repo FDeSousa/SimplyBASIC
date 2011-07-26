@@ -1,7 +1,11 @@
 package fdesousa.app.SimplyBASIC;
 
+import java.io.IOException;
+
 import android.widget.EditText;
-import fdesousa.app.SimplyBASIC.Commands.*;
+import fdesousa.app.SimplyBASIC.Commands.New;
+import fdesousa.app.SimplyBASIC.Commands.Old;
+import fdesousa.app.SimplyBASIC.Commands.Save;
 import fdesousa.app.SimplyBASIC.framework.Command;
 import fdesousa.app.SimplyBASIC.framework.Expression;
 import fdesousa.app.SimplyBASIC.framework.FileIO;
@@ -40,6 +44,7 @@ public class Terminal implements Runnable {
 	//private CommandInterpreter comInt;	//	Instance of our CommandInterpreter to run system commands
 	volatile boolean running = false;	//	Volatile to help keep loop structure and order in JITC
 	Thread terminalThread = null;
+	Thread programThread = null;
 
 	Command command;
 	String token = null;	//	We'll hold a token one at a time here when tokenizing
@@ -49,7 +54,8 @@ public class Terminal implements Runnable {
 		textIO = new TextIO(editText);
 		fileIO = new FileIO("SimplyBASIC");
 		tokenizer = new Tokenizer();
-		basicProgram = new BASICProgram(this);
+		//	BASIC Program will be instantiated later
+		//basicProgram = new BASICProgram(this);
 		//comInt = new CommandInterpreter(this);
 	}	//	End of class constructor
 
@@ -74,55 +80,112 @@ public class Terminal implements Runnable {
 
 			//	As we've got a token to process, figure it out and run it
 			if (token.equals(COMMANDS[HELLO])) {
-				//	Instantiate and run the Hello command
-				command = new Hello(this);
+				//	We forego performance hit of new class instance, and just decide which to run
+				String temp;
+				//	Until the user types NEW or OLD, force them to try again
+				while (true) {
+					textIO.write("NEW OR OLD-- ");
+					temp = textIO.readLine();
+					//	We don't need to keep the instances after they've run once
+					if (temp.equals("NEW")) {
+						new New(this).run();
+						break;
+					} else if (temp.equals("OLD")) {
+						new Old(this).run();
+						break;
+					} else {
+						textIO.writeLine("MUST WRITE ONLY 'NEW' OR 'OLD'");
+					}
+				}
+
 			} else if (token.equals(COMMANDS[CATALOG])) {
-				//	Instantiate and run the Catalog command
-				command = new Catalog(this);
+				//	Simply use calls FileIO.() to list all the files in the directory
+				try {
+					textIO.writeLine(fileIO.folderListing());
+				} catch (IOException e) {
+					textIO.writeLine("DIRECTORY IS NOT READABLE");
+				}
+
+			//	If we have an instance of BASICProgram, we have more available input methods
 			} else if (basicProgram instanceof BASICProgram) {
 				if (Expression.isNumber(token))	{
 					//	First token is a number, assume it's a BASIC line and parse it
 					basicProgram.addLine(Integer.valueOf(token.trim()).intValue(), tokenizer.getRestOfLine());
+
 				} else if (token.equals(COMMANDS[NEW])) {
 					//	Instantiate and run the New command
 					command = new New(this);
+
 				} else if (token.equals(COMMANDS[OLD])) {
 					//	Instantiate and run the Old command
 					command = new Old(this);
+
 				} else if (token.equals(COMMANDS[STOP])) {
-					//	Instantiate and run the Stop command
-					command = new Stop(this);
+					//	Check if there's an instance of Thread in programThread
+					if (programThread instanceof Thread) {
+						//	Alright then, all clear! Stop the program running
+						basicProgram.stop();
+						//	Then attempt to block the thread
+						while (true) {
+							try {
+								programThread.join();
+								break;
+							} catch (InterruptedException e) {
+								//	Naughty, naughty! We retry this, so silently ignore
+							}
+						}
+					}
+					//	If there was no instance of Thread, then we had yet to receive 'RUN'
+
 				} else if (token.equals(COMMANDS[LIST])) {
-					//	Instantiate and run the List command
-					command = new List(this);
+					//	Write returned String from BASICProgram.list() with TextIO.writeLine()
+					textIO.writeLine(basicProgram.list());
+
 				} else if (token.equals(COMMANDS[SAVE])) {
 					//	Instantiate and run the Save command
 					command = new Save(this);
+
 				} else if (token.equals(COMMANDS[UNSAVE])) {
-					//	Instantiate and run the Unsave command
-					command = new Unsave(this);
+					//	Just try to use FileIO.deleteFile(), surrounded by try/catch for safety
+					try {
+						fileIO.deleteFile(basicProgram.getProgName());
+					} catch (IOException e) {
+						//	Assume the file couldn't be deleted
+						textIO.writeLine("FILE COULD NOT BE UNSAVED");
+					}
+
 				} else if (token.equals(COMMANDS[SCRATCH])) {
-					//	Instantiate and run the Scratch command
-					command = new Scratch(this);
+					//	No need for a new class instance, so just do the method call
+					basicProgram.scratch();
+
 				} else if (token.equals(COMMANDS[RENAME])) {
-					//	Instantiate and run the Rename command
-					command = new Rename(this);
+					//	Just ask for the new name of the program and parse
+					//+	the entered value to BASICProgram.setProgName()
+					textIO.write("NEW NAME FOR PROGRAM-- ");
+					basicProgram.setProgName(textIO.readLine());
+
 				} else if (token.equals(COMMANDS[RUN])) {
-					//	Instantiate and run the Run command
-					command = new Run(this);
+					//	Didn't make sense to have RUN in a new class considering it handles
+					//+	a thread containing the BASICProgram being executed
+					programThread = new Thread(basicProgram);
+					programThread.start();
+
 				} else if (token.equals(COMMANDS[BYE])) {
-					//	Instantiate and run the Bye command
-					command = new Bye(this);
+					//	Doesn't make sense to have a dedicated class, so just execute the method
+					end();
+
 				} else if (token.equals("") || token == null) {
 					//	We don't mind empty inputs, but catch them as not being errors
 					//+	Continue the loop on the next iteration because we don't want
 					//+	to execute the previously run command by accident
 					continue;
+
 				} else {
 					//	If it's none of the above, the input is wrong/unknown. Continue loop
 					textIO.writeLine("UNKNOWN INPUT");
 					continue;
 				}
+				//	If not in a BASICProgram instance, tell the user to try typing 'HELLO' first
 			} else {
 				//	If there's no instance of BASICProgram, then you've got to go through HELLO
 				textIO.writeLine("MUST TYPE 'HELLO' FIRST");
@@ -134,7 +197,25 @@ public class Terminal implements Runnable {
 	}
 
 	public void pause() {
-		//	As we handle our own thread, we the thread in here
+		//	We attempt to stop and block the BASICProgram thread before blocking our own
+		//	Check it's actually in an instance of BASICProgram first
+		if (basicProgram instanceof BASICProgram) {
+			//	Then check if there's an instance of Thread in programThread
+			if (programThread instanceof Thread) {
+				//	Alright then, all clear! Stop the program running
+				basicProgram.stop();
+				//	Then attempt to block the thread
+				while (true) {
+					try {
+						programThread.join();
+						break;
+					} catch (InterruptedException e) {
+						//	Naughty, naughty! We retry this, so silently ignore
+					}
+				}
+			}
+		}
+		//	As we handle our own thread, we stop the thread in here
 		running = false;
 		//	Keep trying to block the thread until it actually blocks
 		while (true) {
@@ -142,7 +223,7 @@ public class Terminal implements Runnable {
 				terminalThread.join();
 				break;
 			} catch (InterruptedException e) {
-				//	Naughty, naughty! We retry this
+				//	Naughty, naughty! We retry this, so silently ignore
 			}
 		}
 	}

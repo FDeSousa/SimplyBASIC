@@ -46,13 +46,13 @@ import fdesousa.app.SimplyBASIC.Statements.*;
  * @version 0.1
  * @author Filipe De Sousa
  */
-public class BASICProgram {
+public class BASICProgram implements Runnable {
 	public final static String[] STATEMENTS = {
 		"IF", "THEN", "FOR", "TO", "STEP", 
 		"NEXT", "LET", "READ", "DATA", 
 		"PRINT", "GOTO", "GOSUB", "RETURN", 
 		"DIM", "DEF", "FN", "END", "REM" };
-	
+
 	public final static int IF		=  0;	// Start of IF...THEN statement
 	public final static int THEN	=  1;	// Continues of IF...THEN statement
 	public final static int FOR		=  2;	// Start of FOR...TO...STEP statement
@@ -72,39 +72,52 @@ public class BASICProgram {
 	public final static int END		= 16;	// Ends the program on that line, no matter what
 	public final static int REM		= 17;	// Signifies the line is a comment, and should be ignored by interpreter
 
-	private Map<Integer, String> masterCodeList;
-	private Map<Integer, String> codeList;
-	private Set<Entry<Integer, String>> lines;		// Holds the set of lines for iter
-	private Iterator<Entry<Integer, String>> iter;	// Used to iterate through Set
-	private Entry<Integer, String> cL;				// Holds an individual entry
+	//	All the members related to the code listing and operation listed here
+	private Map<Integer, String> codeListing;		//	Holds the line numbers and line's Strings for execution
+	private Set<Entry<Integer, String>> lines;		//	Holds the set of lines for iter
+	private Iterator<Entry<Integer, String>> iter;	//	Used to iterate through Set
+	private Entry<Integer, String> cL;				//	Holds an individual entry
 
-	private String progName = "", userName = "";
+	//	The name of the program that the user chooses
+	private String programName;
 	// Using the tokenizer again here, will be making good use of this too
-	private Tokenizer t = new Tokenizer();
-	private TextIO et;
-
+	private Tokenizer tokenizer;
+	private String command;
+	private Statement s;
+	private Terminal terminal;
+	private TextIO textIO;
+	//	running is a flag to tell the loop whether or not to stop,
+	//+	it's volatile to prevent reordering of lines within loop
 	private volatile boolean running;
-
-
 	// Using Calendar to get the running time in milliseconds
-	Calendar timer = Calendar.getInstance();
+	Calendar timer;
 	long startTime;
 
-
-	private String command;
-
-	Statement s;
-	Terminal terminal;
-	
-	public BASICProgram(Terminal terminal) {
-		codeList = new TreeMap<Integer, String>();
+	/**
+	 * The one and only constructor for BASICProgram takes all the necessary parameters
+	 * @param terminal - the instance of Terminal we'll use for FileIO/TextIO access
+	 * @param userName - the user's own chosen name
+	 * @param programName - the name of the program the user will be writing/loading
+	 * @param codeListing - the old code listing if available, if null will make new Map
+	 */
+	public BASICProgram(Terminal terminal, String programName, Map<Integer, String> codeListing) {
 		this.terminal = terminal;
+		this.programName = programName;
+		this.tokenizer = terminal.getTokenizer();
+		this.textIO = terminal.getTextIO();
+		//	Place parsed codeListing in our locally accessible one if it's not null
+		if (codeListing != null)
+			this.codeListing = codeListing;
+		//	Otherwise make a nice, fresh, new, clean one
+		else
+			this.codeListing = new TreeMap<Integer, String>();
 		running = false;
+		timer = Calendar.getInstance();
 	}
-	
+
 	public void doSt() {
-		if (t.hasNext())
-			command = t.next();
+		if (tokenizer.hasNext())
+			command = tokenizer.next();
 
 		if (command.equals(STATEMENTS[IF]))
 			s = new If(terminal);
@@ -118,7 +131,7 @@ public class BASICProgram {
 			s = new Read(terminal);
 		else if (command.equals(STATEMENTS[DATA]))
 			return;	// As we have a first-run to get DATA, it's safer to
-					// acknowledge, but ignore it in Statement.java
+					// acknowledge, but ignore it in this run instance
 		else if (command.equals(STATEMENTS[PRINT]))
 			s = new Print(terminal);
 		else if (command.equals(STATEMENTS[GOTO]))
@@ -135,10 +148,10 @@ public class BASICProgram {
 			s = new End(terminal);
 		else if (command.equals(STATEMENTS[REM]))
 			return;    // When encountering a REM statement, the line is ignored, so for
-			// safety, acknowledge but ignore the statement here by using return
+		// safety, acknowledge but ignore the statement here by using return
 		else {
-			et.writeLine("ILLEGAL INSTRUCTION - LINE NUMBER " + getCurrentLine());
-			stop();
+			textIO.writeLine("ILLEGAL INSTRUCTION - LINE NUMBER " + cL.getKey());
+			running = false;
 			return;
 		}
 		//	Since all the statements we want to execute do not return, and all the statements
@@ -153,29 +166,23 @@ public class BASICProgram {
 	 */
 	public void run() {
 		try {
-			// We want to keep a backup codeList, as the key sets are all linked to codeList,
-			// this might give us trouble if something is changed/added/removed.
-			masterCodeList = codeList;
 			// To calculate the running time, we set a start time
 			startTime = timer.getTimeInMillis();
-			running = true;
 
 			// Do the first-run, to get all DATA stored into a FIFO list
 			firstRun();
 			// Re-initialise lNs here for use while final run is going
-			lines = codeList.entrySet();
+			lines = codeListing.entrySet();
 			iter = lines.iterator();
+			running = true;
 
-			while (iter.hasNext() & running) {
+			while (running && iter.hasNext()) {
 				cL = iter.next();
-				t.reset(cL.getValue());
+				tokenizer.reset(cL.getValue());
 				doSt();
 			}
-			// Now, it's ended the run, so we can revert back to the original codeList
-			codeList = masterCodeList;
 		} catch (Exception e) {
-			et.writeLine(e.toString().toUpperCase() + " " + getCurrentLine());
-			codeList = masterCodeList;
+			textIO.writeLine(e.toString().toUpperCase() + " " + cL.getKey());
 		}
 	}
 
@@ -192,111 +199,70 @@ public class BASICProgram {
 		return (!dataStore.isEmpty());
 	}
 
+	/**
+	 * Called by run() to check through and collect all of the DATA in the program
+	 */
 	public void firstRun() {
-		// The generic, auto-generated, must-have version of run(), defined by Runnable
-		// Will see implementation as a first-run method placing DATA in FIFO list
 		String s = new String();
+		running = true;
 		try {
-
-			lines = codeList.entrySet();
+			lines = codeListing.entrySet();
 			iter = lines.iterator();
 
 			while (iter.hasNext() & running) {
 				cL = iter.next();
-				t.reset(cL.getValue());
-				s = t.next();
+				tokenizer.reset(cL.getValue());
+				s = tokenizer.next();
 				if (s.equals(BASICProgram.STATEMENTS[BASICProgram.DATA])) {
 					Statement dataSt = new Data(terminal);
 					dataSt.doSt();
 				} else if (s.equals(BASICProgram.STATEMENTS[BASICProgram.END]) & iter.hasNext()) {
-					et.writeLine("END IS NOT LAST - LINE NUMBER " + cL.getKey());
+					textIO.writeLine("END IS NOT LAST - LINE NUMBER " + cL.getKey());
 					stop();
 				}
 			}
-			// Reset stop just here so the other run can continue
-			running = true;
 		} catch (Exception e) {
 			return;
 		}
 	}
 
-	// Two ways to instantiate a BASIC Program, with or without source code.
-	public BASICProgram(String userName, String progName) {
-		// Used for HELLO, NEW
-		setProgName(progName);
-		setUserName(userName);
-		// Very simple, just initialises the variables here
-		// giving the program a name and user name attributed
+	/**
+	 * Clears the code listing while keeping all other elements of program intact
+	 */
+	public void scratch() {
+		codeListing.clear();
 	}
 
-	public BASICProgram(String userName, String progName, Map<Integer, String> oldCodeList) {
-		// Used for HELLO, OLD
-		setProgName(progName);
-		setUserName(userName);
-		codeList = oldCodeList;
-		// As above, but this is used for an older program, to load the listing
-	}
-
-	public void C_NEW(String progName) {				
-		setProgName(progName);
-		C_SCRATCH();
-	}
-
-	public boolean C_SCRATCH() {
-		codeList.clear();
-		return true;
-	}
-
-	public static BASICProgram C_OLD(String progName, String userName, Map<Integer, String> oldCodeList) {
-		BASICProgram p = new BASICProgram(userName, progName, oldCodeList);
-		return p;
-	}
-
-	public void C_LIST() {
+	/**
+	 * Lists the code listing, returning it as a String
+	 */
+	public String list() {
 		StringBuilder out = new StringBuilder();
 
-		try {
-			out.append("USER NAME: ");
-			out.append(userName);
-			out.append("\nPROGRAM NAME: ");
-			out.append(progName);
-			et.writeLine(out.toString());
+		out.append(programName);
+		out.append("\n");
 
-			lines = codeList.entrySet();
-			iter = lines.iterator();
-
-			while (iter.hasNext()){
-				cL = iter.next();
-				et.writeLine(cL.getKey() + "\t" + cL.getValue() + "\n");
-			}
-		} catch (Exception e) {
-			et.writeLine(e.toString() + "\n");
-		}
-	}
-
-	public String C_SAVE() {
-		StringBuilder out = new StringBuilder();
-		
-		out.append(userName + "\n");
-		out.append(progName + "\n");
-
-		lines = codeList.entrySet();
+		lines = codeListing.entrySet();
 		iter = lines.iterator();
 
 		while (iter.hasNext()) {
 			cL = iter.next();
-			out.append(cL.getKey() + "\t" + cL.getValue() + "\n");
+			out.append(cL.getKey());
+			out.append("\t");
+			out.append(cL.getValue());
+			out.append("\n");
 		}
+
 		return out.toString();
 	}
 
 	public int getFirstLine() {
-		return ((TreeMap<Integer, String>) codeList).firstKey();
+		return ((TreeMap<Integer, String>) codeListing).firstKey();
 	}
 
 	// Boring parts of the class below. Not the meat of it.
 	public void addLine(int lN, String inputLine) {
-		codeList.put(lN, inputLine);
+		codeListing.put(lN, inputLine);
 	}
 
 	public long getTimeToExecute() {
@@ -310,19 +276,11 @@ public class BASICProgram {
 	}
 
 	public void setProgName(String progName) {
-		this.progName = progName;
+		this.programName = progName;
 	}
 
 	public String getProgName() {
-		return progName;
-	}
-
-	public void setUserName(String userName) {
-		this.userName = userName;
-	}
-
-	public String getUserName() {
-		return userName;
+		return programName;
 	}
 
 	public int getCurrentLine() {
@@ -335,11 +293,11 @@ public class BASICProgram {
 
 	// Variables are of type Variable, and can be a Number or Number Array
 	private Map<String, Variable> variables = new TreeMap<String, Variable>();
-	
+
 	public void putVar(Variable v) {
 		variables.put(v.getName(), v);
 	}
-	
+
 	public Variable getVar(String vName) {
 		if (variables.containsKey(vName)) {
 			return variables.get(vName);			
@@ -347,11 +305,11 @@ public class BASICProgram {
 			return null;
 		}
 	}
-	
+
 	public boolean varExists(String vName) {
 		return variables.containsKey(vName);
 	}
-	
+
 	public int varType(String vName) {
 		Variable v = variables.get(vName);
 		return v.getType();
@@ -359,11 +317,11 @@ public class BASICProgram {
 
 	// Functions are of type Function, and can be user-defined functions only
 	private Map<String, Function> functions = new TreeMap<String, Function>();
-	
+
 	public void putFunction(Function f) {
 		functions.put(f.getName(), f);
 	}
-	
+
 	public Function getFunction(String fnName) {
 		if (functions.containsKey(fnName)) {
 			return functions.get(fnName);			
@@ -371,7 +329,7 @@ public class BASICProgram {
 			return null;
 		}
 	}
-	
+
 	public boolean fnExists(String fnName) {
 		return functions.containsKey(fnName);
 	}
@@ -406,7 +364,7 @@ public class BASICProgram {
 		RETURNKeySet = RETURNs.pop();
 		return RETURNKeySet;
 	}
-	
+
 	public boolean getRETURNKeySetisEmpty() {
 		return RETURNKeySet.isEmpty();
 	}
@@ -429,7 +387,7 @@ public class BASICProgram {
 	 * @return Set lineNumbers, entries from tailmap
 	 */
 	public Set<Entry<Integer, String>> getTailSet(int lN) {
-		return ((TreeMap<Integer, String>) codeList).tailMap(lN).entrySet();
+		return ((TreeMap<Integer, String>) codeListing).tailMap(lN).entrySet();
 	}
 
 	// As FOR loops can be numerous, we handle them similarly to GOTO/GOSUB .. RETURN

@@ -2,8 +2,9 @@ bin
 gen
 bin/*
 gen/*
-bin/fdesousa/app/SimplyBASIC/*
-bin/fdesousa/app/SimplyBASIC/SimplyBASIC.class
+.settings
+.settings/*
+
 # ignore java class files
 *.class
 # ignore binary/compiled files
